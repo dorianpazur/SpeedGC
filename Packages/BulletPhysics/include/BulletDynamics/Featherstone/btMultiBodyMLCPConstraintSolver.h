@@ -156,7 +156,7 @@ protected:
 		btTypedConstraint** constraints,
 		int numConstraints,
 		const btContactSolverInfo& infoGlobal,
-		btIDebugDraw* debugDrawer) ;
+		btIDebugDraw* debugDrawer) BT_OVERRIDE;
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR()

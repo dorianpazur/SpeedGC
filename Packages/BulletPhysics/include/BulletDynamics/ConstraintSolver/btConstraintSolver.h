@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
+Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -35,7 +35,6 @@ enum btConstraintSolverType
 	BT_MLCP_SOLVER = 2,
 	BT_NNCG_SOLVER = 4,
 	BT_MULTIBODY_SOLVER = 8,
-	BT_BLOCK_SOLVER = 16,
 };
 
 class btConstraintSolver

@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2008 Erwin Coumans  https://bulletphysics.org
+Copyright (c) 2003-2008 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -17,8 +17,7 @@ subject to the following restrictions:
 #define BT_SOFT_BODY_HELPERS_H
 
 #include "btSoftBody.h"
-#include <fstream>
-#include <string>
+
 //
 // Helpers
 //
@@ -92,8 +91,7 @@ struct btSoftBodyHelpers
 								   int resx,
 								   int resy,
 								   int fixeds,
-								   bool gendiags,
-								   btScalar perturbation = 0.);
+								   bool gendiags);
 	/* Create a patch with UV Texture Coordinates	*/
 	static btSoftBody* CreatePatchUV(btSoftBodyWorldInfo& worldInfo,
 									 const btVector3& corner00,
@@ -142,26 +140,7 @@ struct btSoftBodyHelpers
 											bool bfacelinks,
 											bool btetralinks,
 											bool bfacesfromtetras);
-	static btSoftBody* CreateFromVtkFile(btSoftBodyWorldInfo& worldInfo, const char* vtk_file);
 
-	static void writeObj(const char* file, const btSoftBody* psb);
-
-	static void writeState(const char* file, const btSoftBody* psb);
-
-  //this code cannot be here, dependency on example code are not allowed
-	//static std::string loadDeformableState(btAlignedObjectArray<btVector3>& qs, btAlignedObjectArray<btVector3>& vs, const char* filename, CommonFileIOInterface* fileIO);
-
-	static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d, const btVector3& p, btVector4& bary);
-
-	static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& p, btVector4& bary);
-
-	static void interpolateBarycentricWeights(btSoftBody* psb);
-
-	static void extrapolateBarycentricWeights(btSoftBody* psb);
-
-	static void generateBoundaryFaces(btSoftBody* psb);
-
-	static void duplicateFaces(const char* filename, const btSoftBody* psb);
 	/// Sort the list of links to move link calculations that are dependent upon earlier
 	/// ones as far as possible away from the calculation of those values
 	/// This tends to make adjacent loop iterations not dependent upon one another,

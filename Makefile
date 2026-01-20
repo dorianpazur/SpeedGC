@@ -35,7 +35,7 @@ include $(wildcard ./src/GC/sources.mk)
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS		:= -g -O2 -Wall $(MACHDEP) $(INCLUDE) $(CFLAGS)
+CFLAGS		:= -mcall-sysv-noeabi -g -Wall $(MACHDEP) $(INCLUDE) $(CFLAGS)
 CXXFLAGS	:= $(CFLAGS)
 
 LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -43,7 +43,7 @@ LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-logc -lm -lBulletCollision
+LIBS	:=	-logc -lm -lBullet3Common -lBulletDynamics -lBulletCollision -lLinearMath
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

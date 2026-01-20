@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
+Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -23,14 +23,14 @@ class btMinkowskiSumShape;
 #include "LinearMath/btIDebugDraw.h"
 
 #ifdef BT_USE_DOUBLE_PRECISION
-#define MAX_CONVEX_CAST_ITERATIONS 64
-#define MAX_CONVEX_CAST_EPSILON (SIMD_EPSILON * 10)
+#define MAX_ITERATIONS 64
+#define MAX_EPSILON (SIMD_EPSILON * 10)
 #else
-#define MAX_CONVEX_CAST_ITERATIONS 32
-#define MAX_CONVEX_CAST_EPSILON btScalar(0.0001)
+#define MAX_ITERATIONS 32
+#define MAX_EPSILON btScalar(0.0001)
 #endif
 ///Typically the conservative advancement reaches solution in a few iterations, clip it to 32 for degenerate cases.
-///See discussion about this here https://bulletphysics.orgphpBB2/viewtopic.php?t=565
+///See discussion about this here http://continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=565
 //will need to digg deeper to make the algorithm more robust
 //since, a large epsilon can cause an early termination with false
 //positive results (ray intersections that shouldn't be there)
@@ -58,8 +58,8 @@ public:
 			: m_fraction(btScalar(BT_LARGE_FLOAT)),
 			  m_debugDrawer(0),
 			  m_allowedPenetration(btScalar(0)),
-			  m_subSimplexCastMaxIterations(MAX_CONVEX_CAST_ITERATIONS),
-			  m_subSimplexCastEpsilon(MAX_CONVEX_CAST_EPSILON)
+			  m_subSimplexCastMaxIterations(MAX_ITERATIONS),
+			  m_subSimplexCastEpsilon(MAX_EPSILON)
 		{
 		}
 
