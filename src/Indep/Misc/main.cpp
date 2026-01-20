@@ -4,6 +4,9 @@
 #include <malloc.h>
 #include <ogcsys.h>
 #include <gccore.h>
+
+#include <tWare/Time.h>
+
 #include "includetest.h"
 #include "btBulletDynamicsCommon.h"
 
@@ -117,6 +120,9 @@ int main(int argc, char **argv) {
 	
 	btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	
+	btContactSolverInfo& info = dynamicsWorld->getSolverInfo();
+	info.m_numIterations = 4;
+	
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
 	///-----initialization_end-----
@@ -188,11 +194,25 @@ int main(int argc, char **argv) {
 	
 	/// Do some simulation
 	
+	unsigned int prevFrameTime = tGetTicker();
+	VIDEO_WaitVSync();
+	
+	float avgfps = 0.0f;
+	float fps = 0.0f;
+	
 	///-----stepsimulation_start-----
 	for (i = 0; i < 150; i++)
 	{
-		dynamicsWorld->stepSimulation(1.f / 60.f, 10);
-	
+		unsigned int now = tGetTicker();
+		float frameTime = tGetTickerDifference(prevFrameTime, now);
+		prevFrameTime = now;
+		
+		fps = 1.0f / (frameTime * 0.1f);
+		if (i > 75)
+			avgfps += fps;
+		
+		dynamicsWorld->stepSimulation(1.f / 60.f, 2);
+		
 		//print positions of all objects
 		for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
 		{
@@ -207,9 +227,14 @@ int main(int argc, char **argv) {
 			{
 				trans = obj->getWorldTransform();
 			}
-			printf("world pos object %d = %f,%f,%f\n", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
+			//printf("world pos object %d = %f,%f,%f\n", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 		}
 	}
+	
+	avgfps /= 75.0f;
+	
+	printf("average fps during latter half of physics sim = %.2f\n", avgfps);
+	printf("last fps value = %.2f\n", fps);
 	
 	///-----stepsimulation_end-----
 	
@@ -255,15 +280,27 @@ int main(int argc, char **argv) {
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	collisionShapes.clear();
 
+	prevFrameTime = tGetTicker();
+
 	while(1) {
 
 		VIDEO_WaitVSync();
 		PAD_ScanPads();
-
+		
+		unsigned int now = tGetTicker();
+		float frameTime = tGetTickerDifference(prevFrameTime, now);
+		prevFrameTime = now;
+		
+		float fps = 1.0f / (frameTime * 0.001f);
+		
 		int buttonsDown = PAD_ButtonsDown(0);
 		
 		if( buttonsDown & PAD_BUTTON_A ) {
 			printf("Button A pressed.\n");
+		}
+		
+		if( buttonsDown & PAD_BUTTON_B ) {
+			printf("fps = %.2f\n", fps);
 		}
 
 		if (buttonsDown & PAD_BUTTON_START) {
