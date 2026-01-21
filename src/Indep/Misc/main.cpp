@@ -244,7 +244,7 @@ int main(int argc, char **argv) {
 		//}
 		//
 		//if( buttonsDown & PAD_BUTTON_B ) {
-		//	printf("fps = %.2f\n", fps);
+			printf("fps = %.2f\n", fps);
 		//}
 
 		if (buttonsDown & PAD_BUTTON_START) {
