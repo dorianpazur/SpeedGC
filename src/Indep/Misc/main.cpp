@@ -6,8 +6,10 @@
 #include <ogcsys.h>
 #include <gccore.h>
 #include <gcmodplay.h>
+#include <iso9660.h>
 
 #include <tWare/Time.h>
+#include <tWare/File.h>
 
 #include "includetest.h"
 #include "btBulletDynamicsCommon.h"
@@ -19,7 +21,7 @@ static GXRModeObj *rmode = NULL;
 
 f32 yscale;
 u32 xfbHeight;
-GXColor background = {0xFF, 0x40, 0xFF, 0xff};
+GXColor background = {0x7F, 0x40, 0xFF, 0xff};
 Mtx44 v,p; // view and perspective matrices
 
 void Initialise();
@@ -149,45 +151,8 @@ int main(int argc, char **argv) {
 	float avgfps = 0.0f;
 	float fps = 0.0f;
 	
-	///-----stepsimulation_start-----
-	//for (i = 0; i < 150; i++)
-	//{
-	//	unsigned int now = tGetTicker();
-	//	float frameTime = tGetTickerDifference(prevFrameTime, now);
-	//	prevFrameTime = now;
-	//	
-	//	fps = 1.0f / (frameTime * 0.1f);
-	//	if (i > 75)
-	//		avgfps += fps;
-	//	
-	//	dynamicsWorld->stepSimulation(1.f / 60.f, 2);
-	//	
-	//	//print positions of all objects
-	//	for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
-	//	{
-	//		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
-	//		btRigidBody* body = btRigidBody::upcast(obj);
-	//		btTransform trans;
-	//		if (body && body->getMotionState())
-	//		{
-	//			body->getMotionState()->getWorldTransform(trans);
-	//		}
-	//		else
-	//		{
-	//			trans = obj->getWorldTransform();
-	//		}
-	//		//printf("world pos object %d = %f,%f,%f\n", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
-	//	}
-	//}
-	//
-	//avgfps /= 75.0f;
-	//
-	//printf("average fps during latter half of physics sim = %.2f\n", avgfps);
-	//printf("last fps value = %.2f\n", fps);
-	
-	///-----stepsimulation_end-----
-	
-	//cleanup in the reverse order of creation/initialization
+	printf("Attempting to open test.txt\n");
+	tFile* testFile = tOpenFile("test.txt");
 
 	prevFrameTime = tGetTicker();
 
@@ -235,6 +200,11 @@ int main(int argc, char **argv) {
 		VIDEO_SetNextFramebuffer(xfb[currentBuffer]);
 		VIDEO_Flush();
 		
+		if (testFile)
+			printf("contents of test.txt:\n%s\n", testFile->data);
+		else
+			printf("failed to open test.txt!\n");
+		
 		float fps = 1.0f / (frameTime * 0.001f);
 		
 		int buttonsDown = PAD_ButtonsDown(0);
@@ -251,6 +221,8 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}
+	
+	//cleanup in the reverse order of creation/initialization
 	
 	///-----cleanup_start-----
 	
@@ -299,6 +271,9 @@ void Initialise() {
 	VIDEO_Init();
 	PAD_Init();
 	
+	DVD_Init();
+	ISO9660_Mount("dvd", &__io_gcdvd);
+	
 	rmode = VIDEO_GetPreferredMode(NULL);
 
 	void *gp_fifo = NULL;
@@ -322,7 +297,6 @@ void Initialise() {
 	// clear
 	GX_SetCopyClear(background, 0x00ffffff);
 	
-	
 	GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
 	yscale = GX_GetYScaleFactor(rmode->efbHeight,rmode->xfbHeight);
 	xfbHeight = GX_SetDispCopyYScale(yscale);
@@ -331,7 +305,13 @@ void Initialise() {
 	GX_SetDispCopyDst(rmode->fbWidth,xfbHeight);
 	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_TRUE,rmode->vfilter);
 	GX_SetFieldMode(rmode->field_rendering,((rmode->viHeight==2*rmode->xfbHeight)?GX_ENABLE:GX_DISABLE));
- 
+	
+	if (rmode->aa) {
+		GX_SetPixelFmt(GX_PF_RGB565_Z16, GX_ZC_LINEAR);
+	} else {
+		GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+	}
+	
 	// cull none because other values produce weird results
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_CopyDisp(xfb[currentBuffer],GX_TRUE);
@@ -351,7 +331,6 @@ void Initialise() {
 	// and z near and far distances
     f32 w = rmode->viWidth;
     f32 h = rmode->viHeight;
-	guPerspective(p, 60, (f32)w/h, 10.0F, 300.0F);
+	guPerspective(p, 60, (f32)w/h, 10.0F, 1000.0F);
 	GX_LoadProjectionMtx(p, GX_PERSPECTIVE);
-	
 }

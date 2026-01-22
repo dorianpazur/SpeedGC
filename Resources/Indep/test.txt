@@ -1,0 +1,4 @@
+If you see this text, then that means that filesystem access from the
+DVD drive works. 
+
+Yippee!

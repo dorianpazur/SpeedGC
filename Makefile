@@ -17,9 +17,11 @@ include $(DEVKITPPC)/gamecube_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
+DISCDIR		:=	$(CURDIR)/$(BUILD)/disc
 SOURCES		:=	
 DATA		:=	data
 INCLUDES	:=
+TOOLSDIR	:=	$(CURDIR)/../tools
 
 #---------------------------------------------------------------------------------
 # include platform-independent code
@@ -35,7 +37,7 @@ include $(wildcard ./src/GC/sources.mk)
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS		:= -mcall-sysv-noeabi -g -Wall $(MACHDEP) $(INCLUDE) $(CFLAGS)
+CFLAGS		:= -std=c++23 -g -Wall $(MACHDEP) $(INCLUDE) $(CFLAGS)
 CXXFLAGS	:= $(CFLAGS)
 
 LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -43,7 +45,7 @@ LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-logc -lm -lBullet3Common -lBulletDynamics -lBulletCollision -lLinearMath
+LIBS	:=	-liso9660 -logc -lm -lBullet3Common -lBulletDynamics -lBulletCollision -lLinearMath
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -103,13 +105,13 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 export LIBPATHS	:=	-L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export OUTPUT	:=	$(CURDIR)/$(BUILD)/$(TARGET)
-.PHONY: $(BUILD) clean
+.PHONY: $(BUILD) resources clean
 
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
+	@[ -d $(DISCDIR) ] || mkdir -p $(DISCDIR)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
@@ -123,8 +125,15 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
+discs: ntsc_u.iso
+ntsc_u.iso: resources $(OUTPUT).dol
+	$(TOOLSDIR)/dollz3 $(OUTPUT).dol disc/bootldr.dol -m
+	$(TOOLSDIR)/mkisofs -R -J -G $(TOOLSDIR)/gbi.hdr -no-emul-boot -b bootldr.dol -o ntsc_u.iso disc/
 $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
+
+resources:
+	-cp -f -r ../Resources/Indep/** disc/
 
 $(OFILES_SOURCES) : $(HFILES)
 
