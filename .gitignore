@@ -38,3 +38,6 @@
 
 # Allow packages to have precompiled libs
 !**/Packages/**/*.a
+
+# Don't nuke tools
+!**/tools/**/*
