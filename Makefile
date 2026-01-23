@@ -37,7 +37,7 @@ include $(wildcard ./src/GC/sources.mk)
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS		:= -std=c++23 -g -Wall $(MACHDEP) $(INCLUDE) $(CFLAGS)
+CFLAGS		:= -std=c++23 -g -O2 -Wall $(MACHDEP) $(INCLUDE) $(CFLAGS)
 CXXFLAGS	:= $(CFLAGS)
 
 LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
