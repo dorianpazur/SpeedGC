@@ -10,10 +10,12 @@
 #include <cstdlib>
 #include <cstdint>
 
+#define TFILE_MAX_PATH ((size_t)260)
+
 struct tFile
 {
 	void* data = NULL;
-	const char* filename = "";
+	char filename[TFILE_MAX_PATH] = { '\0' };
 	size_t filesize = 0;
 	
 	~tFile()

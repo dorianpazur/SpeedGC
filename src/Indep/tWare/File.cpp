@@ -29,7 +29,7 @@ tFile* tOpenFile(const char* path)
 
 		tFile* file = new tFile();
 
-		file->filename = path;
+		memcpy(file->filename, path, std::min(TFILE_MAX_PATH, strlen(path)));
 		file->filesize = size;
 		
 		// align to 16 bytes and ensure an extra padding byte always exists for text
@@ -70,7 +70,6 @@ void tCloseFile(tFile* file)
 		if (gOpenFiles[i] == file)
 		{
 			gOpenFiles.erase(gOpenFiles.begin() + i); // remove from vector
-			free(file->data);
 			delete file;
 			break;
 		}
