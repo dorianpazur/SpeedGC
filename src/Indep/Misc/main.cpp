@@ -297,6 +297,40 @@ int main(int argc, char **argv) {
 		dynamicsWorld->addRigidBody(body);
 	}
 	
+	
+	{
+		//create another dynamic rigidbody
+	
+		//btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
+		btCollisionShape* colShape = new btBoxShape(btVector3(1.f, 1.f, 1.f));
+		collisionShapes.push_back(colShape);
+	
+		/// Create Dynamic Objects
+		btTransform startTransform;
+		startTransform.setIdentity();
+	
+		btScalar mass(3.f);
+	
+		//rigidbody is dynamic if and only if mass is non zero, otherwise static
+		bool isDynamic = (mass != 0.f);
+	
+		btVector3 localInertia(0, 0, 0);
+		if (isDynamic)
+			colShape->calculateLocalInertia(mass, localInertia);
+	
+		startTransform.setOrigin(btVector3(-5, -2, 5));
+	
+		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
+		
+		rbInfo.m_restitution = 0.8f;
+		
+		btRigidBody* body = new btRigidBody(rbInfo);
+	
+		dynamicsWorld->addRigidBody(body);
+	}
+	
 	/// Do some simulation
 	
 	unsigned int prevFrameTime = tGetTicker();
