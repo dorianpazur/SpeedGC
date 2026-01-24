@@ -1,0 +1,15 @@
+# sdl pkg-config source file
+
+prefix=/opt/devkitpro/libogc2/wii
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: sdl
+Description: Simple DirectMedia Layer is a cross-platform multimedia library designed to provide low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D video framebuffer.
+Version: 1.2.15
+Requires:
+Conflicts:
+Libs: -L${libdir}  -DGEKKO -mrvl -mcpu=750 -meabi -msdata=sysv -mhard-float                   -lSDLmain -lSDL  -L/opt/devkitpro/libogc2/wii/lib -lopengx -lstdc++ -logc -lm                   -L/opt/devkitpro/libogc2/wii/lib -laesnd -lwiiuse -lbte -lwiikeyboard -lfat -logc -lm                   -L/opt/devkitpro/portlibs/wii/lib                   -L/opt/devkitpro/portlibs/ppc/lib
+Libs.private: -DGEKKO -mrvl -mcpu=750 -meabi -msdata=sysv -mhard-float                   -lSDLmain -lSDL  -L/opt/devkitpro/libogc2/wii/lib -lopengx -lstdc++ -logc -lm                   -L/opt/devkitpro/libogc2/wii/lib -laesnd -lwiiuse -lbte -lwiikeyboard -lfat -logc -lm                   -L/opt/devkitpro/portlibs/wii/lib                   -L/opt/devkitpro/portlibs/ppc/lib  -liconv -lm
+Cflags: -I${includedir}/SDL -D_GNU_SOURCE=1 -DGEKKO -mrvl -mcpu=750 -meabi -msdata=sysv -mhard-float                     -Wall -O2                     -I/opt/devkitpro/libogc2/wii/include                     -I/opt/devkitpro/portlibs/wii/include                     -I/opt/devkitpro/portlibs/ppc/include

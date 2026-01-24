@@ -10,6 +10,8 @@
 #include <tiny_gltf/tiny_gltf.h>
 #include <iostream>
 #include <limits>
+#include <fat.h>
+#include <dirent.h>
 
 #include <tWare/Time.h>
 #include <tWare/File.h>
@@ -27,7 +29,7 @@ u32 xfbHeight;
 GXColor background = {0x7F, 0x40, 0xFF, 0xff};
 Mtx44 v,p; // view and perspective matrices
 
-void Initialise();
+void Initialise(int argc, char** argv);
  
 void draw_init();
 //void draw_cube(Mtx view, Mtx pos);
@@ -119,7 +121,7 @@ struct vModel
 
 int main(int argc, char **argv) {
 
-	Initialise();
+	Initialise(argc, argv);
 
 	printf("\nHello World!\n");
 	printf("%s\n", szTestString);
@@ -486,14 +488,43 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void Initialise() {
+void dirlist(char* path) {
+
+	DIR* pdir = opendir(path);
+	struct dirent* pent;
+
+	if (pdir != NULL) {
+
+		do {
+			errno = 0;
+			pent = readdir(pdir);
+
+			if(pent != NULL && strcmp(".", pent->d_name) != 0 && strcmp("..", pent->d_name) != 0) {
+				char dnbuf[PATH_MAX];
+				sprintf(dnbuf, "%s/%s", path, pent->d_name);
+
+				struct stat statbuf;
+				stat(dnbuf, &statbuf);
+
+				if(S_ISDIR(statbuf.st_mode)) {
+					printf("%s <DIR>\n", dnbuf);
+					dirlist(dnbuf);
+				} else {
+					printf("%s (%lld)\n", dnbuf, statbuf.st_size);
+				}
+			}
+		} while (pent != NULL || errno == EOVERFLOW);
+
+		closedir(pdir);
+	} else {
+		printf("opendir() failure.\n");
+	}
+}
+
+void Initialise(int argc, char** argv) {
 	SYS_STDIO_Report(true); // enable logging to dolphin logs
 	VIDEO_Init();
 	PAD_Init();
-	printf("Mounting DVD\n");
-	
-	DVD_Init();
-	ISO9660_Mount("dvd", &__io_gcdvd);
 	
 	rmode = VIDEO_GetPreferredMode(NULL);
 
@@ -504,6 +535,23 @@ void Initialise() {
 	xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 	xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 	//console_init(xfb[currentBuffer],20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
+	
+	FILE* checkFile = NULL;
+	// check if SD gecko is present and game is at the especified location
+	if (fatInitDefault() && (checkFile = fopen("./Speed/Speed.dol", "rb")))
+	{
+		printf("\n\nFound SD Gecko\n");
+		tChangeBaseDir("./Speed/");
+	}
+	else // otherwise try loading from DVD
+	{
+		printf("\n\nMounting DVD\n");
+		
+		DVD_Init();
+		ISO9660_Mount("dvd", &__io_gcdvd);
+		
+		tChangeBaseDir("dvd://");
+	}
 	
 	VIDEO_Configure(rmode);
 	VIDEO_SetNextFramebuffer(xfb[currentBuffer]);

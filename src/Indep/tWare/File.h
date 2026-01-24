@@ -30,5 +30,6 @@ struct tFile
 
 extern tFile* tOpenFile(const char* path);
 extern void tCloseFile(tFile* file);
+extern void tChangeBaseDir(const char* path);
 
 #endif

@@ -12,13 +12,13 @@
 // TODO: make this std::unordered_map (Ross' suggestion)
 std::vector<tFile*> gOpenFiles;
 
-const char* pathPrefix = "dvd://%s";
+char gBaseDir[TFILE_MAX_PATH + 1] { '\0' };
 
 // abstracted in order to allow for an archive format to potentially be used
 tFile* tOpenFile(const char* path)
 {
-	char realPath[260] = { 0 };
-	snprintf(realPath, 260, pathPrefix, path);
+	char realPath[TFILE_MAX_PATH] = { 0 };
+	snprintf(realPath, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
 	FILE* cFile = fopen(realPath, "rb");
 	
 	if (cFile)
@@ -45,6 +45,7 @@ tFile* tOpenFile(const char* path)
 				// clean up and return null
 				free(file->data);
 				delete file;
+				fclose(cFile);
 				return NULL;
 			}
 
@@ -55,6 +56,8 @@ tFile* tOpenFile(const char* path)
 			delete file;
 			file = NULL;
 		}
+		
+		fclose(cFile);
 
 		return file;
 	}
@@ -74,4 +77,10 @@ void tCloseFile(tFile* file)
 			break;
 		}
 	}
+}
+
+// changes base directory to allow loading data from sd gecko
+void tChangeBaseDir(const char* path)
+{
+	strncpy(gBaseDir, path, TFILE_MAX_PATH);
 }

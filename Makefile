@@ -1,4 +1,18 @@
 #---------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & intermediate files will be placed
+# SOURCES is a list of directories containing source code
+# INCLUDES is a list of directories containing extra header files
+#---------------------------------------------------------------------------------
+TARGET		:=	$(notdir $(CURDIR))
+BUILD		:=	build
+DISCDIR		:=	$(CURDIR)/$(BUILD)/Speed
+SOURCES		:=	
+DATA		:=	data
+INCLUDES	:=
+TOOLSDIR	:=	$(CURDIR)/../tools
+
+#---------------------------------------------------------------------------------
 # Clear the implicit built in rules
 #---------------------------------------------------------------------------------
 .SUFFIXES:
@@ -7,21 +21,13 @@ ifeq ($(strip $(DEVKITPPC)),)
 $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
 endif
 
-include $(DEVKITPPC)/gamecube_rules
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+BASEDIR := $(CURDIR)
+else
+BASEDIR := $(CURDIR)/../
+endif
 
-#---------------------------------------------------------------------------------
-# TARGET is the name of the output
-# BUILD is the directory where object files & intermediate files will be placed
-# SOURCES is a list of directories containing source code
-# INCLUDES is a list of directories containing extra header files
-#---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
-BUILD		:=	build
-DISCDIR		:=	$(CURDIR)/$(BUILD)/disc
-SOURCES		:=	
-DATA		:=	data
-INCLUDES	:=
-TOOLSDIR	:=	$(CURDIR)/../tools
+include $(BASEDIR)/Packages/libogc2/gamecube_rules
 
 #---------------------------------------------------------------------------------
 # include platform-independent code
@@ -45,7 +51,7 @@ LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-liso9660 -logc -lm -lBullet3Common -lBulletDynamics -lBulletCollision -lLinearMath
+LIBS	:=	-liso9660 -lfat -logc -lm -lBullet3Common -lBulletDynamics -lBulletCollision -lLinearMath
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -66,6 +72,8 @@ export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+export BASEDIR 	:=	$(CURDIR)
 
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
@@ -127,13 +135,13 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 discs: ntsc_u.iso
 ntsc_u.iso: resources $(OUTPUT).dol
-	$(TOOLSDIR)/dollz3 $(OUTPUT).dol disc/bootldr.dol -m
-	$(TOOLSDIR)/mkisofs -R -J -G $(TOOLSDIR)/gbi.hdr -no-emul-boot -b bootldr.dol -o ntsc_u.iso disc/
+	$(TOOLSDIR)/dollz3 $(OUTPUT).dol Speed/Speed.dol -m
+	$(TOOLSDIR)/mkisofs -R -J -G $(TOOLSDIR)/gbi.hdr -no-emul-boot -b Speed.dol -o ntsc_u.iso Speed/
 $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
 
 resources:
-	-cp -f -r ../Resources/Indep/** disc/
+	-cp -f -r ../Resources/Indep/** Speed/
 
 $(OFILES_SOURCES) : $(HFILES)
 
