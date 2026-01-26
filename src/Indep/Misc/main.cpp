@@ -208,6 +208,33 @@ int main(int argc, char **argv) {
 	}
 	
 	{
+		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+	
+		collisionShapes.push_back(groundShape);
+	
+		btTransform groundTransform;
+		groundTransform.setIdentity();
+		groundTransform.setOrigin(btVector3(0, -6, -100));
+	
+		btScalar mass(0.);
+	
+		//rigidbody is dynamic if and only if mass is non zero, otherwise static
+		bool isDynamic = (mass != 0.f);
+	
+		btVector3 localInertia(0, 0, 0);
+		if (isDynamic)
+			groundShape->calculateLocalInertia(mass, localInertia);
+	
+		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+		btRigidBody* body = new btRigidBody(rbInfo);
+	
+		//add the body to the dynamics world
+		dynamicsWorld->addRigidBody(body);
+	}
+	
+	{
 		//create a dynamic rigidbody
 	
 		//btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
@@ -401,6 +428,12 @@ int main(int argc, char **argv) {
 				{
 					body->activate();
 					body->applyCentralImpulse( btVector3( 0.f, 0.0f, -100.0f * frameTime * 0.001f ) );
+				}
+				
+				if (buttonsDown & PAD_BUTTON_X)
+				{
+					body->activate();
+					body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, -10000.0f * frameTime * 0.001f ) );
 				}
 			}
 			
