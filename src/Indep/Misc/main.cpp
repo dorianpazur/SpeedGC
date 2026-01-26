@@ -358,6 +358,9 @@ int main(int argc, char **argv) {
 		
 		PAD_ScanPads();
 		
+		int buttonsDown = PAD_ButtonsDown(0);
+		int buttonsPressed = PAD_ButtonsHeld(0);
+		
 		dynamicsWorld->stepSimulation(frameTime * 0.001f, 2);
 		
 		// draw
@@ -367,7 +370,7 @@ int main(int argc, char **argv) {
 		GX_InvalidateTexAll();
 		
 		// physics 
-		//print positions of all objects
+		// print positions of all objects
 		
 		float transformFlt[16];
 		Mtx44 transform;
@@ -384,6 +387,21 @@ int main(int argc, char **argv) {
 			else
 			{
 				trans = obj->getWorldTransform();
+			}
+			
+			if (body)
+			{
+				if (buttonsPressed & PAD_BUTTON_A)
+				{
+					body->activate();
+					body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, 0.0f ) );
+				}
+				
+				if (buttonsDown & PAD_BUTTON_B)
+				{
+					body->activate();
+					body->applyCentralImpulse( btVector3( 0.f, 0.0f, -100.0f * frameTime * 0.001f ) );
+				}
 			}
 			
 			trans.getOpenGLMatrix(transformFlt);
@@ -582,8 +600,7 @@ void Initialise(int argc, char** argv) {
 		GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
 	}
 	
-	// cull none because other values produce weird results
-	GX_SetCullMode(GX_CULL_NONE);
+	GX_SetCullMode(GX_CULL_BACK);
 	GX_CopyDisp(xfb[currentBuffer],GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
  
