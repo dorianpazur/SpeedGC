@@ -498,6 +498,8 @@ void Initialise(int argc, char** argv) {
 	
 	rmode = VIDEO_GetPreferredMode(NULL);
 
+	rmode->aa = true;
+
 	void *gp_fifo = NULL;
 	gp_fifo = memalign(32,GX_FIFO_MINSIZE);
 	memset(gp_fifo,0,GX_FIFO_MINSIZE);
@@ -578,7 +580,7 @@ void Initialise(int argc, char** argv) {
 //---------------------------------------------------------------------------------
 void draw_init() {
 //---------------------------------------------------------------------------------
-	gTestGLBFile = tOpenFile("teapot.glb");
+	gTestGLBFile = tOpenFile("teapot_toon.glb");
 	std::string err;
 	std::string warn;
 	bool loaded = gTestGLBLoader.LoadBinaryFromMemory(&gTestGLBModel, &err, &warn, (const unsigned char*)gTestGLBFile->data, gTestGLBFile->filesize, "dvd://");

@@ -102,8 +102,12 @@ void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex)
 //---------------------------------------------------------------------------------
 void vModel::Render(Mtx view, Mtx transform) {
 //---------------------------------------------------------------------------------
+	const float LARGE_NUMBER = -9999999999.0f;
 	Mtx44 mv; // modelview matrix.	
+	Mtx44 WtoLtmp; // world to local matrix.	
 	Mtx44 WtoL; // world to local matrix.	
+	Mtx44 VtoWtmp; // view to world matrix.	
+	Mtx44 VtoW; // view to world matrix.	
 	
 	// bad naming: this means multiply a by b and put the result into c (ab)
 	guMtxConcat(view,transform,mv);
@@ -112,6 +116,9 @@ void vModel::Render(Mtx view, Mtx transform) {
 	GX_LoadPosMtxImm(mv, GX_PNMTX0);
 	
 	guMtxInverse(transform, WtoL);
+    //guMtxTranspose(WtoLtmp,WtoL);
+	guMtxInverse(view, VtoWtmp);
+    guMtxTranspose(VtoWtmp,VtoW);
 	
 	for (size_t mesh = 0; mesh < mMeshes.size(); mesh++)
 	{
@@ -143,35 +150,62 @@ void vModel::Render(Mtx view, Mtx transform) {
 		// light test
 		
 		guVector lpos;
+		guVector rimPos;
+		guVector rimPos2;
 		guVector center = { 0, 0, 0 };
 		GXLightObj lobj;
+		GXLightObj rimLight;
+		GXLightObj rimLight2;
 		
 		const static GXColor lightColor[] = {
 			{0xB0,0x9A,0x70,0xFF}, // Light color
 			{0x36,0x46,0x50,0xFF}, // Ambient color
-			{0x00,0x00,0x00,0xFF}  // Mat color
+			{0x00,0x00,0x00,0xFF}, // Mat color
+			{0xFF,0xFF,0xFF,0xFF}, // rim 1
+			{0x2F,0x3F,0x5F,0xFF}, // rim 2
 		};
 		
-		lpos.x = -0.707f;
-		lpos.y = -0.707f;
-		lpos.z = -0.707f;
+		lpos.x = 0.707f * LARGE_NUMBER;
+		lpos.y = 0.707f * LARGE_NUMBER;
+		lpos.z = 0.707f * LARGE_NUMBER;
 		
-		guVecMultiply(transform,&center,&center);
-		lpos.x += center.x;
-		lpos.y += center.y;
-		lpos.z += center.z;
+		rimPos.x =  0 * LARGE_NUMBER;
+		rimPos.y =  0 * LARGE_NUMBER;
+		rimPos.z = -1 * LARGE_NUMBER;
+		
+		rimPos2.x = -0 * LARGE_NUMBER;
+		rimPos2.y = -0 * LARGE_NUMBER;
+		rimPos2.z = -1 * LARGE_NUMBER;
+		
 		guVecMultiply(WtoL,&lpos,&lpos);
+		guVecMultiply(VtoW,&rimPos,&rimPos);
+		guVecMultiply(VtoW,&rimPos2,&rimPos2);
+		guVecMultiply(WtoL,&rimPos,&rimPos);
+		guVecMultiply(WtoL,&rimPos2,&rimPos2);
 	
 		GX_InitSpecularDir(&lobj,lpos.x,lpos.y,lpos.z);
 		GX_InitLightColor(&lobj,lightColor[0]);
 		GX_InitLightShininess(&lobj, 22.0f);
 		
+		GX_InitSpecularDir(&rimLight,rimPos.x,rimPos.y,rimPos.z);
+		GX_InitLightColor(&rimLight,lightColor[3]);
+		GX_InitLightShininess(&rimLight, 22.0f);
+		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
+		
+		GX_InitSpecularDir(&rimLight2,rimPos2.x,rimPos2.y,rimPos2.z);
+		GX_InitLightColor(&rimLight2,lightColor[1]);
+		GX_InitLightShininess(&rimLight2, 22.0f);
+		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
+		
 		GX_LoadLightObj(&lobj,GX_LIGHT0);
+		GX_LoadLightObj(&rimLight,GX_LIGHT1);
+		GX_LoadLightObj(&rimLight,GX_LIGHT2);
+		GX_LoadLightObj(&rimLight2,GX_LIGHT3);
 		
 		// set number of rasterized color channels
 		GX_SetNumChans(2);
-		GX_SetChanCtrl(GX_COLOR0,GX_ENABLE,GX_SRC_REG,GX_SRC_VTX,GX_LIGHT0,GX_DF_CLAMP,GX_AF_NONE);
-		GX_SetChanCtrl(GX_COLOR0,GX_ENABLE,GX_SRC_REG,GX_SRC_VTX,GX_LIGHT0,GX_DF_NONE,GX_AF_SPEC);
+		GX_SetChanCtrl(GX_COLOR0,GX_ENABLE,GX_SRC_REG,GX_SRC_VTX,GX_LIGHT0|GX_LIGHT1|GX_LIGHT2|GX_LIGHT3,GX_DF_NONE,GX_AF_NONE);
+		GX_SetChanCtrl(GX_COLOR0,GX_ENABLE,GX_SRC_REG,GX_SRC_VTX,GX_LIGHT0|GX_LIGHT1|GX_LIGHT2|GX_LIGHT3,GX_DF_NONE,GX_AF_SPEC);
     	GX_SetChanCtrl(GX_ALPHA0, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
     	GX_SetChanCtrl(GX_ALPHA1, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
 
