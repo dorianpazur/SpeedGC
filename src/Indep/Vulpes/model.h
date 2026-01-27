@@ -14,8 +14,6 @@ struct vVector3 {
 	float x;
 	float y;
 	float z;
-private:
-	float pad;
 };
 
 struct vVector4 {
@@ -39,7 +37,7 @@ struct vColorShort {
 	uint16_t a;
 };
 
-struct vVertex {
+struct ALIGN(32) vVertex {
 	vVector3 position;
 	vColor color;
 	vVector3 normal;

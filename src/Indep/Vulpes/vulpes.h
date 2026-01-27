@@ -1,6 +1,7 @@
 #ifndef VULPES_H
 #define VULPES_H
 
-#include <vulpes/model.h>
+#include <tWare/Align.h>
+#include <Vulpes/model.h>
 
 #endif

@@ -35,8 +35,7 @@ void draw_init();
 //void draw_cube(Mtx view, Mtx pos);
 //
 tFile *gTestGLBFile = NULL;
-tinygltf::Model gTestGLBModel;
-tinygltf::TinyGLTF gTestGLBLoader;
+vModel *gTestModel = NULL;
 
 int main(int argc, char **argv) {
 
@@ -291,8 +290,6 @@ int main(int argc, char **argv) {
 	tFile* testFile = tOpenFile("test.txt");
 	
 	draw_init();
-		
-	vModel *testModel = new vModel(&gTestGLBModel);
 	
 	prevFrameTime = tGetTicker();
 
@@ -373,7 +370,7 @@ int main(int argc, char **argv) {
 			transform[1][3]=transformFlt[13];
 			transform[2][3]=transformFlt[14];
 			
-			testModel->Render(v, transform);
+			gTestModel->Render(v, transform);
 		}
 		
 		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
@@ -449,6 +446,8 @@ int main(int argc, char **argv) {
 	delete dispatcher;
 	
 	delete collisionConfiguration;
+	
+	delete gTestModel;
 	
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	collisionShapes.clear();
@@ -559,9 +558,9 @@ void Initialise(int argc, char** argv) {
  
 	// setup our camera at the origin
 	// looking down the -z axis with y up
-	guVector cam = {0.0F, 4.0F, 15.0F},
+	guVector cam = {0.0F, -2.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
-		  look = {0.0F, 0.0F, 1.0F};
+		  look = {0.0F, -1.0F, 1.0F};
 	guLookAt(v, &cam, &up, &look);
  
 	// setup our projection matrix
@@ -580,7 +579,12 @@ void Initialise(int argc, char** argv) {
 //---------------------------------------------------------------------------------
 void draw_init() {
 //---------------------------------------------------------------------------------
-	gTestGLBFile = tOpenFile("teapot_toon.glb");
+	tinygltf::Model gTestGLBModel;
+	tinygltf::TinyGLTF gTestGLBLoader;
+	
+	gTestGLBFile = tOpenFile("teapot.glb");
+	if (!gTestGLBFile)
+		printf("oops file can't be found\n");
 	std::string err;
 	std::string warn;
 	bool loaded = gTestGLBLoader.LoadBinaryFromMemory(&gTestGLBModel, &err, &warn, (const unsigned char*)gTestGLBFile->data, gTestGLBFile->filesize, "dvd://");
@@ -600,4 +604,6 @@ void draw_init() {
 		std::cout << "Loaded glTF: " << gTestGLBFile->filename << std::endl;
 	
 	tCloseFile(gTestGLBFile);
+	
+	gTestModel = new vModel(&gTestGLBModel);
 }

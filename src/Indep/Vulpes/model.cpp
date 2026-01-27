@@ -158,24 +158,24 @@ void vModel::Render(Mtx view, Mtx transform) {
 		GXLightObj rimLight2;
 		
 		const static GXColor lightColor[] = {
-			{0xB0,0x9A,0x70,0xFF}, // Light color
-			{0x36,0x46,0x50,0xFF}, // Ambient color
-			{0x00,0x00,0x00,0xFF}, // Mat color
-			{0xFF,0xFF,0xFF,0xFF}, // rim 1
-			{0x2F,0x3F,0x5F,0xFF}, // rim 2
+			{0xF0,0xEA,0xB0,0xFF}, // Light color
+			{0x16,0x28,0x40,0xFF}, // Ambient color
+			{0xB0,0x9A,0x60,0xFF}, // Spec color
+			{0xE0,0xD0,0xC0,0xFF}, // rim 1
+			{0x1F,0x2F,0x3F,0xFF}, // rim 2
 		};
 		
 		lpos.x = 0.707f * LARGE_NUMBER;
 		lpos.y = 0.707f * LARGE_NUMBER;
 		lpos.z = 0.707f * LARGE_NUMBER;
 		
-		rimPos.x =  0 * LARGE_NUMBER;
-		rimPos.y =  0 * LARGE_NUMBER;
-		rimPos.z = -1 * LARGE_NUMBER;
+		rimPos.x =  0.5 * LARGE_NUMBER;
+		rimPos.y =  0.707f * LARGE_NUMBER;
+		rimPos.z = -0.707f * LARGE_NUMBER;
 		
-		rimPos2.x = -0 * LARGE_NUMBER;
-		rimPos2.y = -0 * LARGE_NUMBER;
-		rimPos2.z = -1 * LARGE_NUMBER;
+		rimPos2.x = -0.5 * LARGE_NUMBER;
+		rimPos2.y = -0.35f * LARGE_NUMBER;
+		rimPos2.z = -0.35f * LARGE_NUMBER;
 		
 		guVecMultiply(WtoL,&lpos,&lpos);
 		guVecMultiply(VtoW,&rimPos,&rimPos);
@@ -185,16 +185,16 @@ void vModel::Render(Mtx view, Mtx transform) {
 	
 		GX_InitSpecularDir(&lobj,lpos.x,lpos.y,lpos.z);
 		GX_InitLightColor(&lobj,lightColor[0]);
-		GX_InitLightShininess(&lobj, 22.0f);
+		GX_InitLightShininess(&lobj, 11.0f);
 		
 		GX_InitSpecularDir(&rimLight,rimPos.x,rimPos.y,rimPos.z);
 		GX_InitLightColor(&rimLight,lightColor[3]);
-		GX_InitLightShininess(&rimLight, 22.0f);
+		GX_InitLightShininess(&rimLight, 11.0f);
 		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
 		
 		GX_InitSpecularDir(&rimLight2,rimPos2.x,rimPos2.y,rimPos2.z);
-		GX_InitLightColor(&rimLight2,lightColor[1]);
-		GX_InitLightShininess(&rimLight2, 22.0f);
+		GX_InitLightColor(&rimLight2,lightColor[4]);
+		GX_InitLightShininess(&rimLight2, 11.0f);
 		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
 		
 		GX_LoadLightObj(&lobj,GX_LIGHT0);
