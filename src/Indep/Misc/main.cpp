@@ -37,7 +37,10 @@ void draw_init();
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
-int main(int argc, char **argv) {
+TPLFile DefaultTPL;
+
+int main(int argc, char **argv)
+{
 
 	Initialise(argc, argv);
 
@@ -579,10 +582,21 @@ void Initialise(int argc, char** argv) {
 //---------------------------------------------------------------------------------
 void draw_init() {
 //---------------------------------------------------------------------------------
+
+	tFile* DefaultTexture = tOpenFile("Global/DefaultTexture.tpl");
+	
+	size_t alignedFileSize = DefaultTexture->filesize + 32 - (DefaultTexture->filesize % 32);
+	void* data = (void*)(((int)malloc(alignedFileSize) - 1u + 32) & -32);
+	
+	memcpy(data, DefaultTexture->data, DefaultTexture->filesize);
+	
+	TPL_OpenTPLFromMemory(&DefaultTPL, data, DefaultTexture->filesize);
+	tCloseFile(DefaultTexture);
+	
 	tinygltf::Model gTestGLBModel;
 	tinygltf::TinyGLTF gTestGLBLoader;
 	
-	gTestGLBFile = tOpenFile("teapot.glb");
+	gTestGLBFile = tOpenFile("teapot_textured.glb");
 	if (!gTestGLBFile)
 		printf("oops file can't be found\n");
 	std::string err;

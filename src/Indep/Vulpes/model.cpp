@@ -1,6 +1,8 @@
 #include <gccore.h>
 #include <Vulpes/vulpes.h>
 
+extern TPLFile DefaultTPL;
+
 f32 bswap_float(f32 f)
 {
 	uint32_t bytes = *(uint32_t*)&f;
@@ -16,7 +18,7 @@ vMesh::vMesh(tinygltf::Model *model, size_t nodeIndex)
 	{
 		tinygltf::Mesh &mesh = model->meshes[node.mesh];
 		for (size_t primIdx = 0; primIdx < mesh.primitives.size(); primIdx++)
-		{
+		{	
 			auto &primitive = mesh.primitives[primIdx];
 			tinygltf::Accessor& posAccessor = model->accessors[primitive.attributes["POSITION"]];
 			tinygltf::BufferView& posBufferView = model->bufferViews[posAccessor.bufferView];
@@ -27,6 +29,9 @@ vMesh::vMesh(tinygltf::Model *model, size_t nodeIndex)
 			tinygltf::Accessor& nrmAccessor = model->accessors[primitive.attributes["NORMAL"]];
 			tinygltf::BufferView& nrmBufferView = model->bufferViews[nrmAccessor.bufferView];
 			tinygltf::Buffer& nrmBuffer = model->buffers[nrmBufferView.buffer];
+			tinygltf::Accessor& tex0Accessor = model->accessors[primitive.attributes["TEXCOORD_0"]];
+			tinygltf::BufferView& tex0BufferView = model->bufferViews[tex0Accessor.bufferView];
+			tinygltf::Buffer& tex0Buffer = model->buffers[tex0BufferView.buffer];
 			
 			tinygltf::Accessor& indexAccessor = model->accessors[primitive.indices];
 			tinygltf::BufferView& indexBufferView = model->bufferViews[indexAccessor.bufferView];
@@ -57,6 +62,15 @@ vMesh::vMesh(tinygltf::Model *model, size_t nodeIndex)
 				mVertices[i].color.a = (int)(((float)__builtin_bswap16(bufColor[i].a) / 0xFFFF) * 0xFF);
 			}
 			
+			vVector2* bufTexcoord = (vVector2*)&tex0Buffer.data[tex0BufferView.byteOffset + tex0Accessor.byteOffset];
+			
+			// get texcoords
+			for (size_t i = 0; i < mVertexCount; i++)
+			{
+				mVertices[i].texcoord.x = bswap_float(bufTexcoord[i].x);
+				mVertices[i].texcoord.y = bswap_float(bufTexcoord[i].y);
+			}
+			
 			vGlTFVector3* bufNrm = (vGlTFVector3*)&nrmBuffer.data[nrmBufferView.byteOffset + nrmAccessor.byteOffset];
 			
 			// values are little endian and the space is wrong, fix that
@@ -77,6 +91,16 @@ vMesh::vMesh(tinygltf::Model *model, size_t nodeIndex)
 			{
 				// little endian so we have to fix it
 				mIndices[i] = __builtin_bswap16(indices[i]);
+			}
+			
+			// get texture, if any
+			if (model->images.size() > 0 && model->textures.size() > 0 && model->materials.size() > 0)
+			{
+				int textureIndex = model->materials[primitives].pbrMetallicRoughness.baseColorTexture.index;
+				printf("Texture index: %d\n", textureIndex);
+				int sourceIndex = model->textures[textureIndex].source;
+				printf("Source index: %d\n", sourceIndex);
+				printf("Texture name: %s\n", model->images[sourceIndex].name.c_str());
 			}
 		}
 	}
@@ -102,7 +126,7 @@ void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex)
 //---------------------------------------------------------------------------------
 void vModel::Render(Mtx view, Mtx transform) {
 //---------------------------------------------------------------------------------
-	const float LARGE_NUMBER = -9999999999.0f;
+	const float LARGE_NUMBER = 9999999999.0f;
 	Mtx44 mv; // modelview matrix.	
 	Mtx44 WtoLtmp; // world to local matrix.	
 	Mtx44 WtoL; // world to local matrix.	
@@ -121,11 +145,12 @@ void vModel::Render(Mtx view, Mtx transform) {
     guMtxTranspose(VtoWtmp,VtoW);
 	
 	for (size_t mesh = 0; mesh < mMeshes.size(); mesh++)
-	{
+	{	
 		// tells gx where our position and color data is
 		// args: type of data, pointer, array stride
 		GX_SetArray(GX_VA_POS, &mMeshes[mesh].mVertices[0].position, sizeof(vVertex));
 		GX_SetArray(GX_VA_CLR0, &mMeshes[mesh].mVertices[0].color, sizeof(vVertex));
+		GX_SetArray(GX_VA_TEX0, &mMeshes[mesh].mVertices[0].texcoord, sizeof(vVertex));
 		GX_SetArray(GX_VA_NRM, &mMeshes[mesh].mVertices[0].normal, sizeof(vVertex));
 		DCFlushRange(mMeshes[mesh].mVertices, mMeshes[mesh].mVertexBufferSize);
 		
@@ -135,6 +160,7 @@ void vModel::Render(Mtx view, Mtx transform) {
 		GX_ClearVtxDesc();
 		GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
 		GX_SetVtxDesc(GX_VA_CLR0, GX_INDEX16);
+		GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
 		GX_SetVtxDesc(GX_VA_NRM, GX_INDEX16);
 		
 		// setup the vertex attribute table
@@ -145,6 +171,7 @@ void vModel::Render(Mtx view, Mtx transform) {
 		// bits for non float data.
 		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
 		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
 		
 		// light test
@@ -154,15 +181,19 @@ void vModel::Render(Mtx view, Mtx transform) {
 		guVector rimPos2;
 		guVector center = { 0, 0, 0 };
 		GXLightObj lobj;
+		GXLightObj lspecobj;
 		GXLightObj rimLight;
 		GXLightObj rimLight2;
+		GXLightObj rimLightSpec;
+		GXLightObj rimLight2Spec;
 		
 		const static GXColor lightColor[] = {
 			{0xF0,0xEA,0xB0,0xFF}, // Light color
 			{0x16,0x28,0x40,0xFF}, // Ambient color
 			{0xB0,0x9A,0x60,0xFF}, // Spec color
 			{0xE0,0xD0,0xC0,0xFF}, // rim 1
-			{0x1F,0x2F,0x3F,0xFF}, // rim 2
+			{0x3F,0x4F,0x5F,0xFF}, // rim 2
+			{0x00,0x00,0x00,0xFF}, // No color
 		};
 		
 		lpos.x = 0.707f * LARGE_NUMBER;
@@ -183,46 +214,66 @@ void vModel::Render(Mtx view, Mtx transform) {
 		guVecMultiply(WtoL,&rimPos,&rimPos);
 		guVecMultiply(WtoL,&rimPos2,&rimPos2);
 	
-		GX_InitSpecularDir(&lobj,lpos.x,lpos.y,lpos.z);
+		GX_InitLightPos(&lobj,lpos.x,lpos.y,lpos.z);
 		GX_InitLightColor(&lobj,lightColor[0]);
-		GX_InitLightShininess(&lobj, 11.0f);
 		
-		GX_InitSpecularDir(&rimLight,rimPos.x,rimPos.y,rimPos.z);
+		GX_InitSpecularDir(&lspecobj,-lpos.x,-lpos.y,-lpos.z);
+		GX_InitLightColor(&lspecobj,lightColor[2]);
+		GX_InitLightShininess(&lspecobj, 44.0f);
+		
+		GX_InitLightPos(&rimLight,rimPos.x,rimPos.y,rimPos.z);
 		GX_InitLightColor(&rimLight,lightColor[3]);
-		GX_InitLightShininess(&rimLight, 11.0f);
+		GX_InitLightAttnA(&rimLight, 2.0, 2.0, 2.0);
+		
+		GX_InitSpecularDir(&rimLightSpec,-rimPos.x,-rimPos.y,-rimPos.z);
+		GX_InitLightColor(&rimLightSpec,lightColor[3]);
+		GX_InitLightAttnA(&rimLightSpec, 2.0, 2.0, 2.0);
+		GX_InitLightShininess(&rimLightSpec, 22.0f);
+		
+		GX_InitLightPos(&rimLight2,rimPos2.x,rimPos2.y,rimPos2.z);
+		GX_InitLightColor(&rimLight2,lightColor[4]);
 		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
 		
-		GX_InitSpecularDir(&rimLight2,rimPos2.x,rimPos2.y,rimPos2.z);
-		GX_InitLightColor(&rimLight2,lightColor[4]);
-		GX_InitLightShininess(&rimLight2, 11.0f);
-		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
+		GX_InitSpecularDir(&rimLight2Spec,-rimPos2.x,-rimPos2.y,-rimPos2.z);
+		GX_InitLightColor(&rimLight2Spec,lightColor[4]);
+		GX_InitLightAttnA(&rimLight2Spec, 2.0, 2.0, 2.0);
+		GX_InitLightShininess(&rimLight2Spec, 22.0f);
 		
 		GX_LoadLightObj(&lobj,GX_LIGHT0);
 		GX_LoadLightObj(&rimLight,GX_LIGHT1);
-		GX_LoadLightObj(&rimLight,GX_LIGHT2);
-		GX_LoadLightObj(&rimLight2,GX_LIGHT3);
+		GX_LoadLightObj(&rimLight2,GX_LIGHT2);
+		GX_LoadLightObj(&lspecobj,GX_LIGHT3);
+		GX_LoadLightObj(&rimLightSpec,GX_LIGHT4);
+		GX_LoadLightObj(&rimLight2Spec,GX_LIGHT5);
 		
 		// set number of rasterized color channels
 		GX_SetNumChans(2);
-		GX_SetChanCtrl(GX_COLOR0,GX_ENABLE,GX_SRC_REG,GX_SRC_VTX,GX_LIGHT0|GX_LIGHT1|GX_LIGHT2|GX_LIGHT3,GX_DF_NONE,GX_AF_NONE);
-		GX_SetChanCtrl(GX_COLOR0,GX_ENABLE,GX_SRC_REG,GX_SRC_VTX,GX_LIGHT0|GX_LIGHT1|GX_LIGHT2|GX_LIGHT3,GX_DF_NONE,GX_AF_SPEC);
-    	GX_SetChanCtrl(GX_ALPHA0, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
-    	GX_SetChanCtrl(GX_ALPHA1, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
+		GX_SetChanCtrl(GX_COLOR0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT0 | GX_LIGHT1 | GX_LIGHT2,	GX_DF_CLAMP,	GX_AF_NONE);
+		GX_SetChanCtrl(GX_COLOR1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT3 | GX_LIGHT4 | GX_LIGHT5,	GX_DF_CLAMP,	GX_AF_SPEC);
+    	GX_SetChanCtrl(GX_ALPHA0,	GX_DISABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHTNULL,						GX_DF_NONE,		GX_AF_NONE);
+    	GX_SetChanCtrl(GX_ALPHA1,	GX_DISABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHTNULL,						GX_DF_NONE,		GX_AF_NONE);
 
-		GX_SetChanAmbColor(GX_COLOR0A0,lightColor[1]);
-		GX_SetChanAmbColor(GX_COLOR1A1,lightColor[2]);
+		GX_SetChanAmbColor(GX_COLOR0A0, lightColor[1]);
+		GX_SetChanAmbColor(GX_COLOR1A1, lightColor[5]);
 		
-		// no idea...sets to no textures
-		// i don't know anything about textures or lighting yet :|
-		GX_SetNumChans(1);
-		GX_SetNumTexGens(0);
-		GX_SetNumTevStages(2);
+		GXTexObj texObj;
+		TPL_GetTexture(&DefaultTPL, 0, &texObj);
+		GX_LoadTexObj(&texObj, GX_TEXMAP0);
 		
 		// specular combining
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-    	GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+		GX_SetNumTexGens(1);
+		GX_SetNumTevStages(2);
+		
+		// diffuse
+		//GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO );
+		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
+		
+		// specular
+		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
+    	GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC );
     	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
-    	GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_ONE, GX_CC_RASC, GX_CC_ZERO );
 		
 		// have to step through index buffer manually
 		GX_Begin(GX_TRIANGLES, GX_VTXFMT0, mMeshes[mesh].mIndexCount);
@@ -232,6 +283,7 @@ void vModel::Render(Mtx view, Mtx transform) {
 			uint16_t index = mMeshes[mesh].mIndices[i];
 			GX_Position1x16(index);
 			GX_Color1x16(index);
+			GX_TexCoord1x16(index);
 			GX_Normal1x16(index);
 		}
 		

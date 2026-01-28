@@ -142,6 +142,7 @@ $(OUTPUT).elf: $(OFILES)
 
 resources:
 	-cp -f -r ../Resources/Indep/** Speed/
+	-cp -f -r ../Resources/GC/** Speed/
 
 $(OFILES_SOURCES) : $(HFILES)
 

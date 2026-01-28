@@ -10,6 +10,11 @@ struct vGlTFVector3 {
 	float z;
 };
 
+struct vVector2 {
+	float x;
+	float y;
+};
+
 struct vVector3 {
 	float x;
 	float y;
@@ -40,6 +45,7 @@ struct vColorShort {
 struct ALIGN(32) vVertex {
 	vVector3 position;
 	vColor color;
+	vVector2 texcoord;
 	vVector3 normal;
 };
 

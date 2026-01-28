@@ -1,0 +1,1 @@
+#define DefaultTexture 0
