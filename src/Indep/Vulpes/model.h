@@ -1,6 +1,7 @@
 #ifndef VULPES_VMODEL_H
 #define VULPES_VMODEL_H
 
+#include <tWare/Hash.h>
 #include <tiny_gltf/tiny_gltf.h>
 #include <cstdint>
 
@@ -42,23 +43,30 @@ struct vColorShort {
 	uint16_t a;
 };
 
-struct ALIGN(32) vVertex {
+struct vVertex {
 	vVector3 position;
 	vColor color;
 	vVector2 texcoord;
 	vVector3 normal;
 };
 
-struct vMesh
+struct ALIGN(32) vMesh
 {
+	struct TextureHashes
+	{
+		tHash DiffuseMap = 0;
+	};
+	
 	uint32_t mVertexCount = 0;
 	uint32_t mIndexCount = 0;
 	size_t mVertexBufferSize = 0;
 	vVertex* mVertices = NULL;
 	uint16_t* mIndices = NULL;
 	
+	TextureHashes mTextures;
+	
 	vMesh() {};
-	vMesh(tinygltf::Model *model, size_t nodeIndex);
+	vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive);
 	
 	~vMesh()
 	{
@@ -75,16 +83,38 @@ private:
 	void CreateBuffer(size_t vertexCount)
 	{
 		mVertexBufferSize = sizeof(vVertex)*vertexCount;
-		size_t alignedVtxSize = mVertexBufferSize + 32 - (mVertexBufferSize % 32);
+		printf("VB size: %u\n", mVertexBufferSize);
+		size_t alignedVtxSize = (((uintptr_t)mVertexBufferSize - 1u + 32) & -32);
+		printf("Aligned VB size: %u\n", mVertexBufferSize);
 		mVerticesUnaligned = malloc(alignedVtxSize); // aligned alloc is broken xd
-		mVertices = (vVertex*)(((int)mVerticesUnaligned - 1u + 32) & -32);
+		printf("mVerticesUnaligned: %u\n", mVerticesUnaligned);
+		mVertices = (vVertex*)(((uintptr_t)mVerticesUnaligned - 1u + 32) & -32);
+		printf("mVertices: %u\n", mVertices);
 	}
 	void* mVerticesUnaligned = NULL;
 };
 
-struct vModel
+struct ALIGN(32) vSolid
 {
 	std::vector<vMesh> mMeshes;
+	
+	vSolid(tinygltf::Model *model, tinygltf::Node &node)
+	{	
+		if (node.mesh >= 0)
+		{
+			tinygltf::Mesh &mesh = model->meshes[node.mesh];
+			mMeshes.reserve(mesh.primitives.size());
+			for (size_t primIdx = 0; primIdx < mesh.primitives.size(); primIdx++)
+			{	
+				mMeshes.emplace_back(model, mesh.primitives[primIdx]);
+			}
+		}
+	}
+};
+
+struct ALIGN(32) vModel
+{
+	std::vector<vSolid> mSolids;
 	vModel(tinygltf::Model *model);
 	void Render(Mtx view, Mtx transform);
 	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex);

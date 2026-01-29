@@ -3,5 +3,6 @@
 
 #include <tWare/Align.h>
 #include <Vulpes/model.h>
+#include <Vulpes/TextureCache.h>
 
 #endif

@@ -14,6 +14,7 @@
 
 #include <tWare/Time.h>
 #include <tWare/File.h>
+#include <tWare/Hash.h>
 
 #include "includetest.h"
 #include "btBulletDynamicsCommon.h"
@@ -27,7 +28,8 @@ static GXRModeObj *rmode = NULL;
 f32 yscale;
 u32 xfbHeight;
 GXColor background = {0x7F, 0x40, 0xFF, 0xff};
-Mtx44 v,p; // view and perspective matrices
+Mtx44 viewMtx[2];
+Mtx44 projMtx[2]; // view and perspective matrices
 
 void Initialise(int argc, char** argv);
  
@@ -37,15 +39,16 @@ void draw_init();
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
-TPLFile DefaultTPL;
+const bool bSplitScreen = true;
 
 int main(int argc, char **argv)
 {
-
 	Initialise(argc, argv);
 
 	printf("\nHello World!\n");
-	printf("%s\n", szTestString);
+	//printf("%s\n", szTestString);
+	
+	//printf("Test hash: 0x%08x\n", CTStringHash("bweh"));
 	
 	//btAlignedAllocSetCustom(mallocLog, freeLog);
 	//btAlignedAllocSetCustomAligned(alignedMallocLog, alignedFreeLog);
@@ -289,8 +292,8 @@ int main(int argc, char **argv)
 	float avgfps = 0.0f;
 	float fps = 0.0f;
 	
-	printf("Attempting to open test.txt\n");
-	tFile* testFile = tOpenFile("test.txt");
+	//printf("Attempting to open test.txt\n");
+	//tFile* testFile = tOpenFile("test.txt");
 	
 	draw_init();
 	
@@ -310,70 +313,71 @@ int main(int argc, char **argv)
 		
 		// draw
 		
-		GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
-		GX_InvVtxCache();
-		GX_InvalidateTexAll();
-		
-		// physics 
-		// print positions of all objects
-		
-		float transformFlt[16];
-		Mtx44 transform;
-		
-		for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+		for (int viewNum = 0; viewNum < (bSplitScreen ? 2 : 1); viewNum++)
 		{
-			btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
-			btRigidBody* body = btRigidBody::upcast(obj);
-			btTransform trans;
-			if (body && body->getMotionState())
-			{
-				body->getMotionState()->getWorldTransform(trans);
-			}
-			else
-			{
-				trans = obj->getWorldTransform();
-			}
+			GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
+			GX_SetViewport(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2,0,1); // TODO - add actual view class
+			GX_InvVtxCache();
+			GX_InvalidateTexAll();
 			
-			if (body)
+			float transformFlt[16];
+			Mtx44 transform;
+			
+			for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
 			{
-				if (buttonsPressed & PAD_BUTTON_A)
+				btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
+				btRigidBody* body = btRigidBody::upcast(obj);
+				btTransform trans;
+				if (body && body->getMotionState())
 				{
-					body->activate();
-					body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, 0.0f ) );
+					body->getMotionState()->getWorldTransform(trans);
+				}
+				else
+				{
+					trans = obj->getWorldTransform();
 				}
 				
-				if (buttonsDown & PAD_BUTTON_B)
+				if (body)
 				{
-					body->activate();
-					body->applyCentralImpulse( btVector3( 0.f, 0.0f, -100.0f * frameTime * 0.001f ) );
+					if (buttonsPressed & PAD_BUTTON_A)
+					{
+						body->activate();
+						body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, 0.0f ) );
+					}
+					
+					if (buttonsDown & PAD_BUTTON_B)
+					{
+						body->activate();
+						body->applyCentralImpulse( btVector3( 0.f, 0.0f, -100.0f * frameTime * 0.001f ) );
+					}
+					
+					if (buttonsDown & PAD_BUTTON_X)
+					{
+						body->activate();
+						body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, -10000.0f * frameTime * 0.001f ) );
+					}
 				}
 				
-				if (buttonsDown & PAD_BUTTON_X)
-				{
-					body->activate();
-					body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, -10000.0f * frameTime * 0.001f ) );
-				}
+				trans.getOpenGLMatrix(transformFlt);
+				
+				transform[0][0]=transformFlt[0];
+				transform[1][0]=transformFlt[1];
+				transform[2][0]=transformFlt[2];
+				
+				transform[0][1]=transformFlt[4];
+				transform[1][1]=transformFlt[5];
+				transform[2][1]=transformFlt[6];
+				
+				transform[0][2]=transformFlt[8];
+				transform[1][2]=transformFlt[9];
+				transform[2][2]=transformFlt[10];
+				
+				transform[0][3]=transformFlt[12];
+				transform[1][3]=transformFlt[13];
+				transform[2][3]=transformFlt[14];
+				
+				gTestModel->Render(viewMtx[viewNum], transform);
 			}
-			
-			trans.getOpenGLMatrix(transformFlt);
-			
-			transform[0][0]=transformFlt[0];
-			transform[1][0]=transformFlt[1];
-			transform[2][0]=transformFlt[2];
-			
-			transform[0][1]=transformFlt[4];
-			transform[1][1]=transformFlt[5];
-			transform[2][1]=transformFlt[6];
-			
-			transform[0][2]=transformFlt[8];
-			transform[1][2]=transformFlt[9];
-			transform[2][2]=transformFlt[10];
-			
-			transform[0][3]=transformFlt[12];
-			transform[1][3]=transformFlt[13];
-			transform[2][3]=transformFlt[14];
-			
-			gTestModel->Render(v, transform);
 		}
 		
 		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
@@ -455,7 +459,7 @@ int main(int argc, char **argv)
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	collisionShapes.clear();
 	
-	tCloseFile(testFile);
+	//tCloseFile(testFile);
 
 	return 0;
 }
@@ -564,7 +568,12 @@ void Initialise(int argc, char** argv) {
 	guVector cam = {0.0F, -2.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
 		  look = {0.0F, -1.0F, 1.0F};
-	guLookAt(v, &cam, &up, &look);
+	guLookAt(viewMtx[0], &cam, &up, &look);
+	
+	cam = {4.0F, -2.0F, 10.0F},
+			up = {0.0F, 1.0F, 0.0F},
+		  look = {-8.0F, -1.0F, 0.5F};
+	guLookAt(viewMtx[1], &cam, &up, &look);
  
 	// setup our projection matrix
 	// this creates a perspective matrix with a view angle of 60,
@@ -575,28 +584,64 @@ void Initialise(int argc, char** argv) {
     f32 h = rmode->viHeight;
 	f32 aspect = (f32)w/h;
 	f32 aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
-	guPerspective(p, 60 / aspectCorrect, aspect * aspectCorrect, 0.1F, 1000.0F);
-	GX_LoadProjectionMtx(p, GX_PERSPECTIVE);
+	
+	if (bSplitScreen)
+		aspect *= 2.0f;
+	
+	guPerspective(projMtx[0], 60 / aspectCorrect, aspect * aspectCorrect, 0.1F, 1000.0F);
+	GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
+	
+	w = rmode->viWidth;
+    h = rmode->viHeight;
+	aspect = (f32)w/h;
+	aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
+	
+	if (bSplitScreen)
+		aspect *= 2.0f;
+	
+	guPerspective(projMtx[1], 60 / aspectCorrect, aspect * aspectCorrect, 0.1F, 1000.0F);
 }
 
 //---------------------------------------------------------------------------------
 void draw_init() {
 //---------------------------------------------------------------------------------
-
-	tFile* DefaultTexture = tOpenFile("Global/DefaultTexture.tpl");
+	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
+	vTextureCache::LoadTextureFromPath("Global/TestTexture.tpl");
 	
-	size_t alignedFileSize = DefaultTexture->filesize + 32 - (DefaultTexture->filesize % 32);
-	void* data = (void*)(((int)malloc(alignedFileSize) - 1u + 32) & -32);
-	
-	memcpy(data, DefaultTexture->data, DefaultTexture->filesize);
-	
-	TPL_OpenTPLFromMemory(&DefaultTPL, data, DefaultTexture->filesize);
-	tCloseFile(DefaultTexture);
+	// sonic test
+	vTextureCache::LoadTextureFromPath("sonic/textures/alltx_dwhite.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/mtx_kuchinaka0.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/mtx_kuchinaka1.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/s_anakage1.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/s_hando2.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/s_testhand.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_btest1.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_eye00.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_eye2.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_ha.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hada.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hanasaki.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hara.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_head.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hoho.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_itemring.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_itemshoos0.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_itemshoos1.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_kanagu.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_kutusoko0.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_kutusoko1.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_newspin.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose4.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose6.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose16.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose17.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose18.tpl");
+	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose19.tpl");
 	
 	tinygltf::Model gTestGLBModel;
 	tinygltf::TinyGLTF gTestGLBLoader;
 	
-	gTestGLBFile = tOpenFile("teapot_textured.glb");
+	gTestGLBFile = tOpenFile("sonic/sonic.glb");
 	if (!gTestGLBFile)
 		printf("oops file can't be found\n");
 	std::string err;

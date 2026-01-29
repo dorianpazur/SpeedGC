@@ -1,0 +1,1 @@
+#define TestTexture 0
