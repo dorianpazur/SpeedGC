@@ -39,7 +39,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 	// values are little endian and the space is wrong, fix that
 	for (size_t i = 0; i < mVertexCount; i++)
 	{
-		mVertices[i].position.x = bswap_float(bufVtx[i].x);
+		mVertices[i].position.x = -bswap_float(bufVtx[i].x);
 		mVertices[i].position.y = bswap_float(bufVtx[i].y);
 		mVertices[i].position.z = -bswap_float(bufVtx[i].z);
 	}
@@ -92,7 +92,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 	// values are little endian and the space is wrong, fix that
 	for (size_t i = 0; i < mVertexCount; i++)
 	{
-		mVertices[i].normal.x = bswap_float(bufNrm[i].x);
+		mVertices[i].normal.x = -bswap_float(bufNrm[i].x);
 		mVertices[i].normal.y = bswap_float(bufNrm[i].y);
 		mVertices[i].normal.z = -bswap_float(bufNrm[i].z);
 	}
@@ -105,10 +105,12 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 	
 	mIndices = (uint16_t*)malloc(mIndexCount * sizeof(uint16_t));
 	
-	for (size_t i = 0; i < mIndexCount; i++)
+	for (size_t i = 0; i < mIndexCount; i += 3)
 	{
 		// little endian so we have to fix it
-		mIndices[i] = __builtin_bswap16(indices[i]);
+		mIndices[i+0] = __builtin_bswap16(indices[i+0]);
+		mIndices[i+1] = __builtin_bswap16(indices[i+2]);
+		mIndices[i+2] = __builtin_bswap16(indices[i+1]);
 	}
 	
 	// get texture, if any
