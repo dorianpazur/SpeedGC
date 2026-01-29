@@ -17,7 +17,7 @@ char gBaseDir[TFILE_MAX_PATH + 1] { '\0' };
 // abstracted in order to allow for an archive format to potentially be used
 tFile* tOpenFile(const char* path)
 {
-	char realPath[TFILE_MAX_PATH] = { 0 };
+	char realPath[TFILE_MAX_PATH + 1] = { 0 };
 	snprintf(realPath, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
 	FILE* cFile = fopen(realPath, "rb");
 	

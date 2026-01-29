@@ -20,6 +20,8 @@ struct vVector3 {
 	float x;
 	float y;
 	float z;
+private:
+	float pad;
 };
 
 struct vVector4 {
@@ -43,7 +45,7 @@ struct vColorShort {
 	uint16_t a;
 };
 
-struct vVertex {
+struct ALIGN(32) vVertex {
 	vVector3 position;
 	vColor color;
 	vVector2 texcoord;
@@ -83,13 +85,9 @@ private:
 	void CreateBuffer(size_t vertexCount)
 	{
 		mVertexBufferSize = sizeof(vVertex)*vertexCount;
-		printf("VB size: %u\n", mVertexBufferSize);
 		size_t alignedVtxSize = (((uintptr_t)mVertexBufferSize - 1u + 32) & -32);
-		printf("Aligned VB size: %u\n", mVertexBufferSize);
 		mVerticesUnaligned = malloc(alignedVtxSize); // aligned alloc is broken xd
-		printf("mVerticesUnaligned: %u\n", mVerticesUnaligned);
 		mVertices = (vVertex*)(((uintptr_t)mVerticesUnaligned - 1u + 32) & -32);
-		printf("mVertices: %u\n", mVertices);
 	}
 	void* mVerticesUnaligned = NULL;
 };

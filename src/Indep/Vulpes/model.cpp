@@ -159,7 +159,6 @@ void vModel::Render(Mtx view, Mtx transform) {
 //---------------------------------------------------------------------------------
 	const float LARGE_NUMBER = 9999999999.0f;
 	Mtx44 mv; // modelview matrix.	
-	Mtx44 WtoLtmp; // world to local matrix.	
 	Mtx44 WtoL; // world to local matrix.	
 	Mtx44 VtoWtmp; // view to world matrix.	
 	Mtx44 VtoW; // view to world matrix.	
@@ -171,7 +170,6 @@ void vModel::Render(Mtx view, Mtx transform) {
 	GX_LoadPosMtxImm(mv, GX_PNMTX0);
 	
 	guMtxInverse(transform, WtoL);
-    //guMtxTranspose(WtoLtmp,WtoL);
 	guMtxInverse(view, VtoWtmp);
     guMtxTranspose(VtoWtmp,VtoW);
 	
@@ -183,7 +181,7 @@ void vModel::Render(Mtx view, Mtx transform) {
 		guVector lpos;
 		guVector rimPos;
 		guVector rimPos2;
-		guVector center = { 0, 0, 0 };
+		
 		GXLightObj lobj;
 		GXLightObj lspecobj;
 		GXLightObj rimLight;
