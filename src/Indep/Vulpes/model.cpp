@@ -30,7 +30,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 	
 	vGlTFVector3* bufVtx = (vGlTFVector3*)&posBuffer.data[posBufferView.byteOffset + posAccessor.byteOffset];
 	
-	printf("Vertices\n");
+	//printf("Vertices\n");
 	
 	mVertexCount = posAccessor.count;
 	
@@ -51,7 +51,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 		tinygltf::Buffer& colorBuffer = model->buffers[colorBufferView.buffer];
 		vColorShort* bufColor = (vColorShort*)&colorBuffer.data[colorBufferView.byteOffset + colorAccessor.byteOffset];
 		
-		printf("Found vertex colors\n");
+		//printf("Found vertex colors\n");
 		// get colors
 		for (size_t i = 0; i < mVertexCount; i++)
 		{
@@ -63,7 +63,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 	}
 	else
 	{
-		printf("Didn't find vertex colors\n");
+		//printf("Didn't find vertex colors\n");
 		// fill with white if they're missing
 		for (size_t i = 0; i < mVertexCount; i++)
 		{
@@ -74,7 +74,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 		}
 	}
 	
-	printf("Texcoords\n");
+	//printf("Texcoords\n");
 	
 	vVector2* bufTexcoord = (vVector2*)&tex0Buffer.data[tex0BufferView.byteOffset + tex0Accessor.byteOffset];
 	
@@ -85,7 +85,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 		mVertices[i].texcoord.y = bswap_float(bufTexcoord[i].y);
 	}
 	
-	printf("Normals\n");
+	//printf("Normals\n");
 	
 	vGlTFVector3* bufNrm = (vGlTFVector3*)&nrmBuffer.data[nrmBufferView.byteOffset + nrmAccessor.byteOffset];
 	
@@ -97,7 +97,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 		mVertices[i].normal.z = -bswap_float(bufNrm[i].z);
 	}
 	
-	printf("Indices\n");
+	//printf("Indices\n");
 	
 	const uint16_t* indices = reinterpret_cast<const uint16_t*>(&indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset]);
 	
@@ -117,22 +117,22 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 	if (model->images.size() > 0 && model->textures.size() > 0 && model->materials.size() > 0)
 	{
 		int textureIndex = model->materials[primitive.material].pbrMetallicRoughness.baseColorTexture.index;
-		printf("Texture index: %d\n", textureIndex);
+		//printf("Texture index: %d\n", textureIndex);
 		
 		if (textureIndex != -1)
 		{
 			int sourceIndex = model->textures[textureIndex].source;
-			printf("Source index: %d\n", sourceIndex);
+			//printf("Source index: %d\n", sourceIndex);
 			
 			if (sourceIndex != -1)
 			{
-				printf("Texture name: %s\n", model->images[sourceIndex].name.c_str());
+				//printf("Texture name: %s\n", model->images[sourceIndex].name.c_str());
 				mTextures.DiffuseMap = tStringHash(model->images[sourceIndex].name.c_str());
 			}
 		}
 	}
 	
-	printf("Done with mesh\n");
+	//printf("Done with mesh\n");
 }
 
 vModel::vModel(tinygltf::Model* model)

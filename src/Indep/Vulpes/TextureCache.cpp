@@ -52,7 +52,7 @@ namespace vTextureCache
 		
 		hash = tStringHash(name);
 		
-		printf("name of texture is %s (hash: 0x%08X)\n", name, hash);
+		printf("Loading texture %s (hash: 0x%08X)\n", name, hash);
 		
 		tFile* file = tOpenFile(path);
 		if (!file)
@@ -64,7 +64,7 @@ namespace vTextureCache
 		
 		if (hash == CTStringHash("DefaultTexture"))
 		{
-			printf("Caching defaulttexture\n");
+			//printf("Caching defaulttexture\n");
 			gDefaultTexture = texture;
 		}
 		
