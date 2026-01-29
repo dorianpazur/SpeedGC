@@ -1,7 +1,7 @@
 #include <gccore.h>
 #include <Vulpes/vulpes.h>
 
-extern TPLFile DefaultTPL;
+//---------------------------------------------------------------------------------
 
 f32 bswap_float(f32 f)
 {
@@ -9,6 +9,8 @@ f32 bswap_float(f32 f)
 	bytes = __builtin_bswap32(bytes);
 	return *(f32*)&bytes;
 }
+
+//---------------------------------------------------------------------------------
 
 vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 {
@@ -135,7 +137,9 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 	//printf("Done with mesh\n");
 }
 
-vModel::vModel(tinygltf::Model* model)
+//---------------------------------------------------------------------------------
+
+void vModel::BuildFromGLTFModel(tinygltf::Model* model)
 {
 	auto& scene = model->scenes[model->defaultScene];
 	
@@ -143,6 +147,48 @@ vModel::vModel(tinygltf::Model* model)
 		CreateMeshesFromNode(model, nodeIndex);
 	}
 }
+
+//---------------------------------------------------------------------------------
+
+vModel::vModel(tinygltf::Model* model)
+{
+	BuildFromGLTFModel(model);
+}
+
+//---------------------------------------------------------------------------------
+
+vModel::vModel(const char* path)
+{
+	tinygltf::Model model;
+	tinygltf::TinyGLTF loader;
+	
+	tFile* glbFile = tOpenFile("sonic/sonic.glb");
+	if (!glbFile)
+		printf("oops file can't be found\n");
+	std::string err;
+	std::string warn;
+	bool loaded = loader.LoadBinaryFromMemory(&model, &err, &warn, (const unsigned char*)glbFile->data, glbFile->filesize, "");
+	
+	if (!warn.empty())
+	{
+		printf("GLTF WARNING: %s\n", warn.c_str());
+	}
+	if (!err.empty())
+	{
+		printf("GLTF ERROR: %s\n", err.c_str());
+	}
+	
+	if (!loaded)
+		printf("Failed to load glTF: %s\n", glbFile->filename);
+	else
+		printf("Loaded glTF: %s\n", glbFile->filename);;
+	
+	tCloseFile(glbFile);
+	
+	BuildFromGLTFModel(&model);
+}
+
+//---------------------------------------------------------------------------------
 
 void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex)
 {
@@ -155,8 +201,9 @@ void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex)
 }
 
 //---------------------------------------------------------------------------------
-void vModel::Render(Mtx view, Mtx transform) {
-//---------------------------------------------------------------------------------
+
+void vModel::Render(Mtx view, Mtx transform)
+{
 	const float LARGE_NUMBER = 9999999999.0f;
 	Mtx44 mv; // modelview matrix.	
 	Mtx44 WtoL; // world to local matrix.	

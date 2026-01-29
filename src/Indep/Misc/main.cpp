@@ -43,6 +43,10 @@ const bool bSplitScreen = true;
 
 int main(int argc, char **argv)
 {
+	#ifdef GEKKO
+	SYS_STDIO_Report(true); // enable logging to dolphin logs
+	#endif
+	
 	InitializeEverything(argc, argv);
 	
 	unsigned int prevFrameTime = tGetTicker();
@@ -157,15 +161,22 @@ int main(int argc, char **argv)
 
 void InitializeEverything(int argc, char** argv)
 {
+	#ifdef GEKKO
+	printf("Free memory before init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
+	#endif
+	
 	InitializePlatform(argc, argv);
 	draw_init();
 	World::Initialize();
+	
+	#ifdef GEKKO
+	printf("Free memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
+	#endif
 }
 
 //---------------------------------------------------------------------------------
 
 void InitializePlatform(int argc, char** argv) {
-	SYS_STDIO_Report(true); // enable logging to dolphin logs
 	VIDEO_Init();
 	PAD_Init();
 	
@@ -305,31 +316,5 @@ void draw_init()
 	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose18.tpl");
 	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose19.tpl");
 	
-	tinygltf::Model gTestGLBModel;
-	tinygltf::TinyGLTF gTestGLBLoader;
-	
-	gTestGLBFile = tOpenFile("sonic/sonic.glb");
-	if (!gTestGLBFile)
-		printf("oops file can't be found\n");
-	std::string err;
-	std::string warn;
-	bool loaded = gTestGLBLoader.LoadBinaryFromMemory(&gTestGLBModel, &err, &warn, (const unsigned char*)gTestGLBFile->data, gTestGLBFile->filesize, "dvd://");
-	
-	if (!warn.empty())
-	{
-		printf("GLTF WARNING: %s\n", warn.c_str());
-	}
-	if (!err.empty())
-	{
-		printf("GLTF ERROR: %s\n", err.c_str());
-	}
-	
-	if (!loaded)
-		std::cout << "Failed to load glTF: " << gTestGLBFile->filename << std::endl;
-	else
-		std::cout << "Loaded glTF: " << gTestGLBFile->filename << std::endl;
-	
-	tCloseFile(gTestGLBFile);
-	
-	gTestModel = new vModel(&gTestGLBModel);
+	gTestModel = new vModel("sonic/sonic.glb");
 }

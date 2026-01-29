@@ -113,7 +113,9 @@ struct ALIGN(32) vSolid
 struct ALIGN(32) vModel
 {
 	std::vector<vSolid> mSolids;
+	void BuildFromGLTFModel(tinygltf::Model* model);
 	vModel(tinygltf::Model *model);
+	vModel(const char *path);
 	void Render(Mtx view, Mtx transform);
 	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex);
 };
