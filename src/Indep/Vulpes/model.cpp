@@ -134,7 +134,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 				
 				sprintf(texturePath, "%s/Textures/%s.tpl", basePath, model->images[sourceIndex].name.c_str());
 				
-				printf("Texture path: %s\n", texturePath);
+				//printf("Texture path: %s\n", texturePath);
 				vTextureCache::LoadTextureFromPath(texturePath);
 			}
 		}
@@ -169,12 +169,14 @@ vModel::vModel(const char* path)
 	int filenameIndex;
 	tinygltf::Model model;
 	tinygltf::TinyGLTF loader;
-	
-	tFile* glbFile = tOpenFile(path);
-	if (!glbFile)
-		printf("oops file can't be found\n");
 	std::string err;
 	std::string warn;
+	
+	tFile* glbFile = tOpenFile(path);
+	
+	if (!glbFile)
+		printf("oops file can't be found\n");
+	
 	bool loaded = loader.LoadBinaryFromMemory(&model, &err, &warn, (const unsigned char*)glbFile->data, glbFile->filesize, "");
 	
 	if (!warn.empty())
