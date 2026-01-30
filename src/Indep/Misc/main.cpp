@@ -105,6 +105,7 @@ int main(int argc, char **argv)
 					trans = obj->getWorldTransform();
 				}
 				
+				// TODO: TEMPORARY - REMOVE THIS
 				if (body)
 				{
 					if (buttonsPressed & PAD_BUTTON_A)
@@ -297,36 +298,6 @@ void draw_init()
 {
 	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
 	vTextureCache::LoadTextureFromPath("Global/TestTexture.tpl");
-	
-	// sonic test
-	vTextureCache::LoadTextureFromPath("sonic/textures/alltx_dwhite.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/mtx_kuchinaka0.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/mtx_kuchinaka1.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/s_anakage1.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/s_hando2.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/s_testhand.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_btest1.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_eye00.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_eye2.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_ha.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hada.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hanasaki.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hara.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_head.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_hoho.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_itemring.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_itemshoos0.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_itemshoos1.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_kanagu.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_kutusoko0.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_kutusoko1.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_newspin.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose4.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose6.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose16.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose17.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose18.tpl");
-	vTextureCache::LoadTextureFromPath("sonic/textures/stx_shoose19.tpl");
 	
 	gTestModel = new vModel("sonic/sonic.glb");
 }

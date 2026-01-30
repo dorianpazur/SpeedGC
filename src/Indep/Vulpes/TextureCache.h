@@ -81,6 +81,7 @@ namespace vTextureCache
 	
 	extern bool LoadTextureFromPath(const char* path);
 	extern CachedTexture* GetTexture(tHash nameHash, bool returnDefaultTextureIfNotFound = true);
+	extern void ReleaseTexture(tHash nameHash);
 }
 
 #endif

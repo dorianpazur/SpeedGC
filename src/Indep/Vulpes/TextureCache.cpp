@@ -11,6 +11,8 @@ namespace vTextureCache
 	CachedTexture* gDefaultTexture = NULL;
 	std::unordered_map<tHash, CachedTexture*> gTextureCache;
 	
+	//---------------------------------------------------------------------------------
+
 	bool LoadTextureFromPath(const char* path)
 	{
 		if (!path)
@@ -52,6 +54,12 @@ namespace vTextureCache
 		
 		hash = tStringHash(name);
 		
+		if (CachedTexture* existingTexture = GetTexture(hash, false))
+		{
+			existingTexture->refcount++;
+			return true;
+		}
+		
 		printf("Loading texture %s (hash: 0x%08X)\n", name, hash);
 		
 		tFile* file = tOpenFile(path);
@@ -73,6 +81,8 @@ namespace vTextureCache
 		return true;
 	}
 	
+	//---------------------------------------------------------------------------------
+
 	CachedTexture* GetTexture(tHash nameHash, bool returnDefaultTextureIfNotFound)
 	{
 		if (gTextureCache.contains(nameHash))
@@ -89,6 +99,8 @@ namespace vTextureCache
 		}
 	}
 	
+	//---------------------------------------------------------------------------------
+
 	void ReleaseTexture(tHash nameHash)
 	{
 		if (gTextureCache.contains(nameHash))

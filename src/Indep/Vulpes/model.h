@@ -4,6 +4,7 @@
 #include <tWare/Hash.h>
 #include <tiny_gltf/tiny_gltf.h>
 #include <cstdint>
+#include <Vulpes/TextureCache.h>
 
 struct vGlTFVector3 {
 	float x;
@@ -57,6 +58,11 @@ struct ALIGN(32) vMesh
 	struct TextureHashes
 	{
 		tHash DiffuseMap = 0;
+		
+		~TextureHashes()
+		{
+			vTextureCache::ReleaseTexture(DiffuseMap);
+		}
 	};
 	
 	uint32_t mVertexCount = 0;
@@ -68,7 +74,7 @@ struct ALIGN(32) vMesh
 	TextureHashes mTextures;
 	
 	vMesh() {};
-	vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive);
+	vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char* basePath);
 	
 	~vMesh()
 	{
@@ -96,7 +102,7 @@ struct ALIGN(32) vSolid
 {
 	std::vector<vMesh> mMeshes;
 	
-	vSolid(tinygltf::Model *model, tinygltf::Node &node)
+	vSolid(tinygltf::Model *model, tinygltf::Node &node, const char* basePath = "")
 	{	
 		if (node.mesh >= 0)
 		{
@@ -104,7 +110,7 @@ struct ALIGN(32) vSolid
 			mMeshes.reserve(mesh.primitives.size());
 			for (size_t primIdx = 0; primIdx < mesh.primitives.size(); primIdx++)
 			{	
-				mMeshes.emplace_back(model, mesh.primitives[primIdx]);
+				mMeshes.emplace_back(model, mesh.primitives[primIdx], basePath);
 			}
 		}
 	}
@@ -113,11 +119,11 @@ struct ALIGN(32) vSolid
 struct ALIGN(32) vModel
 {
 	std::vector<vSolid> mSolids;
-	void BuildFromGLTFModel(tinygltf::Model* model);
-	vModel(tinygltf::Model *model);
+	void BuildFromGLTFModel(tinygltf::Model* model, const char* basePath = "");
+	vModel(tinygltf::Model *model, const char* basePath = "");
 	vModel(const char *path);
 	void Render(Mtx view, Mtx transform);
-	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex);
+	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, const char* basePath = "");
 };
 
 #endif

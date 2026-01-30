@@ -12,7 +12,7 @@ f32 bswap_float(f32 f)
 
 //---------------------------------------------------------------------------------
 
-vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
+vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char* basePath)
 {
 	tinygltf::Accessor& posAccessor = model->accessors[primitive.attributes["POSITION"]];
 	tinygltf::BufferView& posBufferView = model->bufferViews[posAccessor.bufferView];
@@ -128,8 +128,14 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 			
 			if (sourceIndex != -1)
 			{
+				char texturePath[TFILE_MAX_PATH] = { '\0' };
 				//printf("Texture name: %s\n", model->images[sourceIndex].name.c_str());
 				mTextures.DiffuseMap = tStringHash(model->images[sourceIndex].name.c_str());
+				
+				sprintf(texturePath, "%s/Textures/%s.tpl", basePath, model->images[sourceIndex].name.c_str());
+				
+				printf("Texture path: %s\n", texturePath);
+				vTextureCache::LoadTextureFromPath(texturePath);
 			}
 		}
 	}
@@ -139,30 +145,32 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive)
 
 //---------------------------------------------------------------------------------
 
-void vModel::BuildFromGLTFModel(tinygltf::Model* model)
+void vModel::BuildFromGLTFModel(tinygltf::Model* model, const char* basePath)
 {
 	auto& scene = model->scenes[model->defaultScene];
 	
 	for (auto nodeIndex : scene.nodes) {
-		CreateMeshesFromNode(model, nodeIndex);
+		CreateMeshesFromNode(model, nodeIndex, basePath);
 	}
 }
 
 //---------------------------------------------------------------------------------
 
-vModel::vModel(tinygltf::Model* model)
+vModel::vModel(tinygltf::Model* model, const char* basePath)
 {
-	BuildFromGLTFModel(model);
+	BuildFromGLTFModel(model, basePath);
 }
 
 //---------------------------------------------------------------------------------
 
 vModel::vModel(const char* path)
 {
+	char basePath[TFILE_MAX_PATH] = { '\0' };
+	int filenameIndex;
 	tinygltf::Model model;
 	tinygltf::TinyGLTF loader;
 	
-	tFile* glbFile = tOpenFile("sonic/sonic.glb");
+	tFile* glbFile = tOpenFile(path);
 	if (!glbFile)
 		printf("oops file can't be found\n");
 	std::string err;
@@ -185,19 +193,37 @@ vModel::vModel(const char* path)
 	
 	tCloseFile(glbFile);
 	
-	BuildFromGLTFModel(&model);
+	// find base path
+	
+	// isolate filename from path
+	for (filenameIndex = strlen(path) - 1; filenameIndex >= 0; filenameIndex--)	
+	{
+		if (path[filenameIndex] == '/' || path[filenameIndex] == '\\')
+		{
+			break;
+		}
+	}
+	
+	if (filenameIndex < 0)
+		filenameIndex = 0;
+	
+	memcpy(basePath, path, filenameIndex); // copy the path up to but not including the filename
+	
+	printf("Base path of model: %s\n", basePath);
+	
+	BuildFromGLTFModel(&model, basePath);
 }
 
 //---------------------------------------------------------------------------------
 
-void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex)
+void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, const char* basePath)
 {
 	mSolids.reserve(model->nodes.size());
 	
-	mSolids.emplace_back(model, model->nodes[nodeIndex]);
+	mSolids.emplace_back(model, model->nodes[nodeIndex], basePath);
 	
 	for (auto childNodeIndex : model->nodes[nodeIndex].children)
-		CreateMeshesFromNode(model, childNodeIndex);
+		CreateMeshesFromNode(model, childNodeIndex, basePath);
 }
 
 //---------------------------------------------------------------------------------
