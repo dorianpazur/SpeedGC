@@ -71,12 +71,22 @@ int main(int argc, char **argv)
 		
 		// draw
 		
+		GX_InvVtxCache();
+		GX_InvalidateTexAll();
+		
 		for (int viewNum = 0; viewNum < (bSplitScreen ? 2 : 1); viewNum++)
 		{
 			GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
-			GX_SetViewport(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2,0,1); // TODO - add actual view class
-			GX_InvVtxCache();
-			GX_InvalidateTexAll();
+			if (bSplitScreen)
+			{
+				GX_SetViewport(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2,0,1); // TODO - add actual view class
+				GX_SetScissor(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2);
+			}
+			else
+			{
+				GX_SetViewport(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight,0,1); // TODO - add actual view class
+				GX_SetScissor(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight);
+			}
 			
 			float transformFlt[16];
 			Mtx44 transform;
@@ -138,6 +148,9 @@ int main(int argc, char **argv)
 			}
 		}
 		
+		GX_SetViewport(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight,0,1);
+		GX_SetScissor(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight);
+		
 		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 		GX_SetColorUpdate(GX_TRUE);
 		GX_CopyDisp(xfb[currentBuffer],GX_TRUE);
@@ -181,8 +194,6 @@ void InitializePlatform(int argc, char** argv) {
 	PAD_Init();
 	
 	rmode = VIDEO_GetPreferredMode(NULL);
-
-	rmode->aa = true;
 
 	void *gp_fifo = NULL;
 	gp_fifo = memalign(32,GX_FIFO_MINSIZE);
@@ -281,6 +292,7 @@ void InitializePlatform(int argc, char** argv) {
 }
 
 //---------------------------------------------------------------------------------
+
 void draw_init()
 {
 	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
