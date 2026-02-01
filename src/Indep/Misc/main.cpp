@@ -14,6 +14,7 @@
 #include <tWare/Time.h>
 #include <tWare/File.h>
 #include <tWare/Hash.h>
+#include "ScreenPrintf.h"
 
 #include <Vulpes/vulpes.h> // graphics
 
@@ -37,7 +38,14 @@ void draw_init();
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
-const bool bSplitScreen = true;
+bool bSplitScreen = true;
+bool bWideScreen = true;
+
+float CPUTime = 0.0f;
+float GPUTime = 0.0f;
+float gAvgFps = 0.0f;
+
+bool twkVblankCount = 0;
 
 //---------------------------------------------------------------------------------
 
@@ -52,15 +60,34 @@ int main(int argc, char **argv)
 	unsigned int prevFrameTime = tGetTicker();
 	VIDEO_WaitVSync();
 	
-	float avgfps = 0.0f;
+	float avgfpsaccum = 0.0f;
+	int avgfpsaccumcount = 0;
 	float fps = 0.0f;
 	
 	prevFrameTime = tGetTicker();
-
+	
+	Mtx guiMtx;
+	Mtx identityMtx;
+	guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
+	guMtxIdentity(identityMtx);
+	
 	while(1) {
 		unsigned int now = tGetTicker();
 		float frameTime = tGetTickerDifference(prevFrameTime, now);
 		prevFrameTime = now;
+		
+		fps = 1.0f / (frameTime * 0.001f);
+		
+		if (avgfpsaccumcount++ < 10)
+			avgfpsaccum += fps;
+		else
+		{
+			gAvgFps = avgfpsaccum / 10.0f;
+			avgfpsaccum = 0;
+			avgfpsaccumcount = 0;
+		}
+		
+		unsigned int CPUTimeStart = tGetTicker();
 		
 		PAD_ScanPads();
 		
@@ -69,7 +96,11 @@ int main(int argc, char **argv)
 		
 		World::GetInstance()->Simulate(frameTime * 0.001f);
 		
+		CPUTime = tGetTickerDifference(CPUTimeStart, tGetTicker());
+		
 		// draw
+		
+		unsigned int GPUTimeTemp = tGetTicker();
 		
 		GX_InvVtxCache();
 		GX_InvalidateTexAll();
@@ -84,8 +115,8 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				GX_SetViewport(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight,0,1); // TODO - add actual view class
-				GX_SetScissor(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight);
+				GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1); // TODO - add actual view class
+				GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
 			}
 			
 			float transformFlt[16];
@@ -149,8 +180,15 @@ int main(int argc, char **argv)
 			}
 		}
 		
-		GX_SetViewport(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight,0,1);
-		GX_SetScissor(0,rmode->efbHeight,rmode->fbWidth,rmode->efbHeight);
+		GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
+		GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
+		
+		GX_LoadProjectionMtx(guiMtx, GX_ORTHOGRAPHIC);
+		GX_LoadPosMtxImm(identityMtx, GX_PNMTX0);
+		
+		GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
+		
+		DrawScreenPrintfs();
 		
 		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 		GX_SetColorUpdate(GX_TRUE);
@@ -162,8 +200,14 @@ int main(int argc, char **argv)
 		
 		VIDEO_Flush();
 		
-		VIDEO_WaitVSync();
+		for (uint8_t i = 0; i < twkVblankCount; i++)
+			VIDEO_WaitVSync();
+		
 		currentBuffer ^= 1;
+		
+		DisplayDebugScreenPrints();
+		
+		GPUTime = tGetTickerDifference(GPUTimeTemp, tGetTicker());
 	}
 	
 	delete gTestModel;
@@ -277,8 +321,10 @@ void InitializePlatform(int argc, char** argv) {
 	
 	if (bSplitScreen)
 		aspect *= 2.0f;
+	if (bWideScreen)
+		aspect *= 1.33333334f;
 	
-	guPerspective(projMtx[0], 60 / aspectCorrect, aspect * aspectCorrect, 0.1F, 1000.0F);
+	guPerspective(projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
 	GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
 	
 	w = rmode->viWidth;
@@ -289,7 +335,7 @@ void InitializePlatform(int argc, char** argv) {
 	if (bSplitScreen)
 		aspect *= 2.0f;
 	
-	guPerspective(projMtx[1], 60 / aspectCorrect, aspect * aspectCorrect, 0.1F, 1000.0F);
+	guPerspective(projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
 }
 
 //---------------------------------------------------------------------------------
@@ -297,7 +343,7 @@ void InitializePlatform(int argc, char** argv) {
 void draw_init()
 {
 	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
-	vTextureCache::LoadTextureFromPath("Global/TestTexture.tpl");
+	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
 	
 	gTestModel = new vModel("sonic/sonic.glb");
 }

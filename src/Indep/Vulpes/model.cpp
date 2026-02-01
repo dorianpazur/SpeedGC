@@ -248,6 +248,8 @@ void vModel::Render(Mtx view, Mtx transform)
 	guMtxInverse(view, VtoWtmp);
     guMtxTranspose(VtoWtmp,VtoW);
 	
+	GX_SetCullMode(GX_CULL_BACK);
+	
 	for (size_t solid = 0; solid < mSolids.size(); solid++)
 	{	
 
