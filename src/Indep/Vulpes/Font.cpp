@@ -14,7 +14,7 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 	
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGB, GX_RGB8, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 	
 	GX_SetNumChans(1);
@@ -57,19 +57,19 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 		texBottomY -= 0.5f/fontTexture->height;
 		
 		GX_Position3f32(rightX, topY, 0);
-		GX_Color3u8( 0xff, 0xff, 0xff );
+		GX_Color4u8( (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF );
 		GX_TexCoord2f32(texRightX, texTopY);
 		
 		GX_Position3f32(rightX, bottomY, 0);
-		GX_Color3u8( 0xff, 0xff, 0xff );
+		GX_Color4u8( (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF );
 		GX_TexCoord2f32(texRightX, texBottomY);
 		
 		GX_Position3f32(leftX, bottomY, 0);
-		GX_Color3u8( 0xff, 0xff, 0xff );
+		GX_Color4u8( (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF );
 		GX_TexCoord2f32(texLeftX, texBottomY);
 		
 		GX_Position3f32(leftX, topY, 0);
-		GX_Color3u8( 0xff, 0xff, 0xff );
+		GX_Color4u8( (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF );
 		GX_TexCoord2f32(texLeftX, texTopY);
 		
 		float kern = 11.5f;
@@ -116,9 +116,6 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 		};
 		
 		currentOffset += kern;
-		
-		//printf("top left: %.2f, %.2f\ntop right: %.2f, %.2f\nbottom left: %.2f, %.2f\nbottom right: %.2f, %.2f\n",
-		//	leftX, topY, rightX, topY, leftX, bottomY, rightX, bottomY);
 	}
 	
 	GX_End();

@@ -1,5 +1,5 @@
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef WORLD_WORLD_H
+#define WORLD_WORLD_H
 
 #include <cstddef>
 #include <cstdio>
@@ -23,6 +23,7 @@ public:
 	static World* GetInstance();
 	
 	void Simulate(float timestep);
+	bool ShouldPauseWorld();
 	
 	World();
 	~World();

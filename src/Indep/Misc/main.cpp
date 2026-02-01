@@ -20,6 +20,11 @@
 
 #include "World.h"
 
+// debug stuff
+#include "DebugMenu.h"
+#include "DebugAssistant.h"
+#include "DebugMenuRender.h"
+
 static uint8_t currentBuffer = 0;
 static void *xfb[2] = { NULL, NULL}; // double buffered
 static GXRModeObj *rmode = NULL;
@@ -45,7 +50,7 @@ float CPUTime = 0.0f;
 float GPUTime = 0.0f;
 float gAvgFps = 0.0f;
 
-bool twkVblankCount = 0;
+int twkVblankCount = 1;
 
 //---------------------------------------------------------------------------------
 
@@ -90,6 +95,9 @@ int main(int argc, char **argv)
 		unsigned int CPUTimeStart = tGetTicker();
 		
 		PAD_ScanPads();
+		
+		if (gDebugMenuIOHandler)
+			gDebugMenuIOHandler->PollInput();
 		
 		int buttonsDown = PAD_ButtonsDown(0);
 		int buttonsPressed = PAD_ButtonsHeld(0);
@@ -137,7 +145,7 @@ int main(int argc, char **argv)
 				}
 				
 				// TODO: TEMPORARY - REMOVE THIS
-				if (body)
+				if (!World::GetInstance()->ShouldPauseWorld() && body)
 				{
 					if (buttonsPressed & PAD_BUTTON_A)
 					{
@@ -188,6 +196,9 @@ int main(int argc, char **argv)
 		
 		GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 		
+		DebugMenu::render();
+		DebugMenu::renderBackground();
+		
 		DrawScreenPrintfs();
 		
 		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
@@ -226,6 +237,7 @@ void InitializeEverything(int argc, char** argv)
 	InitializePlatform(argc, argv);
 	draw_init();
 	World::Initialize();
+	DebugMenuInit();
 	
 	#ifdef GEKKO
 	printf("Free memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
