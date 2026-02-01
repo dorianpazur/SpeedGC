@@ -105,7 +105,7 @@ void DebugMenuRender::renderOverlay(int x, int y, int width, int height, float a
 	poly.Colours[0][0] = color >> 0;
 	poly.Colours[0][1] = color >> 8;
 	poly.Colours[0][2] = color >> 16;
-	poly.Colours[0][3] = (unsigned int)(alpha * 255.0f);
+	poly.Colours[0][3] = (uint8_t)(alpha * 255.0f);
 	
 	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
 	*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];

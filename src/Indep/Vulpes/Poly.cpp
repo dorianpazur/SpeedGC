@@ -38,7 +38,8 @@ void vPolyRender(vPoly* poly, struct vTextureCache::CachedTexture* texture)
 	else
 	{
 		GX_SetNumTexGens(0);
-		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
 	}
 	

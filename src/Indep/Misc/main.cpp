@@ -73,10 +73,52 @@ int main(int argc, char **argv)
 	
 	Mtx guiMtx;
 	Mtx identityMtx;
-	guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
-	guMtxIdentity(identityMtx);
+	
 	
 	while(1) {
+		guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
+		guMtxIdentity(identityMtx);
+		
+		// setup our camera at the origin
+		// looking down the -z axis with y up
+		guVector cam = {0.0F, -2.0F, 18.0F},
+				up = {0.0F, 1.0F, 0.0F},
+			look = {0.0F, -1.0F, 1.0F};
+		guLookAt(viewMtx[0], &cam, &up, &look);
+		
+		cam = {4.0F, -2.0F, 10.0F},
+				up = {0.0F, 1.0F, 0.0F},
+			look = {-8.0F, -1.0F, 0.5F};
+		guLookAt(viewMtx[1], &cam, &up, &look);
+	
+		// setup our projection matrix
+		// this creates a perspective matrix with a view angle of 60,
+		// an aspect ratio of 4/3 (i'm not sure if that's the right
+		// way to do it but i just went by what made a square on my screen)
+		// and z near and far distances
+		f32 w = rmode->viWidth;
+		f32 h = rmode->viHeight;
+		f32 aspect = (f32)w/h;
+		f32 aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
+		
+		if (bSplitScreen)
+			aspect *= 2.0f;
+		if (bWideScreen)
+			aspect *= 1.33333334f;
+		
+		guPerspective(projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+		GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
+		
+		w = rmode->viWidth;
+		h = rmode->viHeight;
+		aspect = (f32)w/h;
+		aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
+		
+		if (bSplitScreen)
+			aspect *= 2.0f;
+		
+		guPerspective(projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	
 		unsigned int now = tGetTicker();
 		float frameTime = tGetTickerDifference(prevFrameTime, now);
 		prevFrameTime = now;
@@ -308,46 +350,11 @@ void InitializePlatform(int argc, char** argv) {
 	GX_SetCullMode(GX_CULL_BACK);
 	GX_CopyDisp(xfb[currentBuffer],GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
- 
-	// setup our camera at the origin
-	// looking down the -z axis with y up
-	guVector cam = {0.0F, -2.0F, 18.0F},
-			up = {0.0F, 1.0F, 0.0F},
-		  look = {0.0F, -1.0F, 1.0F};
-	guLookAt(viewMtx[0], &cam, &up, &look);
 	
-	cam = {4.0F, -2.0F, 10.0F},
-			up = {0.0F, 1.0F, 0.0F},
-		  look = {-8.0F, -1.0F, 0.5F};
-	guLookAt(viewMtx[1], &cam, &up, &look);
- 
-	// setup our projection matrix
-	// this creates a perspective matrix with a view angle of 60,
-	// an aspect ratio of 4/3 (i'm not sure if that's the right
-	// way to do it but i just went by what made a square on my screen)
-	// and z near and far distances
-    f32 w = rmode->viWidth;
-    f32 h = rmode->viHeight;
-	f32 aspect = (f32)w/h;
-	f32 aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
-	
-	if (bSplitScreen)
-		aspect *= 2.0f;
-	if (bWideScreen)
-		aspect *= 1.33333334f;
-	
-	guPerspective(projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
-	GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
-	
-	w = rmode->viWidth;
-    h = rmode->viHeight;
-	aspect = (f32)w/h;
-	aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
-	
-	if (bSplitScreen)
-		aspect *= 2.0f;
-	
-	guPerspective(projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	// init some sort of matrix to prevent noise on boot
+	Mtx44 matrix;
+	guOrtho(matrix, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+	GX_LoadProjectionMtx(matrix, GX_ORTHOGRAPHIC);
 }
 
 //---------------------------------------------------------------------------------

@@ -9,6 +9,8 @@
 #include "ScreenPrintf.h"
 
 extern int twkVblankCount;
+extern bool bSplitScreen;
+extern bool bWideScreen;
 
 void DebugMenuAllocate()
 {
@@ -55,6 +57,8 @@ void DebugMenuLoad()
     // rendering menu
     DebugMenu* rendering = DebugMenu::create("Rendering ->", root); {
 		DebugMenu::addWidgetToNewestMenu(new IntWidget("VSync", &twkVblankCount, 0, 2, 1, NULL));
+		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Widescreen", &bWideScreen, NULL));
+		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Splitscreen", &bSplitScreen, NULL));
     } DebugMenu::endNewestMenu();
 
     if (gLastCurMenuName)
