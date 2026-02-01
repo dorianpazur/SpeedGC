@@ -4,7 +4,7 @@
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
+TARGET		:=	Speed
 BUILD		:=	build
 DISCDIR		:=	$(CURDIR)/$(BUILD)/Speed
 SOURCES		:=	

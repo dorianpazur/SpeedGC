@@ -6,43 +6,43 @@
 #include <cstddef>
 
 struct vGlTFVector3 {
-	float x;
-	float y;
-	float z;
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
 };
 
 struct vVector2 {
-	float x;
-	float y;
+	float x = 0.0f;
+	float y = 0.0f;
 };
 
 struct vVector3 {
-	float x;
-	float y;
-	float z;
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
 private:
 	float pad;
 };
 
 struct vVector4 {
-	float x;
-	float y;
-	float z;
-	float w;
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+	float w = 0.0f;
 };
 
 struct vColor {
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-	uint8_t a;
+	uint8_t r = 0;
+	uint8_t g = 0;
+	uint8_t b = 0;
+	uint8_t a = 0;
 };
 
 struct vColorShort {
-	uint16_t r;
-	uint16_t g;
-	uint16_t b;
-	uint16_t a;
+	uint16_t r = 0;
+	uint16_t g = 0;
+	uint16_t b = 0;
+	uint16_t a = 0;
 };
 
 #endif
