@@ -1,4 +1,4 @@
-#include <cstdio>
+﻿#include <cstdio>
 #include <cstdint>
 #include <cstdlib>
 #include <string.h>
@@ -17,6 +17,7 @@
 #include "ScreenPrintf.h"
 
 #include <Vulpes/vulpes.h> // graphics
+#include "Vehicle.h"
 
 #include "World.h"
 
@@ -38,7 +39,7 @@ void draw_init();
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
-bool bSplitScreen = true;
+bool bSplitScreen = false;
 bool bWideScreen = true;
 
 float CPUTime = 0.0f;
@@ -46,6 +47,9 @@ float GPUTime = 0.0f;
 float gAvgFps = 0.0f;
 
 bool twkVblankCount = 0;
+
+Vehicle* gVehicle = nullptr;
+vModel* gCarModel = nullptr;
 
 //---------------------------------------------------------------------------------
 
@@ -93,6 +97,35 @@ int main(int argc, char **argv)
 		
 		int buttonsDown = PAD_ButtonsDown(0);
 		int buttonsPressed = PAD_ButtonsHeld(0);
+
+		float engineForce = 0.0f;
+		float brakeForce = 0.0f;
+		float steering = 0.0f;
+
+		if (buttonsPressed & PAD_BUTTON_UP)
+		{
+			engineForce = 2000.0f;
+		}
+
+		if (buttonsPressed & PAD_BUTTON_DOWN)
+		{
+			brakeForce = 50.0f;
+		}
+
+		if (buttonsPressed & PAD_BUTTON_LEFT)
+		{
+			steering = 0.3f;
+		}
+		else if (buttonsPressed & PAD_BUTTON_RIGHT)
+		{
+			steering = -0.3f;
+		}
+
+		if (gVehicle)
+		{
+			gVehicle->applyInput(engineForce, brakeForce, steering);
+		}
+
 		
 		World::GetInstance()->Simulate(frameTime * 0.001f);
 		
@@ -104,28 +137,79 @@ int main(int argc, char **argv)
 		
 		GX_InvVtxCache();
 		GX_InvalidateTexAll();
-		
+
 		for (int viewNum = 0; viewNum < (bSplitScreen ? 2 : 1); viewNum++)
 		{
 			GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
 			if (bSplitScreen)
 			{
-				GX_SetViewport(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2,0,1); // TODO - add actual view class
-				GX_SetScissor(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2);
+				GX_SetViewport(0, (rmode->efbHeight / 2) * viewNum, rmode->fbWidth, rmode->efbHeight / 2, 0, 1); // TODO - add actual view class
+				GX_SetScissor(0, (rmode->efbHeight / 2) * viewNum, rmode->fbWidth, rmode->efbHeight / 2);
 			}
 			else
 			{
-				GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1); // TODO - add actual view class
-				GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
+				GX_SetViewport(0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1); // TODO - add actual view class
+				GX_SetScissor(0, 0, rmode->fbWidth, rmode->efbHeight);
 			}
-			
+
 			float transformFlt[16];
 			Mtx44 transform;
-			
+
+			// =========================
+			// Render vehicle chassis
+			// =========================
+			if (gVehicle && gCarModel)
+			{
+				btTransform trans;
+				btRigidBody* body = gVehicle->getBody();
+
+				if (body->getMotionState())
+				{
+					body->getMotionState()->getWorldTransform(trans);
+				}
+				else
+				{
+					trans = body->getWorldTransform();
+				}
+
+				trans.getOpenGLMatrix(transformFlt);
+
+				printf("Vehicle pos Y = %f\n", transformFlt[13]);
+				printf("Vehicle pos: X=%f Y=%f Z=%f\n",
+					transformFlt[12],
+					transformFlt[13],
+					transformFlt[14]);
+
+				// Bullet (OpenGL) using GX matrix
+				transform[0][0] = transformFlt[0] * 5.0f;
+				transform[1][0] = transformFlt[1];
+				transform[2][0] = transformFlt[2];
+
+				transform[0][1] = transformFlt[4];
+				transform[1][1] = transformFlt[5] * 5.0f;
+				transform[2][1] = transformFlt[6];
+
+				transform[0][2] = transformFlt[8];
+				transform[1][2] = transformFlt[9];
+				transform[2][2] = transformFlt[10] * 5.0f;
+
+				transform[0][3] = transformFlt[12];
+				transform[1][3] = transformFlt[13];
+				transform[2][3] = transformFlt[14];
+
+				gCarModel->Render(viewMtx[viewNum], transform);
+			}
+
+
 			for (int j = World::GetInstance()->dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
 			{
 				btCollisionObject* obj = World::GetInstance()->dynamicsWorld->getCollisionObjectArray()[j];
 				btRigidBody* body = btRigidBody::upcast(obj);
+
+				// skip vehicle chassis
+				if (gVehicle && body == gVehicle->getBody())
+					continue;
+
 				btTransform trans;
 				if (body && body->getMotionState())
 				{
@@ -135,50 +219,28 @@ int main(int argc, char **argv)
 				{
 					trans = obj->getWorldTransform();
 				}
-				
-				// TODO: TEMPORARY - REMOVE THIS
-				if (body)
-				{
-					if (buttonsPressed & PAD_BUTTON_A)
-					{
-						body->activate();
-						body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, 0.0f ) );
-					}
-					
-					if (buttonsDown & PAD_BUTTON_B)
-					{
-						body->activate();
-						body->applyCentralImpulse( btVector3( 0.f, 0.0f, -100.0f * frameTime * 0.001f ) );
-					}
-					
-					if (buttonsDown & PAD_BUTTON_X)
-					{
-						body->activate();
-						body->applyCentralImpulse( btVector3( 0.f, 100.0f * frameTime * 0.001f, -10000.0f * frameTime * 0.001f ) );
-					}
-				}
-				
+
 				trans.getOpenGLMatrix(transformFlt);
-				
-				transform[0][0]=transformFlt[0];
-				transform[1][0]=transformFlt[1];
-				transform[2][0]=transformFlt[2];
-				
-				transform[0][1]=transformFlt[4];
-				transform[1][1]=transformFlt[5];
-				transform[2][1]=transformFlt[6];
-				
-				transform[0][2]=transformFlt[8];
-				transform[1][2]=transformFlt[9];
-				transform[2][2]=transformFlt[10];
-				
-				transform[0][3]=transformFlt[12];
-				transform[1][3]=transformFlt[13];
-				transform[2][3]=transformFlt[14];
-				
-				gTestModel->Render(viewMtx[viewNum], transform);
+
+				transform[0][0] = transformFlt[0];
+				transform[1][0] = transformFlt[1];
+				transform[2][0] = transformFlt[2];
+
+				transform[0][1] = transformFlt[4];
+				transform[1][1] = transformFlt[5];
+				transform[2][1] = transformFlt[6];
+
+				transform[0][2] = transformFlt[8];
+				transform[1][2] = transformFlt[9];
+				transform[2][2] = transformFlt[10];
+
+				transform[0][3] = transformFlt[12];
+				transform[1][3] = transformFlt[13];
+				transform[2][3] = transformFlt[14];
+
 			}
 		}
+
 		
 		GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
 		GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
@@ -226,6 +288,13 @@ void InitializeEverything(int argc, char** argv)
 	InitializePlatform(argc, argv);
 	draw_init();
 	World::Initialize();
+
+	// Create vehicle
+	gVehicle = new Vehicle(
+		World::GetInstance()->dynamicsWorld,
+		btVector3(0.0f, 10.0f, 0.0f)
+	);
+
 	
 	#ifdef GEKKO
 	printf("Free memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
@@ -346,4 +415,5 @@ void draw_init()
 	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
 	
 	gTestModel = new vModel("sonic/sonic.glb");
+	gCarModel = new vModel("sonic/sonic.glb");
 }
