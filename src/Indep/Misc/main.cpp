@@ -78,6 +78,9 @@ int main(int argc, char **argv)
 	Mtx guiMtx;
 	Mtx identityMtx;
 	
+	vVector3 camTarget;
+	float transformFlt[16];
+	Mtx44 transform;
 	
 	while(1) {
 		guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
@@ -87,7 +90,11 @@ int main(int argc, char **argv)
 		// looking down the -z axis with y up
 		guVector cam = {0.0F, 5.0F, 12.0F},
 				up = {0.0F, 1.0F, 0.0F},
-			look = {0.0F, 2.0F, 0.0F};
+			look = {
+				camTarget.x,
+				camTarget.y,
+				camTarget.z
+			};
 		guLookAt(viewMtx[0], &cam, &up, &look);
 		
 		cam = {4.0F, -2.0F, 10.0F},
@@ -188,9 +195,10 @@ int main(int argc, char **argv)
 		
 		GX_InvVtxCache();
 		GX_InvalidateTexAll();
-
+		
 		for (int viewNum = 0; viewNum < (bSplitScreen ? 2 : 1); viewNum++)
 		{
+		
 			GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
 			if (bSplitScreen)
 			{
@@ -202,9 +210,6 @@ int main(int argc, char **argv)
 				GX_SetViewport(0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1); // TODO - add actual view class
 				GX_SetScissor(0, 0, rmode->fbWidth, rmode->efbHeight);
 			}
-
-			float transformFlt[16];
-			Mtx44 transform;
 
 			// =========================
 			// Render vehicle chassis
@@ -230,6 +235,10 @@ int main(int argc, char **argv)
 					transformFlt[12],
 					transformFlt[13],
 					transformFlt[14]);
+					
+				camTarget.x = transformFlt[12];
+				camTarget.y = transformFlt[13];
+				camTarget.z = transformFlt[14];
 
 				// Bullet (OpenGL) using GX matrix
 				transform[0][0] = transformFlt[0];
@@ -250,48 +259,7 @@ int main(int argc, char **argv)
 
 				gCarModel->Render(viewMtx[viewNum], transform);
 			}
-
-
-			for (int j = World::GetInstance()->dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
-			{
-				btCollisionObject* obj = World::GetInstance()->dynamicsWorld->getCollisionObjectArray()[j];
-				btRigidBody* body = btRigidBody::upcast(obj);
-
-				// skip vehicle chassis
-				if (gVehicle && body == gVehicle->getBody())
-					continue;
-
-				btTransform trans;
-				if (body && body->getMotionState())
-				{
-					body->getMotionState()->getWorldTransform(trans);
-				}
-				else
-				{
-					trans = obj->getWorldTransform();
-				}
-				
-				trans.getOpenGLMatrix(transformFlt);
-
-				transform[0][0] = transformFlt[0];
-				transform[1][0] = transformFlt[1];
-				transform[2][0] = transformFlt[2];
-
-				transform[0][1] = transformFlt[4];
-				transform[1][1] = transformFlt[5];
-				transform[2][1] = transformFlt[6];
-
-				transform[0][2] = transformFlt[8];
-				transform[1][2] = transformFlt[9];
-				transform[2][2] = transformFlt[10];
-
-				transform[0][3] = transformFlt[12];
-				transform[1][3] = transformFlt[13];
-				transform[2][3] = transformFlt[14];
-
-			}
 		}
-
 		
 		GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
 		GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
