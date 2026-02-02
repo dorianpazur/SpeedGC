@@ -21,6 +21,11 @@
 
 #include "World.h"
 
+// debug stuff
+#include "DebugMenu.h"
+#include "DebugAssistant.h"
+#include "DebugMenuRender.h"
+
 static uint8_t currentBuffer = 0;
 static void *xfb[2] = { NULL, NULL}; // double buffered
 static GXRModeObj *rmode = NULL;
@@ -46,7 +51,7 @@ float CPUTime = 0.0f;
 float GPUTime = 0.0f;
 float gAvgFps = 0.0f;
 
-bool twkVblankCount = 0;
+int twkVblankCount = 1;
 
 Vehicle* gVehicle = nullptr;
 vModel* gCarModel = nullptr;
@@ -72,13 +77,58 @@ int main(int argc, char **argv)
 	
 	Mtx guiMtx;
 	Mtx identityMtx;
-	guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
-	guMtxIdentity(identityMtx);
+	
 	
 	while(1) {
+		guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
+		guMtxIdentity(identityMtx);
+		
+		// setup our camera to view the car from behind and above
+		// looking down the -z axis with y up
+		guVector cam = {0.0F, 5.0F, 12.0F},
+				up = {0.0F, 1.0F, 0.0F},
+			look = {0.0F, 2.0F, 0.0F};
+		guLookAt(viewMtx[0], &cam, &up, &look);
+		
+		cam = {4.0F, -2.0F, 10.0F},
+				up = {0.0F, 1.0F, 0.0F},
+			look = {-8.0F, -1.0F, 0.5F};
+		guLookAt(viewMtx[1], &cam, &up, &look);
+	
+		// setup our projection matrix
+		// this creates a perspective matrix with a view angle of 60,
+		// an aspect ratio of 4/3 (i'm not sure if that's the right
+		// way to do it but i just went by what made a square on my screen)
+		// and z near and far distances
+		f32 w = rmode->viWidth;
+		f32 h = rmode->viHeight;
+		f32 aspect = (f32)w/h;
+		f32 aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
+		
+		if (bSplitScreen)
+			aspect *= 2.0f;
+		if (bWideScreen)
+			aspect *= 1.33333334f;
+		
+		guPerspective(projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+		GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
+		
+		w = rmode->viWidth;
+		h = rmode->viHeight;
+		aspect = (f32)w/h;
+		aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
+		
+		if (bSplitScreen)
+			aspect *= 2.0f;
+		
+		guPerspective(projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	
 		unsigned int now = tGetTicker();
 		float frameTime = tGetTickerDifference(prevFrameTime, now);
 		prevFrameTime = now;
+		
+		if (frameTime > 1000.0f/12.0f) // limit frame time
+			frameTime = 1000.0f/12.0f;
 		
 		fps = 1.0f / (frameTime * 0.001f);
 		
@@ -102,27 +152,31 @@ int main(int argc, char **argv)
 		int buttonsHeld = PAD_ButtonsHeld(0);
 
 		// D-pad / Arrow keys input
-		if (buttonsHeld & PAD_BUTTON_UP)    engineForce = 15000.0f;  // Forward
-		if (buttonsHeld & PAD_BUTTON_DOWN)  brakeForce = 15000.0f;   // Reverse/Brake (same strength as forward)
-		if (buttonsHeld & PAD_BUTTON_LEFT)  steering = 1.0f;         // Turn left
-		if (buttonsHeld & PAD_BUTTON_RIGHT) steering = -1.0f;       // Turn right
+		//if (buttonsHeld & PAD_BUTTON_UP)    engineForce = 15000.0f;  // Forward
+		//if (buttonsHeld & PAD_BUTTON_DOWN)  brakeForce = 15000.0f;   // Reverse/Brake (same strength as forward)
+		//if (buttonsHeld & PAD_BUTTON_LEFT)  steering = 1.0f;         // Turn left
+		//if (buttonsHeld & PAD_BUTTON_RIGHT) steering = -1.0f;       // Turn right
 
 		// Analog stick input for smoother control (ONLY forward/back, no auto-steer)
-		s8 stickY = PAD_StickY(0);
+		//s8 stickY = PAD_StickY(0);
 		
 		// Use analog stick if pushed significantly (deadzone ~30)
-		if (stickY > 30) {
-			engineForce = (stickY / 128.0f) * 15000.0f;
-		} else if (stickY < -30) {
-			brakeForce = (-stickY / 128.0f) * 15000.0f;
-		}
-
+		//if (stickY > 30) {
+		//	engineForce = (stickY / 128.0f) * 15000.0f;
+		//} else if (stickY < -30) {
+		//	brakeForce = (-stickY / 128.0f) * 15000.0f;
+		//}
+		
+		engineForce = (PAD_TriggerR(0) / 255.0f) * 15000.0f;
+		brakeForce = (PAD_TriggerL(0) / 255.0f) * 15000.0f;
 
 		if (gVehicle)
 		{
-			gVehicle->applyInput(engineForce, brakeForce, steering);
+			gVehicle->applyInput(engineForce, brakeForce, PAD_StickX(0) / 127.0f);
 		}
-
+		
+		if (gDebugMenuIOHandler)
+			gDebugMenuIOHandler->PollInput();
 		
 		World::GetInstance()->Simulate(frameTime * 0.001f);
 		
@@ -216,7 +270,7 @@ int main(int argc, char **argv)
 				{
 					trans = obj->getWorldTransform();
 				}
-
+				
 				trans.getOpenGLMatrix(transformFlt);
 
 				transform[0][0] = transformFlt[0];
@@ -246,6 +300,9 @@ int main(int argc, char **argv)
 		GX_LoadPosMtxImm(identityMtx, GX_PNMTX0);
 		
 		GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
+		
+		DebugMenu::render();
+		DebugMenu::renderBackground();
 		
 		DrawScreenPrintfs();
 		
@@ -285,8 +342,7 @@ void InitializeEverything(int argc, char** argv)
 	InitializePlatform(argc, argv);
 	draw_init();
 	World::Initialize();
-
-
+	
 	// CREATE CUBE VEHICLE
 
 	// Vehicle constructor creates the body internally
@@ -308,7 +364,7 @@ void InitializeEverything(int argc, char** argv)
 	//add body to the world
 	World::GetInstance()->dynamicsWorld->addRigidBody(groundBody);
 
-
+	DebugMenuInit();
 	
 	#ifdef GEKKO
 	printf("Free memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
@@ -379,46 +435,11 @@ void InitializePlatform(int argc, char** argv) {
 	GX_SetCullMode(GX_CULL_BACK);
 	GX_CopyDisp(xfb[currentBuffer],GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
- 
-	// setup our camera to view the car from behind and above
-	// looking down the -z axis with y up
-	guVector cam = {0.0F, 5.0F, 12.0F},
-			up = {0.0F, 1.0F, 0.0F},
-		  look = {0.0F, 2.0F, 0.0F};
-	guLookAt(viewMtx[0], &cam, &up, &look);
 	
-	cam = {4.0F, -2.0F, 10.0F},
-			up = {0.0F, 1.0F, 0.0F},
-		  look = {-8.0F, -1.0F, 0.5F};
-	guLookAt(viewMtx[1], &cam, &up, &look);
- 
-	// setup our projection matrix
-	// this creates a perspective matrix with a view angle of 60,
-	// an aspect ratio of 4/3 (i'm not sure if that's the right
-	// way to do it but i just went by what made a square on my screen)
-	// and z near and far distances
-    f32 w = rmode->viWidth;
-    f32 h = rmode->viHeight;
-	f32 aspect = (f32)w/h;
-	f32 aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
-	
-	if (bSplitScreen)
-		aspect *= 2.0f;
-	if (bWideScreen)
-		aspect *= 1.33333334f;
-	
-	guPerspective(projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
-	GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
-	
-	w = rmode->viWidth;
-    h = rmode->viHeight;
-	aspect = (f32)w/h;
-	aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
-	
-	if (bSplitScreen)
-		aspect *= 2.0f;
-	
-	guPerspective(projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	// init some sort of matrix to prevent noise on boot
+	Mtx44 matrix;
+	guOrtho(matrix, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+	GX_LoadProjectionMtx(matrix, GX_ORTHOGRAPHIC);
 }
 
 //---------------------------------------------------------------------------------

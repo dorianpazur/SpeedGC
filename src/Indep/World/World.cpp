@@ -1,5 +1,6 @@
 
 #include "World.h"
+#include "DebugAssistant.h"
 
 World* World::gWorld = NULL;
 
@@ -243,7 +244,15 @@ World::World()
 
 void World::Simulate(float timestep)
 {
-	dynamicsWorld->stepSimulation(timestep, 2);
+	if (!ShouldPauseWorld())
+		dynamicsWorld->stepSimulation(timestep, 2);
+}
+
+//---------------------------------------------------------------------------------
+
+bool World::ShouldPauseWorld()
+{
+	return DebugMenuShouldPauseWorld();
 }
 
 //---------------------------------------------------------------------------------
