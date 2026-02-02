@@ -1,4 +1,5 @@
 #include "Vehicle.h"
+#include "ScreenPrintf.h"
 
 Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 {
@@ -44,13 +45,13 @@ void Vehicle::applyInput(float engine, float brake, float steering)
     float speed = velocity.length();
 
     // Debug by print velocity and forces occasionally
-    static int debugCounter = 0;
-    if (++debugCounter % 60 == 0) // Every ~1 second at 60fps
-    {
-        printf("Speed: %f, Engine: %f, Brake: %f, Steering: %f\n", speed, engine, brake, steering);
-        printf("Velocity: (%f, %f, %f)\n", velocity.x(), velocity.y(), velocity.z());
-        printf("Forward: (%f, %f, %f)\n", forward.x(), forward.y(), forward.z());
-    }
+    //static int debugCounter = 0;
+    //if (++debugCounter % 60 == 0) // Every ~1 second at 60fps
+    //{
+        ScreenShadowPrintf(-100, 150, "Speed: %.3f, Engine: %.3f, Brake: %.3f, Steering: %.3f", speed, engine, brake, steering);
+        ScreenShadowPrintf(-100, 165, "Velocity: (%.3f, %.3f, %.3f)", velocity.x(), velocity.y(), velocity.z());
+        ScreenShadowPrintf(-100, 180, "Forward: (%.3f, %.3f, %.3f)", forward.x(), forward.y(), forward.z());
+    //}
 
     // Apply engine force (forward)
     if (engine > 0.0f)
@@ -84,8 +85,8 @@ void Vehicle::applyInput(float engine, float brake, float steering)
     {
         //direct control over yaw angular velocity so turning feels snappy
         btVector3 angVel = body->getAngularVelocity();
-        float yawSpeed = 20.0f; //higher = faster turning
-        angVel.setY(steering * yawSpeed);
+        float yawSpeed = 5.0f; //higher = faster turning
+        angVel.setY(-steering * yawSpeed);
         body->setAngularVelocity(angVel);
     }
     else

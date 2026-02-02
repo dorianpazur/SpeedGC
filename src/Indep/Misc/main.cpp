@@ -225,8 +225,8 @@ int main(int argc, char **argv)
 
 				trans.getOpenGLMatrix(transformFlt);
 
-				printf("Vehicle pos Y = %f\n", transformFlt[13]);
-				printf("Vehicle pos: X=%f Y=%f Z=%f\n",
+				ScreenShadowPrintf(-100, 195, "Vehicle pos Y = %.3f", transformFlt[13]);
+				ScreenShadowPrintf(-100, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
 					transformFlt[12],
 					transformFlt[13],
 					transformFlt[14]);
