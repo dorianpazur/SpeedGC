@@ -94,32 +94,29 @@ int main(int argc, char **argv)
 		unsigned int CPUTimeStart = tGetTicker();
 		
 		PAD_ScanPads();
-		
-		int buttonsDown = PAD_ButtonsDown(0);
-		int buttonsPressed = PAD_ButtonsHeld(0);
 
 		float engineForce = 0.0f;
 		float brakeForce = 0.0f;
 		float steering = 0.0f;
 
-		if (buttonsPressed & PAD_BUTTON_UP)
-		{
-			engineForce = 2000.0f;
+		int buttonsHeld = PAD_ButtonsHeld(0);
+
+		// D-pad / Arrow keys input
+		if (buttonsHeld & PAD_BUTTON_UP)    engineForce = 15000.0f;  // Forward
+		if (buttonsHeld & PAD_BUTTON_DOWN)  brakeForce = 15000.0f;   // Reverse/Brake (same strength as forward)
+		if (buttonsHeld & PAD_BUTTON_LEFT)  steering = 1.0f;         // Turn left
+		if (buttonsHeld & PAD_BUTTON_RIGHT) steering = -1.0f;       // Turn right
+
+		// Analog stick input for smoother control (ONLY forward/back, no auto-steer)
+		s8 stickY = PAD_StickY(0);
+		
+		// Use analog stick if pushed significantly (deadzone ~30)
+		if (stickY > 30) {
+			engineForce = (stickY / 128.0f) * 15000.0f;
+		} else if (stickY < -30) {
+			brakeForce = (-stickY / 128.0f) * 15000.0f;
 		}
 
-		if (buttonsPressed & PAD_BUTTON_DOWN)
-		{
-			brakeForce = 50.0f;
-		}
-
-		if (buttonsPressed & PAD_BUTTON_LEFT)
-		{
-			steering = 0.3f;
-		}
-		else if (buttonsPressed & PAD_BUTTON_RIGHT)
-		{
-			steering = -0.3f;
-		}
 
 		if (gVehicle)
 		{
@@ -181,17 +178,17 @@ int main(int argc, char **argv)
 					transformFlt[14]);
 
 				// Bullet (OpenGL) using GX matrix
-				transform[0][0] = transformFlt[0] * 5.0f;
+				transform[0][0] = transformFlt[0];
 				transform[1][0] = transformFlt[1];
 				transform[2][0] = transformFlt[2];
 
 				transform[0][1] = transformFlt[4];
-				transform[1][1] = transformFlt[5] * 5.0f;
+				transform[1][1] = transformFlt[5];
 				transform[2][1] = transformFlt[6];
 
 				transform[0][2] = transformFlt[8];
 				transform[1][2] = transformFlt[9];
-				transform[2][2] = transformFlt[10] * 5.0f;
+				transform[2][2] = transformFlt[10];
 
 				transform[0][3] = transformFlt[12];
 				transform[1][3] = transformFlt[13];
@@ -289,11 +286,28 @@ void InitializeEverything(int argc, char** argv)
 	draw_init();
 	World::Initialize();
 
-	// Create vehicle
-	gVehicle = new Vehicle(
-		World::GetInstance()->dynamicsWorld,
-		btVector3(0.0f, 10.0f, 0.0f)
-	);
+
+	// CREATE CUBE VEHICLE
+
+	// Vehicle constructor creates the body internally
+	gVehicle = new Vehicle(World::GetInstance()->dynamicsWorld, btVector3(0, 2, 0));
+
+	btCollisionShape* groundShape = new btBoxShape(btVector3(100, 1, 100)); //the gound
+
+	btTransform groundTransform;
+	groundTransform.setIdentity();
+	groundTransform.setOrigin(btVector3(0, -1, 0)); //the ground position
+
+	btDefaultMotionState* groundMotion =
+		new btDefaultMotionState(groundTransform);
+
+	//the fixed ground 
+	btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
+
+	btRigidBody* groundBody = new btRigidBody(groundInfo);
+	//add body to the world
+	World::GetInstance()->dynamicsWorld->addRigidBody(groundBody);
+
 
 	
 	#ifdef GEKKO
@@ -366,11 +380,11 @@ void InitializePlatform(int argc, char** argv) {
 	GX_CopyDisp(xfb[currentBuffer],GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
  
-	// setup our camera at the origin
+	// setup our camera to view the car from behind and above
 	// looking down the -z axis with y up
-	guVector cam = {0.0F, -2.0F, 18.0F},
+	guVector cam = {0.0F, 5.0F, 12.0F},
 			up = {0.0F, 1.0F, 0.0F},
-		  look = {0.0F, -1.0F, 1.0F};
+		  look = {0.0F, 2.0F, 0.0F};
 	guLookAt(viewMtx[0], &cam, &up, &look);
 	
 	cam = {4.0F, -2.0F, 10.0F},
