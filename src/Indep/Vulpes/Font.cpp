@@ -39,15 +39,15 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 	
 	for (size_t c = 0; c < characterCount; c++)
 	{
-		float leftX = (x + currentOffset) / 320.0f;
-		float topY = y / 240.0f;
-		float rightX = leftX + (15.0f / 320.0f);
+		float leftX = ((x + currentOffset) / 320.0f) - (10.0f / 320.0f);
+		float topY = (y / 240.0f) - (6.0f / 320.0f);
+		float rightX = leftX + (30.0f / 320.0f);
 		float bottomY = topY + (30.0f / 240.0f);
 		
-		float texLeftX = (text[c] % 32) / 32.0f;
-		float texTopY = (text[c] / 32) / 8.0f;
-		float texRightX = texLeftX + (1 / 32.0f);
-		float texBottomY = texTopY + (1 / 8.0f);
+		float texLeftX = (text[c] % 16) / 16.0f;
+		float texTopY = (text[c] / 16) / 16.0f;
+		float texRightX = texLeftX + (1 / 16.0f);
+		float texBottomY = texTopY + (1 / 16.0f);
 		
 		// offset by half a pixel so it looks a bit nicer
 		texLeftX += 0.5f/fontTexture->width;
@@ -77,13 +77,15 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 		switch (text[c])
 		{
 			case ' ':
-				kern = 7.5f;
-				break;
 			case ';':
 			case ':':
 			case '.':
 			case ',':
-				kern = 5.5f;
+			case '[':
+			case ']':
+			case '(':
+			case ')':
+				kern = 6.0f;
 				break;
 			case '0':
 			case '1':
@@ -95,24 +97,35 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 			case '7':
 			case '8':
 			case '9':
-			case 'o':
 			case 'y':
 			case 'a':
-			case 'e':
+			case 'o':
 			case '+':
 			case '-':
 			case '=':
-				kern = 11.5f;
+				kern = 11.0f;
+				break;
+			case 'e':
+				kern = 10.0f;
 				break;
 			case 'r':
 			case 'i':
 			case 'j':
 			case 'f':
 			case 'l':
+			case 't':
 			case 'I':
 			case 'J':
-				kern = 9.5f;
+				kern = 8.0f;
 				break;
+			case 'M':
+			case 'm':
+			case 'N':
+			case 'W':
+			case 'w':
+				kern = 15.0f;
+				break;
+			
 		};
 		
 		currentOffset += kern;
