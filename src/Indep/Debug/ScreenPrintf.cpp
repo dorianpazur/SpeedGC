@@ -1,5 +1,4 @@
 #include "ScreenPrintf.h"
-//#include "DebugMenu.h"
 
 struct ScreenPrintItem
 {
@@ -70,7 +69,12 @@ void ScreenPrintf(int x, int y, float duration, unsigned int color, char const* 
             item->PosY = y;
 			item->Color = color;
 			
-            vsnprintf(item->Text, 128, fmt, argList);
+			va_list argListCopy;
+			va_copy(argListCopy, argList);
+			
+            vsnprintf(item->Text, 128, fmt, argListCopy);
+			
+			va_end(argListCopy);
         }
     }
 }
@@ -111,7 +115,7 @@ void ScreenShadowPrintf(int x, int y, unsigned int color, char const* fmt, ...)
 {
     va_list argList;
     float duration = 0.0f;
-
+	
     va_start(argList, fmt);
     ScreenPrintf(x + 1, y + 1, duration, 0x80000000, fmt, argList);
     ScreenPrintf(x, y, duration, color, fmt, argList);
@@ -122,7 +126,7 @@ void ScreenShadowPrintf(int x, int y, char const* fmt, ...)
 {
     va_list argList;
     float duration = 0.0f;
-
+	
     va_start(argList, fmt);
     ScreenPrintf(x + 1, y + 1, duration, 0x80000000, fmt, argList);
     ScreenPrintf(x, y, duration, 0xFFFFFFFF, fmt, argList);
@@ -151,7 +155,7 @@ void DrawScreenPrintfs()
 	float frameTime = tGetTickerDifference(prevTicker, now);
 	prevTicker = now;
 	
-    for (int i = 0; i < SCREEN_PRINT_ITEM_COUNT; i++)
+    for (int i = SCREEN_PRINT_ITEM_COUNT - 1; i >= 0; i--) // display in reverse order
     {
         if (ScreenPrintItemTable[i].Lifetime >= 0.0f)
         {
