@@ -31,24 +31,52 @@ void DebugMenuInputHandler::PollInput()
 		}
 	}
 	
-	if (DebugMenu::isActive() && buttonsDown & PAD_BUTTON_UP)
+	static bool pressedUp = false;
+	if (DebugMenu::isActive() && ((buttonsDown & PAD_BUTTON_UP) || PAD_StickY(0) > 64))
 	{
-		DebugMenu::eventUp();
+		if (!pressedUp)
+			DebugMenu::eventUp();
+		pressedUp = true;
+	}
+	else
+	{
+		pressedUp = false;
 	}
 	
-	if (DebugMenu::isActive() && buttonsDown & PAD_BUTTON_DOWN)
+	static bool pressedDown = false;
+	if (DebugMenu::isActive() && ((buttonsDown & PAD_BUTTON_DOWN) || PAD_StickY(0) < -64))
 	{
-		DebugMenu::eventDown();
+		if (!pressedDown)
+			DebugMenu::eventDown();
+		pressedDown = true;
+	}
+	else
+	{
+		pressedDown = false;
 	}
 	
-	if (DebugMenu::isActive() && buttonsDown & PAD_BUTTON_LEFT)
+	static bool pressedLeft = false;
+	if (DebugMenu::isActive() && ((buttonsDown & PAD_BUTTON_LEFT) || PAD_StickX(0) < -64))
 	{
-		DebugMenu::eventLeft();
+		if (!pressedLeft)
+			DebugMenu::eventLeft();
+		pressedLeft = true;
+	}
+	else
+	{
+		pressedLeft = false;
 	}
 	
-	if (DebugMenu::isActive() && buttonsDown & PAD_BUTTON_RIGHT)
+	static bool pressedRight = false;
+	if (DebugMenu::isActive() && ((buttonsDown & PAD_BUTTON_RIGHT) || PAD_StickX(0) > 64))
 	{
-		DebugMenu::eventRight();
+		if (!pressedRight)
+			DebugMenu::eventRight();
+		pressedRight = true;
+	}
+	else
+	{
+		pressedRight = false;
 	}
 	
 	if (DebugMenu::isActive() && buttonsDown & PAD_BUTTON_A)
@@ -60,74 +88,6 @@ void DebugMenuInputHandler::PollInput()
 	{
 		DebugMenu::eventCancel();
 	}
-	
-	//while (!mActionQ->IsEmpty())
-    //{
-    //    ActionRef ref;
-    //    mActionQ->GetAction(&ref);
-	//
-    //    switch (ref.actiondata->id)
-    //    {
-    //        case FRONTENDACTION_UP:
-    //        case FRONTENDACTION_DOWN:
-    //            if (ref.actiondata->data == 1.0f)
-    //            {
-    //                if (ref.actiondata->id == FRONTENDACTION_UP)
-    //                    DebugMenu::eventUp();
-    //                else
-    //                    DebugMenu::eventDown();
-    //            }
-    //            break;
-    //        case FRONTENDACTION_LEFT:
-    //            if (DebugMenu::isActive())
-    //                DebugMenu::eventLeft();
-    //            break;
-    //        case FRONTENDACTION_RIGHT:
-    //            if (DebugMenu::isActive())
-    //                DebugMenu::eventRight();
-    //            break;
-    //        case FRONTENDACTION_ACCEPT:
-    //            if (DebugMenu::isActive())
-    //                DebugMenu::eventSelect();
-    //            break;
-    //        case FRONTENDACTION_CANCEL:
-    //            if (DebugMenu::isActive())
-    //                DebugMenu::eventCancel();
-    //            // xbox/xbox 360
-    //            /*
-    //            else if (mActiveSpeed)
-    //                TriggerSetSpeed();
-    //            */
-    //            break;
-    //        //case FRONTENDACTION_CANCEL_ALT: // PS2
-    //        case FRONTENDACTION_BUTTON2: // PC????
-    //            if (!DebugMenu::isActive() && mActiveSpeed)
-    //                TriggerSetSpeed();
-    //            break;
-    //        case FRONTENDACTION_LTRIGGER:
-    //            if (mActiveShift && ref.actiondata->data == 1.0f)
-    //            {
-    //                if (DebugMenu::isActive())
-    //                    Exit();
-    //                else
-    //                {
-    //                    DebugMenu::activate();
-    //                    Activate();
-    //                    DebugMenuLoad();
-    //                }
-    //            }
-    //            break;
-    //        case FRONTENDACTION_RTRIGGER:
-    //            // shift button
-    //            if (ref.actiondata->data == 1.0f)
-    //                mActiveShift = true;
-    //            else if (ref.actiondata->data == 0.0f)
-    //                mActiveShift = false;
-	//
-    //            break;
-    //    }
-    //    mActionQ->PopAction();
-    //}
 }
 
 void DebugMenuInputHandler::Activate()
