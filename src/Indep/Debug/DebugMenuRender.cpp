@@ -6,7 +6,7 @@ extern bool bWideScreen;
 
 void GetStringSize(const char* str, int* x, int* y)
 {
-	int ry = 15;
+	int ry = 18;
 	
 	size_t characterCount = strlen(str);
 	
