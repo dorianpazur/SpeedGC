@@ -1,6 +1,6 @@
 #include "DebugMenuRender.h"
 #include "ScreenPrintf.h"
-#include <Vulpes/Poly.h>
+#include <Vulpes/vulpes.h>
 
 extern bool bWideScreen;
 
@@ -14,50 +14,7 @@ void GetStringSize(const char* str, int* x, int* y)
 	
 	for (size_t c = 0; c < characterCount; c++)
 	{
-		float kern = 11.5f;
-		
-		switch (str[c])
-		{
-			case ' ':
-				kern = 7.5f;
-				break;
-			case ';':
-			case ':':
-			case '.':
-			case ',':
-				kern = 5.5f;
-				break;
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-			case 'o':
-			case 'y':
-			case 'a':
-			case 'e':
-			case '+':
-			case '-':
-			case '=':
-				kern = 11.5f;
-				break;
-			case 'r':
-			case 'i':
-			case 'j':
-			case 'f':
-			case 'l':
-			case 'I':
-			case 'J':
-				kern = 9.5f;
-				break;
-		};
-		
-		currentOffset += kern;
+		currentOffset += vGetFontKern(str[c]);
 	}
 	
     *x = (int)currentOffset;
@@ -123,4 +80,3 @@ void DebugMenuRender::print(int x, int y, unsigned int color, const char* str)
 
     DoScreenPrintf = false;
 }
-
