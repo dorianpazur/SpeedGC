@@ -51,6 +51,7 @@ float GPUTime = 0.0f;
 float gAvgFps = 0.0f;
 
 int twkVblankCount = 1;
+bool twkDeflicker = true;
 
 //---------------------------------------------------------------------------------
 
@@ -76,6 +77,7 @@ int main(int argc, char **argv)
 	
 	
 	while(1) {
+		GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,twkDeflicker,rmode->vfilter);
 		guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
 		guMtxIdentity(identityMtx);
 		
@@ -341,7 +343,6 @@ void InitializePlatform(int argc, char** argv) {
 	GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
 	GX_SetDispCopySrc(0,0,rmode->fbWidth,rmode->efbHeight);
 	GX_SetDispCopyDst(rmode->fbWidth,xfbHeight);
-	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_TRUE,rmode->vfilter);
 	GX_SetFieldMode(rmode->field_rendering,((rmode->viHeight==2*rmode->xfbHeight)?GX_ENABLE:GX_DISABLE));
 	
 	if (rmode->aa) {
