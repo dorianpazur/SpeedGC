@@ -2,6 +2,85 @@
 #include <Vulpes/Font.h>
 #include <Vulpes/TextureCache.h>
 
+float vGetFontKern(char c, tHash fontName)
+{
+	float kern = 12.0f;
+	
+	switch (c)
+	{
+		case 'i':
+		case 'l':
+		case 'I':
+		case ' ':
+			kern = 5.0f;
+			break;
+		case ';':
+		case ':':
+		case '.':
+		case ',':
+		case '[':
+		case ']':
+		case '(':
+		case ')':
+		case 'j':
+		case 'f':
+		case 't':
+			kern = 6.0f;
+			break;
+		case 'd':
+		case 'h':
+		case 'o':
+		case 'p':
+		case 'n':
+		case 'F':
+		case '+':
+		case '-':
+		case '=':
+			kern = 11.0f;
+			break;
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'e':
+		case 'k':
+		case 'a':
+		case 'c':
+		case 'u':
+		case 'y':
+		case 'v':
+			kern = 10.0f;
+			break;
+		case 's':
+			kern = 9.0f;
+			break;
+		case 'r':
+		case 'J':
+			kern = 8.0f;
+			break;
+		case 'W':
+			kern = 17.0f;
+			break;
+		case 'm':
+		case 'w':
+		case 'M':
+		case 'N':
+			kern = 15.0f;
+			break;
+		case 'R':
+			kern = 13.0f;
+			break;
+	};
+	
+	return kern;
+}
+
 void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName)
 {
 	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
@@ -72,63 +151,7 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 		GX_Color4u8( (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF );
 		GX_TexCoord2f32(texLeftX, texTopY);
 		
-		float kern = 11.5f;
-		
-		switch (text[c])
-		{
-			case ' ':
-			case ';':
-			case ':':
-			case '.':
-			case ',':
-			case '[':
-			case ']':
-			case '(':
-			case ')':
-				kern = 6.0f;
-				break;
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-			case 'y':
-			case 'a':
-			case 'o':
-			case '+':
-			case '-':
-			case '=':
-				kern = 11.0f;
-				break;
-			case 'e':
-				kern = 10.0f;
-				break;
-			case 'r':
-			case 'i':
-			case 'j':
-			case 'f':
-			case 'l':
-			case 't':
-			case 'I':
-			case 'J':
-				kern = 8.0f;
-				break;
-			case 'M':
-			case 'm':
-			case 'N':
-			case 'W':
-			case 'w':
-				kern = 15.0f;
-				break;
-			
-		};
-		
-		currentOffset += kern;
+		currentOffset += vGetFontKern(text[c], fontName);
 	}
 	
 	GX_End();
