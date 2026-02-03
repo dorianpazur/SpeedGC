@@ -418,5 +418,5 @@ void draw_init()
 	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
 	
 	gTestModel = new vModel("sonic/sonic.glb");
-	gCarModel = new vModel("sonic/sonic.glb");
+	gCarModel = new vModel("Vehicles/Test/test_ship.glb");
 }
