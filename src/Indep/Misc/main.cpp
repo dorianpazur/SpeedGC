@@ -230,8 +230,8 @@ int main(int argc, char **argv)
 
 				trans.getOpenGLMatrix(transformFlt);
 
-				ScreenShadowPrintf(-100, 195, "Vehicle pos Y = %.3f", transformFlt[13]);
-				ScreenShadowPrintf(-100, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
+				ScreenShadowPrintf(-200, 195, "Vehicle pos Y = %.3f", transformFlt[13]);
+				ScreenShadowPrintf(-200, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
 					transformFlt[12],
 					transformFlt[13],
 					transformFlt[14]);

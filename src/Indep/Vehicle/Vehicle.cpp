@@ -48,9 +48,9 @@ void Vehicle::applyInput(float engine, float brake, float steering)
     //static int debugCounter = 0;
     //if (++debugCounter % 60 == 0) // Every ~1 second at 60fps
     //{
-        ScreenShadowPrintf(-100, 150, "Speed: %.3f, Engine: %.3f, Brake: %.3f, Steering: %.3f", speed, engine, brake, steering);
-        ScreenShadowPrintf(-100, 165, "Velocity: (%.3f, %.3f, %.3f)", velocity.x(), velocity.y(), velocity.z());
-        ScreenShadowPrintf(-100, 180, "Forward: (%.3f, %.3f, %.3f)", forward.x(), forward.y(), forward.z());
+        ScreenShadowPrintf(-200, 150, "Speed: %.3f, Engine: %.3f, Brake: %.3f, Steering: %.3f", speed, engine, brake, steering);
+        ScreenShadowPrintf(-200, 165, "Velocity: (%.3f, %.3f, %.3f)", velocity.x(), velocity.y(), velocity.z());
+        ScreenShadowPrintf(-200, 180, "Forward: (%.3f, %.3f, %.3f)", forward.x(), forward.y(), forward.z());
     //}
 
     // Apply engine force (forward)
