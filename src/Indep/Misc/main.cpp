@@ -43,7 +43,7 @@ void draw_init();
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
-bool bSplitScreen = true;
+bool bSplitScreen = false;
 bool bWideScreen = true;
 
 float CPUTime = 0.0f;
@@ -51,7 +51,7 @@ float GPUTime = 0.0f;
 float gAvgFps = 0.0f;
 
 int twkVblankCount = 1;
-bool twkDeflicker = true;
+bool twkDeflicker = false;
 
 //---------------------------------------------------------------------------------
 
