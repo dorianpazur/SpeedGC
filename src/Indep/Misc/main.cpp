@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		if (gDebugMenuIOHandler)
 			gDebugMenuIOHandler->PollInput();
 		
-		World::GetInstance()->Simulate(timestep * 0.001f);
+		World::GetInstance()->Simulate(frameTime * 0.001f);
 			
 		CPUTime = tGetTickerDifference(CPUTimeStart, tGetTicker());
 		
