@@ -11,6 +11,7 @@
 #include "ScreenPrintf.h"
 
 #include "World.h"
+#include "Vehicle.h"
 
 //---------------------------------------------------------------------------------
 
@@ -33,10 +34,15 @@ bool twkDeflicker = false;
 extern tFile *gTestGLBFile;
 extern vModel *gTestModel;
 
+extern vModel *gCarModel;
+extern Vehicle *gVehicle;
+
 //---------------------------------------------------------------------------------
 
 void vDisplayFrame()
 {
+	static vVector3 camTarget;
+	
 	Mtx guiMtx;
 	Mtx identityMtx;
 		
@@ -46,9 +52,9 @@ void vDisplayFrame()
 	
 	// setup our camera at the origin
 	// looking down the -z axis with y up
-	guVector cam = {0.0F, -2.0F, 18.0F},
+	guVector cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
-		look = {0.0F, -1.0F, 1.0F};
+		look = {camTarget.x, camTarget.y, camTarget.z};
 	guLookAt(viewMtx[0], &cam, &up, &look);
 	
 	cam = {4.0F, -2.0F, 10.0F},

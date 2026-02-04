@@ -12,7 +12,6 @@
 #include "ScreenPrintf.h"
 
 #include <Vulpes/vulpes.h> // graphics
-#include "Vehicle.h"
 
 // debug stuff
 #include "DebugMenu.h"
@@ -20,6 +19,7 @@
 #include "DebugMenuRender.h"
 
 #include "World.h" // physics stuff
+#include "Vehicle.h"
 
 #include <EABase/eabase.h> // platform checks
 
@@ -30,6 +30,9 @@ void draw_init();
 
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
+
+Vehicle* gVehicle = nullptr;
+vModel* gCarModel = nullptr;
 
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
@@ -47,9 +50,6 @@ void Main_DisplayFrame()
 	
 	DisplayDebugScreenPrints();
 }
-
-Vehicle* gVehicle = nullptr;
-vModel* gCarModel = nullptr;
 
 //---------------------------------------------------------------------------------
 
