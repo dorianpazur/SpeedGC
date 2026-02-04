@@ -1,6 +1,7 @@
 #ifndef VULPES_H
 #define VULPES_H
 
+#include <Vulpes/Platform.h>
 #include <Vulpes/Vectors.h>
 #include <tWare/Align.h>
 #include <Vulpes/model.h>

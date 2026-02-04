@@ -4,15 +4,16 @@
 //	
 
 #include <tWare/Time.h>
+#include <EABase/eabase.h>
 
-#ifdef GEKKO
+#ifdef EA_PLATFORM_GAMECUBE
 #include <ogc/system.h>
 #include <ogc/lwp_watchdog.h>
 #endif
 
 // get current time tick from CPU
 unsigned int tGetTicker() {
-#ifdef GEKKO
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_REVOLUTION)
     return gettick();
 #endif
 }
@@ -26,7 +27,7 @@ float tGetTickerDifference(unsigned int startTick, unsigned int endTick) {
 	else
 		tickDifference = startTick - endTick;
 	
-#ifdef GEKKO
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_REVOLUTION)
     return ticks_to_microsecs(tickDifference) * 0.001f;
 #endif
 }
