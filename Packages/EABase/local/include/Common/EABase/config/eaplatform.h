@@ -255,6 +255,8 @@
 // __R5900 is defined by the GCC compiler and is only defined for PS2 processors.
 // __MWERKS__ and __MIPS__ are defined by the Metrowerks compiler.
 #elif defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_PS2) || defined(__R5900) || defined(__R5900__)
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_SONY 1
     #undef  EA_PLATFORM_PLAYSTATION2
     #define EA_PLATFORM_PLAYSTATION2 1
     #define EA_PLATFORM_NAME "PS2"
@@ -268,6 +270,8 @@
 // The GNU PSP compiler also predefines _R3000, so we check that __psp__ 
 // is not also defined.
 #elif defined(EA_PLATFORM_PLAYSTATION2_IOP) || ((defined(_R3000) || defined(R3000)) && !defined(__psp__))
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_SONY 1
     #undef  EA_PLATFORM_PLAYSTATION2_IOP
     #define EA_PLATFORM_PLAYSTATION2_IOP 1
     #define EA_PLATFORM_NAME "PS2 IOP"
@@ -278,6 +282,8 @@
 
 // PlayStation 3 PPU (Primary Processing Unit)
 #elif defined(EA_PLATFORM_PS3_PPU) || defined(EA_PLATFORM_PS3) || defined(__PU__) || defined(__PPU__)
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_SONY 1
     #undef  EA_PLATFORM_PS3_PPU
     #define EA_PLATFORM_PS3_PPU 1
     #undef  EA_PLATFORM_PS3
@@ -289,6 +295,8 @@
 
 // PlayStation 3 SPU (Synergistic Processing Unit)
 #elif defined(EA_PLATFORM_PS3_SPU) || defined(__SPU__)
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_SONY 1
     #undef  EA_PLATFORM_PS3_SPU
     #define EA_PLATFORM_PS3_SPU 1
     #define EA_PLATFORM_NAME "PS3 SPU"
@@ -300,6 +308,8 @@
 // __psp__ is defined by the GCC compiler.
 // _R4000 is defined by the SN compiler.
 #elif defined(EA_PLATFORM_PSP) || (defined(__GNUC__) && defined(__psp__)) || (defined(__SNC__) && defined(_R4000))
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_SONY 1
     #undef  EA_PLATFORM_PSP
     #define EA_PLATFORM_PSP 1
     #define EA_PLATFORM_NAME "PSP"
@@ -326,6 +336,8 @@
 // define EA_PLATFORM_REVOLUTION in your project settings.
 // __GNUC__ and __wii__ are defined by the devkitPro toolchain.
 #elif defined(EA_PLATFORM_REVOLUTION) || (defined(__PPCBROADWAY__) || (defined(__GNUC__) && defined(__wii__)))
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_NINTENDO 1
     #undef  EA_PLATFORM_REVOLUTION
     #define EA_PLATFORM_REVOLUTION 1
     #define EA_PLATFORM_NAME "Revolution"
@@ -339,6 +351,8 @@
 // __MWERKS__ and __PPCGEKKO__ are defined by the Metrowerks compiler.
 // __GNUC__ and __gamecube__ are defined by the devkitPro toolchain.
 #elif defined(EA_PLATFORM_GAMECUBE) || ((defined(__SN__) && defined(__PPC__)) || (defined(__MWERKS__) && defined(__PPCGEKKO__)) || (defined(__GNUC__) && defined(__gamecube__)))
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_NINTENDO 1
     #undef  EA_PLATFORM_GAMECUBE
     #define EA_PLATFORM_GAMECUBE 1
     #define EA_PLATFORM_NAME "GameCube"
@@ -350,6 +364,8 @@
 // Nintendo DS
 // __MWERKS__ are defined by the Metrowerks compiler.
 #elif defined(EA_PLATFORM_DS) || (defined(__MWERKS__) && defined(SDK_ARM9))
+	#define EA_PLATFORM_CONSOLE 1
+	#define EA_PLATFORM_NINTENDO 1\
     #undef  EA_PLATFORM_DS
     #define EA_PLATFORM_DS 1
     #define EA_PLATFORM_NAME "NDS"
@@ -364,6 +380,8 @@
 // in the project files or otherwise. _M_IX86 is the VC++ way of detecting 
 // an x86 target, which would mean XBox and not Xenon (a.k.a. XBox2).
 #elif defined(EA_PLATFORM_XBOX) || (defined(_XBOX) && defined(_M_IX86))
+	#define EA_PLATFORM_MICROSOFT 1
+	#define EA_PLATFORM_CONSOLE 1
     #undef  EA_PLATFORM_XBOX
     #define EA_PLATFORM_XBOX 1
     #define EA_PLATFORM_NAME "XBox"
@@ -382,6 +400,8 @@
 // to infer that Xenon is the target if neither _XENON nor _XBOX2 are specifically 
 // defined by the project build file.
 #elif defined(EA_PLATFORM_XENON) || defined(_XENON) || defined(_XBOX2) || ((defined(_XBOX) || defined(XBOX)) && defined(_M_PPC))
+	#define EA_PLATFORM_MICROSOFT 1
+	#define EA_PLATFORM_CONSOLE 1
     #undef  EA_PLATFORM_XENON
     #define EA_PLATFORM_XENON 1
     #define EA_PLATFORM_NAME "Xenon"
