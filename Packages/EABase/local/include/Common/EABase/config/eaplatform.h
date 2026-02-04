@@ -324,7 +324,8 @@
 // There is no way to automatically detect the Wii uniquely from GameCube until 
 // CodeWarrior 2.4 for Wii. For earlier compiler versions you may need to manually
 // define EA_PLATFORM_REVOLUTION in your project settings.
-#elif defined(EA_PLATFORM_REVOLUTION) || defined(__PPCBROADWAY__)
+// __GNUC__ and __wii__ are defined by the devkitPro toolchain.
+#elif defined(EA_PLATFORM_REVOLUTION) || (defined(__PPCBROADWAY__) || (defined(__GNUC__) && defined(__wii__)))
     #undef  EA_PLATFORM_REVOLUTION
     #define EA_PLATFORM_REVOLUTION 1
     #define EA_PLATFORM_NAME "Revolution"
@@ -336,8 +337,8 @@
 // GameCube
 // __SN__ and __PPC__ are defined by the SN compiler.
 // __MWERKS__ and __PPCGEKKO__ are defined by the Metrowerks compiler.
-// __GNUC__ and GEKKO are defined by the devkitPro toolchain.
-#elif defined(EA_PLATFORM_GAMECUBE) || ((defined(__SN__) && defined(__PPC__)) || (defined(__MWERKS__) && defined(__PPCGEKKO__)) || (defined(__GNUC__) && defined(GEKKO)))
+// __GNUC__ and __gamecube__ are defined by the devkitPro toolchain.
+#elif defined(EA_PLATFORM_GAMECUBE) || ((defined(__SN__) && defined(__PPC__)) || (defined(__MWERKS__) && defined(__PPCGEKKO__)) || (defined(__GNUC__) && defined(__gamecube__)))
     #undef  EA_PLATFORM_GAMECUBE
     #define EA_PLATFORM_GAMECUBE 1
     #define EA_PLATFORM_NAME "GameCube"
