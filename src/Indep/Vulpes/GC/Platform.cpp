@@ -104,39 +104,50 @@ void vDisplayFrame()
 		float transformFlt[16];
 		Mtx44 transform;
 		
-		for (int j = World::GetInstance()->dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+		if (gVehicle && gCarModel)
 		{
-			btCollisionObject* obj = World::GetInstance()->dynamicsWorld->getCollisionObjectArray()[j];
-			btRigidBody* body = btRigidBody::upcast(obj);
 			btTransform trans;
-			if (body && body->getMotionState())
+			btRigidBody* body = gVehicle->getBody();
+
+			if (body->getMotionState())
 			{
 				body->getMotionState()->getWorldTransform(trans);
 			}
 			else
 			{
-				trans = obj->getWorldTransform();
+				trans = body->getWorldTransform();
 			}
-			
+
 			trans.getOpenGLMatrix(transformFlt);
-			
-			transform[0][0]=transformFlt[0];
-			transform[1][0]=transformFlt[1];
-			transform[2][0]=transformFlt[2];
-			
-			transform[0][1]=transformFlt[4];
-			transform[1][1]=transformFlt[5];
-			transform[2][1]=transformFlt[6];
-			
-			transform[0][2]=transformFlt[8];
-			transform[1][2]=transformFlt[9];
-			transform[2][2]=transformFlt[10];
-			
-			transform[0][3]=transformFlt[12];
-			transform[1][3]=transformFlt[13];
-			transform[2][3]=transformFlt[14];
-			
-			gTestModel->Render(viewMtx[viewNum], transform);
+
+			ScreenShadowPrintf(-200, 195, "Vehicle pos Y = %.3f", transformFlt[13]);
+			ScreenShadowPrintf(-200, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
+				transformFlt[12],
+				transformFlt[13],
+				transformFlt[14]);
+				
+			camTarget.x = transformFlt[12];
+			camTarget.y = transformFlt[13];
+			camTarget.z = transformFlt[14];
+
+			// Bullet (OpenGL) using GX matrix
+			transform[0][0] = transformFlt[0];
+			transform[1][0] = transformFlt[1];
+			transform[2][0] = transformFlt[2];
+
+			transform[0][1] = transformFlt[4];
+			transform[1][1] = transformFlt[5];
+			transform[2][1] = transformFlt[6];
+
+			transform[0][2] = transformFlt[8];
+			transform[1][2] = transformFlt[9];
+			transform[2][2] = transformFlt[10];
+
+			transform[0][3] = transformFlt[12];
+			transform[1][3] = transformFlt[13];
+			transform[2][3] = transformFlt[14];
+
+			gCarModel->Render(viewMtx[viewNum], transform);
 		}
 	}
 	
