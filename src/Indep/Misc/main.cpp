@@ -25,6 +25,8 @@
 #include "DebugAssistant.h"
 #include "DebugMenuRender.h"
 
+#include <EABase/eabase.h> // platform checks
+
 static uint8_t currentBuffer = 0;
 static void *xfb[2] = { NULL, NULL}; // double buffered
 static GXRModeObj *rmode = NULL;
@@ -57,7 +59,7 @@ bool twkDeflicker = false;
 
 int main(int argc, char **argv)
 {
-	#ifdef GEKKO
+	#ifdef EA_PLATFORM_GAMECUBE
 	SYS_STDIO_Report(true); // enable logging to dolphin logs
 	#endif
 	
@@ -277,7 +279,7 @@ int main(int argc, char **argv)
 
 void InitializeEverything(int argc, char** argv)
 {
-	#ifdef GEKKO
+	#ifdef EA_PLATFORM_GAMECUBE
 	printf("Free memory before init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 	#endif
 	
@@ -286,7 +288,7 @@ void InitializeEverything(int argc, char** argv)
 	World::Initialize();
 	DebugMenuInit();
 	
-	#ifdef GEKKO
+	#ifdef EA_PLATFORM_GAMECUBE
 	printf("Free memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 	#endif
 }
@@ -294,6 +296,7 @@ void InitializeEverything(int argc, char** argv)
 //---------------------------------------------------------------------------------
 
 void InitializePlatform(int argc, char** argv) {
+	#ifdef EA_PLATFORM_GAMECUBE
 	VIDEO_Init();
 	PAD_Init();
 	
@@ -359,6 +362,7 @@ void InitializePlatform(int argc, char** argv) {
 	Mtx44 matrix;
 	guOrtho(matrix, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 	GX_LoadProjectionMtx(matrix, GX_ORTHOGRAPHIC);
+	#endif
 }
 
 //---------------------------------------------------------------------------------
