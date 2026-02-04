@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <cstdio>
 #include <cstring>
+#include <malloc.h>
 
 // TODO: make this std::unordered_map (Ross' suggestion)
 std::vector<tFile*> gOpenFiles;
@@ -35,7 +36,7 @@ tFile* tOpenFile(const char* path)
 		// align to 16 bytes and ensure an extra padding byte always exists for text
 		long alignedSize = (size + 1) + 16 - ((size + 1) % 16);
 		
-		file->data = malloc(alignedSize); // create buffer
+		file->data = memalign(32, alignedSize); // create buffer
 		memset(file->data, 0, alignedSize);
 
 		if (file->data)
@@ -48,7 +49,7 @@ tFile* tOpenFile(const char* path)
 				fclose(cFile);
 				return NULL;
 			}
-
+			
 			gOpenFiles.push_back(file); // track it for safer releasing and for debugging
 		}
 		else

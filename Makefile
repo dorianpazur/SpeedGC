@@ -105,7 +105,8 @@ export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I$(CURDIR)/$(BUILD) \
-			-I$(LIBOGC_INC)
+			-I$(LIBOGC_INC) \
+			-I$(CURDIR)/Packages/EABase/local/include/Common
 
 #---------------------------------------------------------------------------------
 # build a list of library paths

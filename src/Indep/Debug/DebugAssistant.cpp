@@ -11,6 +11,7 @@
 extern int twkVblankCount;
 extern bool bSplitScreen;
 extern bool bWideScreen;
+extern bool twkDeflicker;
 
 void DebugMenuAllocate()
 {
@@ -59,6 +60,7 @@ void DebugMenuLoad()
 		DebugMenu::addWidgetToNewestMenu(new IntWidget("VSync", &twkVblankCount, 0, 2, 1, NULL));
 		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Widescreen", &bWideScreen, NULL));
 		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Splitscreen", &bSplitScreen, NULL));
+		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Deflicker", &twkDeflicker, NULL));
     } DebugMenu::endNewestMenu();
 
     if (gLastCurMenuName)
