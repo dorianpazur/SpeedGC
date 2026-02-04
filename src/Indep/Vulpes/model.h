@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <Vulpes/TextureCache.h>
 #include <Vulpes/Vectors.h>
+#include <malloc.h>
 
 struct ALIGN(32) vVertex {
 	vVector3 position;
@@ -42,7 +43,7 @@ struct ALIGN(32) vMesh
 	{
 		if (mVertices)
 		{
-			free(mVerticesUnaligned);
+			free(mVertices);
 		}
 		if (mIndices)
 		{
@@ -53,11 +54,8 @@ private:
 	void CreateBuffer(size_t vertexCount)
 	{
 		mVertexBufferSize = sizeof(vVertex)*vertexCount;
-		size_t alignedVtxSize = (((uintptr_t)mVertexBufferSize - 1u + 32) & -32);
-		mVerticesUnaligned = malloc(alignedVtxSize); // aligned alloc is broken xd
-		mVertices = (vVertex*)(((uintptr_t)mVerticesUnaligned - 1u + 32) & -32);
+		mVertices = (vVertex*)memalign(32, mVertexBufferSize);
 	}
-	void* mVerticesUnaligned = NULL;
 };
 
 struct ALIGN(32) vSolid

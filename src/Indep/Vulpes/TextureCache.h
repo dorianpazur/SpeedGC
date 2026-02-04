@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <malloc.h>
 #ifdef GEKKO
 	#include <gccore.h>
 #endif
@@ -27,8 +28,7 @@ namespace vTextureCache
 			CachedTexturePlat(tFile* file)
 			{
 				size_t alignedFileSize = file->filesize + 32 - (file->filesize % 32);
-				UnalignedRawData = malloc(alignedFileSize);
-				RawData = (void*)(((int)UnalignedRawData - 1u + 32) & -32);
+				RawData = memalign(32, alignedFileSize);
 				
 				memcpy(RawData, file->data, file->filesize);
 				
@@ -38,9 +38,8 @@ namespace vTextureCache
 			
 			~CachedTexturePlat()
 			{
+				free(RawData);
 				RawData = NULL;
-				free(UnalignedRawData);
-				UnalignedRawData = NULL;
 			}
 			
 			void GetTexturePlatInfo(uint32_t &width, uint32_t &height)
@@ -57,7 +56,6 @@ namespace vTextureCache
 		private:
 			TPLFile tpl;
 			void* RawData = NULL;
-			void* UnalignedRawData = NULL;
 		};
 	#endif
 	
