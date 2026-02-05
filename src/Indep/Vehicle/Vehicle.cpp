@@ -2,7 +2,7 @@
 #include "ScreenPrintf.h"
 
 const float speedPowerDecline = 0.1f;
-const float enginePower = 50000.0f;
+const float enginePower = 15000.0f;
 const float brakePower = 100.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.5f;
@@ -129,7 +129,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	
 	float angVelFrictionLoss = std::abs((body->getWorldTransform().getBasis().transpose() * body->getAngularVelocity()).getY()) * 0.5f;
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
-	mThrottleInput /= 1.0f + mBrakeInput * 2.0f;
+	mThrottleInput /= 1.0f + (mBrakeInput * 2.0f);
 	float speedFrictionScale = std::min(1.0f, 0.015f + (speed * 0.065f));
 	
 	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
