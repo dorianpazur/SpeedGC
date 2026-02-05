@@ -92,7 +92,7 @@ World::World()
 	
 		btTransform groundTransform;
 		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -6, -200));
+		groundTransform.setOrigin(btVector3(0, -6, -100));
 	
 		btScalar mass(0.);
 	

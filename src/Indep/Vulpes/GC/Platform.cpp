@@ -35,13 +35,13 @@ extern tFile *gTestGLBFile;
 extern vModel *gTestModel;
 
 extern vModel *gCarModel;
-extern Vehicle *gVehicle;
+extern std::vector<Vehicle*> gVehicles;
 
 //---------------------------------------------------------------------------------
 
 void vDisplayFrame()
 {
-	static vVector3 camTarget;
+	static vVector3 camTarget[2];
 	
 	Mtx guiMtx;
 	Mtx identityMtx;
@@ -54,12 +54,12 @@ void vDisplayFrame()
 	// looking down the -z axis with y up
 	guVector cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
-		look = {camTarget.x, camTarget.y, camTarget.z};
+		look = {camTarget[0].x, camTarget[0].y, camTarget[0].z};
 	guLookAt(viewMtx[0], &cam, &up, &look);
 	
-	cam = {4.0F, 2.0F, 20.0F},
+	cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
-		look = {-8.0F, -1.0F, 0.5F};
+		look = {camTarget[1].x, camTarget[1].y, camTarget[1].z};
 	guLookAt(viewMtx[1], &cam, &up, &look);
 	
 	// setup our projection matrix
@@ -145,44 +145,47 @@ void vDisplayFrame()
 		GX_LoadPosMtxImm(viewMtx[viewNum], GX_PNMTX0);
 		vPolyRender(&poly, vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
 		
-		if (gVehicle && gCarModel)
+		if (gCarModel)
 		{
-			btTransform trans;
-			btRigidBody* body = gVehicle->getBody();
-
-			if (body->getMotionState())
+			for (size_t veh = 0; veh < gVehicles.size(); veh++)
 			{
-				body->getMotionState()->getWorldTransform(trans);
+				btTransform trans;
+				btRigidBody* body = gVehicles[veh]->getBody();
+	
+				if (body->getMotionState())
+				{
+					body->getMotionState()->getWorldTransform(trans);
+				}
+				else
+				{
+					trans = body->getWorldTransform();
+				}
+	
+				trans.getOpenGLMatrix(transformFlt);
+					
+				camTarget[veh].x = transformFlt[12];
+				camTarget[veh].y = transformFlt[13];
+				camTarget[veh].z = transformFlt[14];
+	
+				// Bullet (OpenGL) using GX matrix
+				transform[0][0] = transformFlt[0];
+				transform[1][0] = transformFlt[1];
+				transform[2][0] = transformFlt[2];
+	
+				transform[0][1] = transformFlt[4];
+				transform[1][1] = transformFlt[5];
+				transform[2][1] = transformFlt[6];
+	
+				transform[0][2] = transformFlt[8];
+				transform[1][2] = transformFlt[9];
+				transform[2][2] = transformFlt[10];
+	
+				transform[0][3] = transformFlt[12];
+				transform[1][3] = transformFlt[13];
+				transform[2][3] = transformFlt[14];
+	
+				gCarModel->Render(viewMtx[viewNum], transform);
 			}
-			else
-			{
-				trans = body->getWorldTransform();
-			}
-
-			trans.getOpenGLMatrix(transformFlt);
-				
-			camTarget.x = transformFlt[12];
-			camTarget.y = transformFlt[13];
-			camTarget.z = transformFlt[14];
-
-			// Bullet (OpenGL) using GX matrix
-			transform[0][0] = transformFlt[0];
-			transform[1][0] = transformFlt[1];
-			transform[2][0] = transformFlt[2];
-
-			transform[0][1] = transformFlt[4];
-			transform[1][1] = transformFlt[5];
-			transform[2][1] = transformFlt[6];
-
-			transform[0][2] = transformFlt[8];
-			transform[1][2] = transformFlt[9];
-			transform[2][2] = transformFlt[10];
-
-			transform[0][3] = transformFlt[12];
-			transform[1][3] = transformFlt[13];
-			transform[2][3] = transformFlt[14];
-
-			gCarModel->Render(viewMtx[viewNum], transform);
 		}
 	}
 	

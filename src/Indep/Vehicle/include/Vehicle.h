@@ -7,7 +7,7 @@ class Vehicle
 public:
     Vehicle(btDynamicsWorld* world, const btVector3& startPos);
 
-    void Update(float engineForce, float brakeForce, float steering, float timestep);
+    void Update(float throttle, float brake, float steering, float timestep);
     btRigidBody* getBody() { return body; }
 
 private:
