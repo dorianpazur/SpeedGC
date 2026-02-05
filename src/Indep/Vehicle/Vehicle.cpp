@@ -87,30 +87,42 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 
 void Vehicle::Update(float engine, float brake, float steering, float timestep)
 {
+	btTransform trans;
+	body->getMotionState()->getWorldTransform(trans);
+	
 	btVector3 velocity = body->getLinearVelocity();
     float speed = velocity.length();
+	if (speed < 0.2f)
+		speed = 0.0f;
 	
 	mSteeringInput = std::lerp(mSteeringInput, -steering / (1.0 + std::min(2.0f, speed * 0.05f)), 10.0f * timestep);
 	mBrakeInput = std::lerp(mBrakeInput, brake, 40.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, engine, 40.0f * timestep);
 	
-	float angVel = std::abs((body->getWorldTransform().getBasis().transpose() * body->getAngularVelocity()).getY()) * 0.5f;
+	float angVelFrictionLoss = std::abs((body->getWorldTransform().getBasis().transpose() * body->getAngularVelocity()).getY()) * 0.5f;
+	angVelFrictionLoss /= 1.0f + mBrakeInput;
+	mThrottleInput /= 1.0f + mBrakeInput * 2.0f;
 	
-	ScreenPrintf(-20, -155, "mSteeringInput %.2f", mSteeringInput);
-	ScreenPrintf(-20, -140, "mThrottleInput %.2f", mThrottleInput);
-	ScreenPrintf(-20, -125, "mBrakeInput %.2f", mBrakeInput);
-	ScreenPrintf(-20, -110, "angVel %.2f", angVel);
+	ScreenPrintf(40, 170, "Speed %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
+	ScreenPrintf(40, 155, "mSteeringInput %.2f", mSteeringInput);
+	ScreenPrintf(40, 140, "mThrottleInput %.2f", mThrottleInput);
+	ScreenPrintf(40, 125, "mBrakeInput %.2f", mBrakeInput);
+	ScreenPrintf(40, 110, "angVelFrictionLoss %.2f", angVelFrictionLoss);
+	ScreenShadowPrintf(-200, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
+				trans.getOrigin().getX(),
+				trans.getOrigin().getY(),
+				trans.getOrigin().getZ());
 	
 	float powerMod = 1.0f / (1.0f + (speed * speedPowerDecline));
 	// TODO: modulate parameters based on speed and such
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
 	{
 		btWheelInfo& wheel = mRaycastVehicle->getWheelInfo(i);
-		wheel.m_frictionSlip = wheelFriction / (1.0f + angVel);
+		wheel.m_frictionSlip = wheelFriction / (1.0f + angVelFrictionLoss);
 		
 		mRaycastVehicle->applyEngineForce(mThrottleInput * enginePower * powerMod, i);
 		mRaycastVehicle->setBrake(mBrakeInput * brakePower * powerMod, i);
-		if (i < 2)
+		if (wheel.m_bIsFrontWheel)
 		{
 			mRaycastVehicle->setSteeringValue(mSteeringInput, i);
 		}

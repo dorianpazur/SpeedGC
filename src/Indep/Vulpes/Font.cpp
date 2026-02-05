@@ -20,6 +20,9 @@ float vGetFontKern(char c, tHash fontName)
 		case ',':
 		case '[':
 		case ']':
+		case '/':
+		case '\\':
+		case '|':
 		case '(':
 		case ')':
 		case 'j':

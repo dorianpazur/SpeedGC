@@ -57,7 +57,7 @@ void vDisplayFrame()
 		look = {camTarget.x, camTarget.y, camTarget.z};
 	guLookAt(viewMtx[0], &cam, &up, &look);
 	
-	cam = {4.0F, -2.0F, 10.0F},
+	cam = {4.0F, 2.0F, 20.0F},
 			up = {0.0F, 1.0F, 0.0F},
 		look = {-8.0F, -1.0F, 0.5F};
 	guLookAt(viewMtx[1], &cam, &up, &look);
@@ -160,12 +160,6 @@ void vDisplayFrame()
 			}
 
 			trans.getOpenGLMatrix(transformFlt);
-
-			ScreenShadowPrintf(-200, 195, "Vehicle pos Y = %.3f", transformFlt[13]);
-			ScreenShadowPrintf(-200, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
-				transformFlt[12],
-				transformFlt[13],
-				transformFlt[14]);
 				
 			camTarget.x = transformFlt[12];
 			camTarget.y = transformFlt[13];
