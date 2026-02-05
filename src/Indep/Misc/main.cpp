@@ -1,4 +1,4 @@
-#include <cstdio>
+﻿#include <cstdio>
 #include <cstdint>
 #include <cstdlib>
 #include <string.h>
@@ -19,6 +19,7 @@
 #include "DebugMenuRender.h"
 
 #include "World.h" // physics stuff
+#include "Vehicle.h"
 
 #include <EABase/eabase.h> // platform checks
 
@@ -29,6 +30,9 @@ void draw_init();
 
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
+
+Vehicle* gVehicle = nullptr;
+vModel* gCarModel = nullptr;
 
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
@@ -86,6 +90,18 @@ int main(int argc, char **argv)
 		
 		PollInputs();
 		
+		float engineForce = 0.0f;
+		float brakeForce = 0.0f;
+		float steering = 0.0f;
+		
+		engineForce = (PAD_TriggerR(0) / 255.0f);
+		brakeForce = (PAD_TriggerL(0) / 255.0f);
+
+		if (gVehicle)
+		{
+			gVehicle->Update(engineForce, brakeForce, PAD_StickX(0) / 127.0f, frameTime * 0.001f);
+		}
+		
 		if (gDebugMenuIOHandler)
 			gDebugMenuIOHandler->PollInput();
 		
@@ -112,6 +128,28 @@ void InitializeEverything(int argc, char** argv)
 	InitializePlatform(argc, argv);
 	draw_init();
 	World::Initialize();
+	
+	// CREATE CUBE VEHICLE
+
+	// Vehicle constructor creates the body internally
+	gVehicle = new Vehicle(World::GetInstance()->dynamicsWorld, btVector3(0, 10, 0));
+
+	btCollisionShape* groundShape = new btBoxShape(btVector3(400, 1, 400)); //the gound
+
+	btTransform groundTransform;
+	groundTransform.setIdentity();
+	groundTransform.setOrigin(btVector3(0, -1, 0)); //the ground position
+
+	btDefaultMotionState* groundMotion =
+		new btDefaultMotionState(groundTransform);
+
+	//the fixed ground 
+	btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
+
+	btRigidBody* groundBody = new btRigidBody(groundInfo);
+	//add body to the world
+	World::GetInstance()->dynamicsWorld->addRigidBody(groundBody);
+
 	DebugMenuInit();
 	
 	#ifdef EA_PLATFORM_GAMECUBE
@@ -127,4 +165,5 @@ void draw_init()
 	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
 	
 	gTestModel = new vModel("sonic/sonic.glb");
+	gCarModel = new vModel("Vehicles/Test/test_ship.glb");
 }

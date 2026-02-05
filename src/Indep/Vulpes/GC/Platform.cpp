@@ -11,6 +11,7 @@
 #include "ScreenPrintf.h"
 
 #include "World.h"
+#include "Vehicle.h"
 
 //---------------------------------------------------------------------------------
 
@@ -33,10 +34,15 @@ bool twkDeflicker = false;
 extern tFile *gTestGLBFile;
 extern vModel *gTestModel;
 
+extern vModel *gCarModel;
+extern Vehicle *gVehicle;
+
 //---------------------------------------------------------------------------------
 
 void vDisplayFrame()
 {
+	static vVector3 camTarget;
+	
 	Mtx guiMtx;
 	Mtx identityMtx;
 		
@@ -46,9 +52,9 @@ void vDisplayFrame()
 	
 	// setup our camera at the origin
 	// looking down the -z axis with y up
-	guVector cam = {0.0F, -2.0F, 18.0F},
+	guVector cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
-		look = {0.0F, -1.0F, 1.0F};
+		look = {camTarget.x, camTarget.y, camTarget.z};
 	guLookAt(viewMtx[0], &cam, &up, &look);
 	
 	cam = {4.0F, -2.0F, 10.0F},
@@ -104,43 +110,89 @@ void vDisplayFrame()
 		float transformFlt[16];
 		Mtx44 transform;
 		
-		for (int j = World::GetInstance()->dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+		vPoly poly;
+	
+		poly.Vertices[0].x = -100.0f;
+		poly.Vertices[0].y = 0;
+		poly.Vertices[0].z = -100.0f;
+		poly.UVs[0][0] = 0.0f;
+		poly.UVs[0][1] = 0.0f;
+		poly.Vertices[1].x = -100.0f;
+		poly.Vertices[1].y = 0;
+		poly.Vertices[1].z = 100.0f;
+		poly.UVs[1][0] = 0.0f;
+		poly.UVs[1][1] = 1.0f;
+		poly.Vertices[2].x = 100.0f;
+		poly.Vertices[2].y = 0;
+		poly.Vertices[2].z = 100.0f;
+		poly.UVs[2][0] = 1.0f;
+		poly.UVs[2][1] = 1.0f;
+		poly.Vertices[3].x = 100.0f;
+		poly.Vertices[3].y = 0;
+		poly.Vertices[3].z = -100.0f;
+		poly.UVs[3][0] = 1.0f;
+		poly.UVs[3][1] = 0.0f;
+		
+		poly.Colours[0][0] = 0xFF;
+		poly.Colours[0][1] = 0xFF;
+		poly.Colours[0][2] = 0xFF;
+		poly.Colours[0][3] = 0xFF;
+		
+		*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+		*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+		
+		GX_LoadPosMtxImm(viewMtx[viewNum], GX_PNMTX0);
+		vPolyRender(&poly, vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
+		
+		if (gVehicle && gCarModel)
 		{
-			btCollisionObject* obj = World::GetInstance()->dynamicsWorld->getCollisionObjectArray()[j];
-			btRigidBody* body = btRigidBody::upcast(obj);
 			btTransform trans;
-			if (body && body->getMotionState())
+			btRigidBody* body = gVehicle->getBody();
+
+			if (body->getMotionState())
 			{
 				body->getMotionState()->getWorldTransform(trans);
 			}
 			else
 			{
-				trans = obj->getWorldTransform();
+				trans = body->getWorldTransform();
 			}
-			
+
 			trans.getOpenGLMatrix(transformFlt);
-			
-			transform[0][0]=transformFlt[0];
-			transform[1][0]=transformFlt[1];
-			transform[2][0]=transformFlt[2];
-			
-			transform[0][1]=transformFlt[4];
-			transform[1][1]=transformFlt[5];
-			transform[2][1]=transformFlt[6];
-			
-			transform[0][2]=transformFlt[8];
-			transform[1][2]=transformFlt[9];
-			transform[2][2]=transformFlt[10];
-			
-			transform[0][3]=transformFlt[12];
-			transform[1][3]=transformFlt[13];
-			transform[2][3]=transformFlt[14];
-			
-			gTestModel->Render(viewMtx[viewNum], transform);
+
+			ScreenShadowPrintf(-200, 195, "Vehicle pos Y = %.3f", transformFlt[13]);
+			ScreenShadowPrintf(-200, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
+				transformFlt[12],
+				transformFlt[13],
+				transformFlt[14]);
+				
+			camTarget.x = transformFlt[12];
+			camTarget.y = transformFlt[13];
+			camTarget.z = transformFlt[14];
+
+			// Bullet (OpenGL) using GX matrix
+			transform[0][0] = transformFlt[0];
+			transform[1][0] = transformFlt[1];
+			transform[2][0] = transformFlt[2];
+
+			transform[0][1] = transformFlt[4];
+			transform[1][1] = transformFlt[5];
+			transform[2][1] = transformFlt[6];
+
+			transform[0][2] = transformFlt[8];
+			transform[1][2] = transformFlt[9];
+			transform[2][2] = transformFlt[10];
+
+			transform[0][3] = transformFlt[12];
+			transform[1][3] = transformFlt[13];
+			transform[2][3] = transformFlt[14];
+
+			gCarModel->Render(viewMtx[viewNum], transform);
 		}
 	}
 	
-	// gui 
+	// gui
 	GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
 	GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
 	

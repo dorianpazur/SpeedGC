@@ -13,6 +13,7 @@ struct vPoly {
     unsigned char Flailer = 0;
 };
 
+void vPolyFERender(vPoly* poly, struct vTextureCache::CachedTexture* texture);
 void vPolyRender(vPoly* poly, struct vTextureCache::CachedTexture* texture);
 
 #endif

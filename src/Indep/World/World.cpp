@@ -59,13 +59,13 @@ World::World()
 	//the ground is a cube of side 100 at position y = -56.
 	//the sphere will hit it at y = -6, with center at -5
 	{
-		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(50.), btScalar(100.)));
 		
 		collisionShapes.push_back(groundShape);
 		
 		btTransform groundTransform;
 		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -56, 0));
+		groundTransform.setOrigin(btVector3(0, -50, 0));
 	
 		btScalar mass(0.);
 	
@@ -86,13 +86,13 @@ World::World()
 	}
 	
 	{
-		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(100.), btScalar(10.)));
 	
 		collisionShapes.push_back(groundShape);
 	
 		btTransform groundTransform;
 		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -6, -100));
+		groundTransform.setOrigin(btVector3(0, -6, -200));
 	
 		btScalar mass(0.);
 	
@@ -109,133 +109,6 @@ World::World()
 		btRigidBody* body = new btRigidBody(rbInfo);
 	
 		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-	}
-	
-	{
-		//create a dynamic rigidbody
-	
-		//btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
-		btCollisionShape* colShape = new btSphereShape(btScalar(1.));
-		collisionShapes.push_back(colShape);
-	
-		/// Create Dynamic Objects
-		btTransform startTransform;
-		startTransform.setIdentity();
-	
-		btScalar mass(1.f);
-	
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-	
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			colShape->calculateLocalInertia(mass, localInertia);
-	
-		startTransform.setOrigin(btVector3(0.25f, 10, -0.05f));
-	
-		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-		btRigidBody* body = new btRigidBody(rbInfo);
-	
-		dynamicsWorld->addRigidBody(body);
-	}
-	
-	{
-		//create another dynamic rigidbody
-	
-		//btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
-		btCollisionShape* colShape = new btSphereShape(btScalar(1.));
-		collisionShapes.push_back(colShape);
-	
-		/// Create Dynamic Objects
-		btTransform startTransform;
-		startTransform.setIdentity();
-	
-		btScalar mass(1.f);
-	
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-	
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			colShape->calculateLocalInertia(mass, localInertia);
-	
-		startTransform.setOrigin(btVector3(-0.25f, 12, 0.3f));
-	
-		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-		btRigidBody* body = new btRigidBody(rbInfo);
-	
-		dynamicsWorld->addRigidBody(body);
-	}
-	
-	{
-		//create another dynamic rigidbody
-	
-		//btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
-		btCollisionShape* colShape = new btBoxShape(btVector3(1.f, 1.f, 1.f));
-		collisionShapes.push_back(colShape);
-	
-		/// Create Dynamic Objects
-		btTransform startTransform;
-		startTransform.setIdentity();
-	
-		btScalar mass(1.f);
-	
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-	
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			colShape->calculateLocalInertia(mass, localInertia);
-	
-		startTransform.setOrigin(btVector3(0, 8, 0.02));
-	
-		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-		
-		rbInfo.m_restitution = 0.8f;
-		
-		btRigidBody* body = new btRigidBody(rbInfo);
-	
-		dynamicsWorld->addRigidBody(body);
-	}
-	
-	
-	{
-		//create another dynamic rigidbody
-	
-		//btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
-		btCollisionShape* colShape = new btBoxShape(btVector3(1.f, 1.f, 1.f));
-		collisionShapes.push_back(colShape);
-	
-		/// Create Dynamic Objects
-		btTransform startTransform;
-		startTransform.setIdentity();
-	
-		btScalar mass(3.f);
-	
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-	
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			colShape->calculateLocalInertia(mass, localInertia);
-	
-		startTransform.setOrigin(btVector3(-5, -2, 5));
-	
-		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-		
-		rbInfo.m_restitution = 0.8f;
-		
-		btRigidBody* body = new btRigidBody(rbInfo);
-	
 		dynamicsWorld->addRigidBody(body);
 	}
 }
