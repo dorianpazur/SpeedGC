@@ -1,6 +1,31 @@
 #include <gccore.h>
 #include <Vulpes/vulpes.h>
 
+//---------------------------------------------------------------------------------
+
+void vPolyFERender(vPoly* poly, struct vTextureCache::CachedTexture* texture)
+{
+	vPoly polyMod;
+	
+	memcpy(&polyMod, poly, sizeof(vPoly));
+	
+	polyMod.Vertices[0].x = (poly->Vertices[0].x / 320.0f) - 1.0f;
+	polyMod.Vertices[0].y = (poly->Vertices[0].y / 240.0f) - 1.0f;
+	
+	polyMod.Vertices[1].x = (poly->Vertices[1].x / 320.0f) - 1.0f;
+	polyMod.Vertices[1].y = (poly->Vertices[1].y / 240.0f) - 1.0f;
+	
+	polyMod.Vertices[2].x = (poly->Vertices[2].x / 320.0f) - 1.0f;
+	polyMod.Vertices[2].y = (poly->Vertices[2].y / 240.0f) - 1.0f;
+	
+	polyMod.Vertices[3].x = (poly->Vertices[3].x / 320.0f) - 1.0f;
+	polyMod.Vertices[3].y = (poly->Vertices[3].y / 240.0f) - 1.0f;
+	
+	vPolyRender(&polyMod, texture);
+}
+
+//---------------------------------------------------------------------------------
+
 void vPolyRender(vPoly* poly, struct vTextureCache::CachedTexture* texture)
 {
 	if (texture)
@@ -47,7 +72,7 @@ void vPolyRender(vPoly* poly, struct vTextureCache::CachedTexture* texture)
 	
 	for (int i = 0; i < 4; i++)
 	{
-		GX_Position3f32((poly->Vertices[i].x / 320.0f) - 1.0f, (poly->Vertices[i].y / 240.0f) - 1.0f, poly->Vertices[i].z);
+		GX_Position3f32(poly->Vertices[i].x, poly->Vertices[i].y, poly->Vertices[i].z);
 		GX_Color4u8(poly->Colours[i][0], poly->Colours[i][1], poly->Colours[i][2], poly->Colours[i][3]);
 		if (texture)
 			GX_TexCoord2f32(poly->UVs[i][0], poly->UVs[i][1]);

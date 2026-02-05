@@ -68,7 +68,7 @@ void DebugMenuRender::renderOverlay(int x, int y, int width, int height, float a
 	*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
 	*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 	
-	vPolyRender(&poly, NULL);
+	vPolyFERender(&poly, NULL);
 }
 
 // print a line in the debug menu

@@ -94,12 +94,12 @@ int main(int argc, char **argv)
 		float brakeForce = 0.0f;
 		float steering = 0.0f;
 		
-		engineForce = (PAD_TriggerR(0) / 255.0f) * 15000.0f;
-		brakeForce = (PAD_TriggerL(0) / 255.0f) * 15000.0f;
+		engineForce = (PAD_TriggerR(0) / 255.0f);
+		brakeForce = (PAD_TriggerL(0) / 255.0f);
 
 		if (gVehicle)
 		{
-			gVehicle->applyInput(engineForce, brakeForce, PAD_StickX(0) / 127.0f);
+			gVehicle->Update(engineForce, brakeForce, PAD_StickX(0) / 127.0f, frameTime * 0.001f);
 		}
 		
 		if (gDebugMenuIOHandler)
@@ -132,9 +132,9 @@ void InitializeEverything(int argc, char** argv)
 	// CREATE CUBE VEHICLE
 
 	// Vehicle constructor creates the body internally
-	gVehicle = new Vehicle(World::GetInstance()->dynamicsWorld, btVector3(0, 2, 0));
+	gVehicle = new Vehicle(World::GetInstance()->dynamicsWorld, btVector3(0, 10, 0));
 
-	btCollisionShape* groundShape = new btBoxShape(btVector3(100, 1, 100)); //the gound
+	btCollisionShape* groundShape = new btBoxShape(btVector3(400, 1, 400)); //the gound
 
 	btTransform groundTransform;
 	groundTransform.setIdentity();

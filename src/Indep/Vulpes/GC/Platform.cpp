@@ -110,6 +110,41 @@ void vDisplayFrame()
 		float transformFlt[16];
 		Mtx44 transform;
 		
+		vPoly poly;
+	
+		poly.Vertices[0].x = -100.0f;
+		poly.Vertices[0].y = 0;
+		poly.Vertices[0].z = -100.0f;
+		poly.UVs[0][0] = 0.0f;
+		poly.UVs[0][1] = 0.0f;
+		poly.Vertices[1].x = -100.0f;
+		poly.Vertices[1].y = 0;
+		poly.Vertices[1].z = 100.0f;
+		poly.UVs[1][0] = 0.0f;
+		poly.UVs[1][1] = 1.0f;
+		poly.Vertices[2].x = 100.0f;
+		poly.Vertices[2].y = 0;
+		poly.Vertices[2].z = 100.0f;
+		poly.UVs[2][0] = 1.0f;
+		poly.UVs[2][1] = 1.0f;
+		poly.Vertices[3].x = 100.0f;
+		poly.Vertices[3].y = 0;
+		poly.Vertices[3].z = -100.0f;
+		poly.UVs[3][0] = 1.0f;
+		poly.UVs[3][1] = 0.0f;
+		
+		poly.Colours[0][0] = 0xFF;
+		poly.Colours[0][1] = 0xFF;
+		poly.Colours[0][2] = 0xFF;
+		poly.Colours[0][3] = 0xFF;
+		
+		*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+		*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+		
+		GX_LoadPosMtxImm(viewMtx[viewNum], GX_PNMTX0);
+		vPolyRender(&poly, vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
+		
 		if (gVehicle && gCarModel)
 		{
 			btTransform trans;
@@ -157,7 +192,7 @@ void vDisplayFrame()
 		}
 	}
 	
-	// gui 
+	// gui
 	GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
 	GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
 	
