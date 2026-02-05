@@ -2,13 +2,13 @@
 #include "ScreenPrintf.h"
 
 const float speedPowerDecline = 0.1f;
-const float enginePower = 7500.0f;
+const float enginePower = 50000.0f;
 const float brakePower = 100.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.5f;
 const float wheelWidth = 0.4f;
-const float wheelFriction = 5.0f;  //BT_LARGE_FLOAT;
-const float suspensionStiffness = 8.0f;
+const float wheelFriction = 7.0f;  //BT_LARGE_FLOAT;
+const float suspensionStiffness = 12.0f;
 const float suspensionDamping = 2.3f;
 const float suspensionCompression = 4.4f;
 const float rollInfluence = 0.03f;
@@ -26,7 +26,7 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 	
     transform.setIdentity();
 	transform.setOrigin(btVector3(0, 0, -0.5f));
-	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(1.0f, 0.5f, 1.5f))); // car-sized cube
+	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(1.5f, 0.5f, 1.5f))); // car-sized cube
 	
 	transform.setIdentity();
     transform.setOrigin(btVector3(0.25, 0, 3.0f));
@@ -74,16 +74,16 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 	//choose coordinate system
 	mRaycastVehicle->setCoordinateSystem(0, 1, 2);
 
-	btVector3 connectionPointCS0(1.0 - (0.3 * wheelWidth), connectionHeight, 2 * 1.0 - wheelRadius);
+	btVector3 connectionPointCS0(1.5 - (0.3 * wheelWidth), connectionHeight, 2 * 1.0 - wheelRadius);
 
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
-	connectionPointCS0 = btVector3(-1.0 + (0.3 * wheelWidth), connectionHeight, 2 * 1.0 - wheelRadius);
+	connectionPointCS0 = btVector3(-1.5 + (0.3 * wheelWidth), connectionHeight, 2 * 1.0 - wheelRadius);
 
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
-	connectionPointCS0 = btVector3(-1.0 + (0.3 * wheelWidth), connectionHeight, -2 * 1.0 + wheelRadius);
+	connectionPointCS0 = btVector3(-1.5 + (0.3 * wheelWidth), connectionHeight, -2 * 1.0 + wheelRadius);
 	isFrontWheel = false;
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
-	connectionPointCS0 = btVector3(1.0 - (0.3 * wheelWidth), connectionHeight, -2 * 1.0 + wheelRadius);
+	connectionPointCS0 = btVector3(1.5 - (0.3 * wheelWidth), connectionHeight, -2 * 1.0 + wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
 
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
@@ -117,7 +117,8 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	if (speed < 0.2f)
 		speed = 0.0f;
 	
-	if (speed == 0.0f && throttle == 0.0f)
+	// hit the brakes when going too slow and not on the throttle
+	if (speed <= 3.0f && throttle == 0.0f)
 	{
 		brake = 1.0f;
 	}
@@ -143,6 +144,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 				trans.getOrigin().getZ());
 	
 	float powerMod = 1.0f / (1.0f + (speed * speedPowerDecline));
+	powerMod *= std::min(1.0f, 0.05f + (speed * 0.05f));
 	// TODO: modulate parameters based on speed and such
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
 	{
