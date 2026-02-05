@@ -12,16 +12,17 @@ float vGetFontKern(char c, tHash fontName)
 		case 'l':
 		case 'I':
 		case ' ':
-			kern = 5.0f;
-			break;
+		case '/':
+		case '\\':
 		case ';':
 		case ':':
 		case '.':
 		case ',':
+			kern = 5.0f;
+			break;
+		
 		case '[':
 		case ']':
-		case '/':
-		case '\\':
 		case '|':
 		case '(':
 		case ')':
@@ -37,8 +38,6 @@ float vGetFontKern(char c, tHash fontName)
 		case 'n':
 		case 'F':
 		case '+':
-		case '-':
-		case '=':
 			kern = 11.0f;
 			break;
 		case '0':
@@ -58,6 +57,7 @@ float vGetFontKern(char c, tHash fontName)
 		case 'u':
 		case 'y':
 		case 'v':
+		case 'L':
 			kern = 10.0f;
 			break;
 		case 's':
@@ -65,6 +65,8 @@ float vGetFontKern(char c, tHash fontName)
 			break;
 		case 'r':
 		case 'J':
+		case '-':
+		case '=':
 			kern = 8.0f;
 			break;
 		case 'W':

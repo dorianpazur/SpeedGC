@@ -103,12 +103,12 @@ void Vehicle::Update(float engine, float brake, float steering, float timestep)
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
 	mThrottleInput /= 1.0f + mBrakeInput * 2.0f;
 	
-	ScreenPrintf(40, 170, "Speed %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
-	ScreenPrintf(40, 155, "mSteeringInput %.2f", mSteeringInput);
-	ScreenPrintf(40, 140, "mThrottleInput %.2f", mThrottleInput);
-	ScreenPrintf(40, 125, "mBrakeInput %.2f", mBrakeInput);
-	ScreenPrintf(40, 110, "angVelFrictionLoss %.2f", angVelFrictionLoss);
-	ScreenShadowPrintf(-200, 210, "Vehicle pos: X=%.3f Y=%.3f Z=%.3f",
+	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
+	ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
+	ScreenShadowPrintf(70, 180, "mThrottleInput: %.2f", mThrottleInput);
+	ScreenShadowPrintf(70, 165, "mBrakeInput: %.2f", mBrakeInput);
+	ScreenShadowPrintf(70, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
+	ScreenShadowPrintf(-300, 220, "Vehicle pos: (%.2f, %.2f, %.2f)",
 				trans.getOrigin().getX(),
 				trans.getOrigin().getY(),
 				trans.getOrigin().getZ());
