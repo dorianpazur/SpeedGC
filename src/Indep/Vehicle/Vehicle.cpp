@@ -3,7 +3,7 @@
 
 const float speedPowerDecline = 0.1f;
 const float enginePower = 7500.0f;
-const float brakePower = 50.0f;
+const float brakePower = 100.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.5f;
 const float wheelWidth = 0.4f;
