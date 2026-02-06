@@ -165,7 +165,7 @@ bool DebugMenu::selectionFitsOnScreen()
     }
     else
     {
-        snprintf(str, sizeof(str), "[Revision %s]", Revision);
+        snprintf(str, sizeof(str), "[Rev %s]", Revision);
         mRenderer->getStringSize(str, &width, &titleHeight);
     }
     
@@ -245,7 +245,7 @@ void DebugMenu::doRender(IMenuRender* renderer)
     }
     else
     {
-        snprintf(subMenuTitle, sizeof(subMenuTitle), "[Revision %s]", Revision);
+        snprintf(subMenuTitle, sizeof(subMenuTitle), "[Rev %s]", Revision);
         mRenderer->getStringSize(subMenuTitle, &width, &titleHeight);
     }
 

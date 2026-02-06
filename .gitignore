@@ -41,3 +41,4 @@
 
 # Don't nuke tools
 !**/tools/**/*
+src/Indep/Revision/Revision.cpp
