@@ -2,7 +2,7 @@
 #include "ScreenPrintf.h"
 
 const float speedPowerDecline = 0.1f;
-const float enginePower = 15000.0f;
+const float enginePower = 20000.0f;
 const float brakePower = 100.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.5f;
@@ -123,9 +123,9 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		brake = 1.0f;
 	}
 	
-	mBrakeInput = std::lerp(mBrakeInput, brake, 40.0f * timestep);
-	mThrottleInput = std::lerp(mThrottleInput, throttle, 40.0f * timestep);
-	mSteeringInput = std::lerp(mSteeringInput, -steering / (1.0 + std::min(1.0f, speed * 0.015f * mThrottleInput)), 10.0f * timestep);
+	mBrakeInput = std::lerp(mBrakeInput, brake, 30.0f * timestep);
+	mThrottleInput = std::lerp(mThrottleInput, throttle, 30.0f * timestep);
+	mSteeringInput = std::lerp(mSteeringInput, -steering / (1.0 + std::min(3.0f, speed * 0.007f * mThrottleInput)), 5.0f * timestep);
 	
 	float angVelFrictionLoss = std::abs((body->getWorldTransform().getBasis().transpose() * body->getAngularVelocity()).getY()) * 0.5f;
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
@@ -143,7 +143,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 				trans.getOrigin().getY(),
 				trans.getOrigin().getZ());
 	
-	btVector3 downforce = btVector3(0,-100 * speed * timestep,0);
+	btVector3 downforce = btVector3(0, -10000.0f * speed * timestep, 0);
 	body->applyCentralForce(body->getWorldTransform().getBasis() * downforce);
 	
 	float powerMod = 1.0f / (1.0f + (speed * speedPowerDecline));
