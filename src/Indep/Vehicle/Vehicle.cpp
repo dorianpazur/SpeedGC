@@ -7,7 +7,7 @@ const float brakePower = 100.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.5f;
 const float wheelWidth = 0.4f;
-const float wheelFriction = 7.0f;  //BT_LARGE_FLOAT;
+const float wheelFriction = 16.0f;  //BT_LARGE_FLOAT;
 const float suspensionStiffness = 12.0f;
 const float suspensionDamping = 2.3f;
 const float suspensionCompression = 4.4f;
@@ -118,19 +118,19 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		speed = 0.0f;
 	
 	// hit the brakes when going too slow and not on the throttle
-	if (speed <= 3.0f && throttle == 0.0f)
+	if (speed <= 3.5f && throttle == 0.0f)
 	{
 		brake = 1.0f;
 	}
 	
 	mBrakeInput = std::lerp(mBrakeInput, brake, 40.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, throttle, 40.0f * timestep);
-	mSteeringInput = std::lerp(mSteeringInput, -steering / (1.0 + std::min(2.0f, speed * 0.05f * mThrottleInput)), 10.0f * timestep);
+	mSteeringInput = std::lerp(mSteeringInput, -steering / (1.0 + std::min(1.0f, speed * 0.015f * mThrottleInput)), 10.0f * timestep);
 	
 	float angVelFrictionLoss = std::abs((body->getWorldTransform().getBasis().transpose() * body->getAngularVelocity()).getY()) * 0.5f;
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
 	mThrottleInput /= 1.0f + (mBrakeInput * 2.0f);
-	float speedFrictionScale = std::min(1.0f, 0.015f + (speed * 0.065f));
+	float speedFrictionScale = std::min(1.0f, 0.002f + (speed * 0.045f));
 	
 	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
 	ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
@@ -142,6 +142,9 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 				trans.getOrigin().getX(),
 				trans.getOrigin().getY(),
 				trans.getOrigin().getZ());
+	
+	btVector3 downforce = btVector3(0,-100 * speed * timestep,0);
+	body->applyCentralForce(body->getWorldTransform().getBasis() * downforce);
 	
 	float powerMod = 1.0f / (1.0f + (speed * speedPowerDecline));
 	powerMod *= std::min(1.0f, 0.05f + (speed * 0.05f));

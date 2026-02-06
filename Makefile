@@ -75,6 +75,13 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
 export BASEDIR 	:=	$(CURDIR)
 
+export BRANCH   := $(shell git branch --show-current)
+export REVISION := $(shell git rev-list --count HEAD)
+export HASH     := $(shell git rev-parse --short HEAD)
+export REVISION_CPP	:=	$(BASEDIR)/src/Indep/Revision/Revision.cpp
+REVISION_CPP_NOTDIR :=  $(notdir $(REVISION_CPP))
+export REVISION_O	:=	$(REVISION_CPP_NOTDIR:.cpp=.o)
+
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
@@ -95,6 +102,9 @@ endif
 
 export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
 export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
+ifeq (,$(findstring $(REVISION_O),$(OFILES_SOURCES)))
+export OFILES_SOURCES := $(OFILES_SOURCES) $(REVISION_O)
+endif
 export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
 
 export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
@@ -114,7 +124,8 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 export LIBPATHS	:=	-L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export OUTPUT	:=	$(CURDIR)/$(BUILD)/$(TARGET)
-.PHONY: $(BUILD) resources clean
+export REVISION_OBJ_OUTPUT	:=	$(CURDIR)/$(BUILD)/$(REVISION_O)
+.PHONY: $(BUILD) resources clean revision $(REVISION_CPP)
 
 #---------------------------------------------------------------------------------
 $(BUILD):
@@ -146,6 +157,13 @@ resources:
 	-cp -f -r ../Resources/GC/** Speed/
 
 $(OFILES_SOURCES) : $(HFILES)
+
+$(REVISION_O): revision $(REVISION_CPP)
+
+revision:
+	@rm -fr $(REVISION_O)
+	@echo "Revision $(BRANCH)_r$(REVISION) ($(HASH))"
+	@echo "const char *Revision = \"$(BRANCH)_r$(REVISION) ($(HASH)) \" __DATE__ \" \" __TIME__;" > $(REVISION_CPP)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .jpg extension

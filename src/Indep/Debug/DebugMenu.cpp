@@ -2,6 +2,7 @@
 #include "DebugAssistant.h"
 #include "SubmenuWidget.h"
 #include "ScreenPrintf.h"
+#include "Revision.h"
 
 IMenuRender* DebugMenu::mRenderer = NULL;
 DebugMenuInputHandler* gDebugMenuIOHandler = NULL;
@@ -164,7 +165,7 @@ bool DebugMenu::selectionFitsOnScreen()
     }
     else
     {
-        snprintf(str, sizeof(str), "[Build %s]", "Add version info here" );
+        snprintf(str, sizeof(str), "[Revision %s]", Revision);
         mRenderer->getStringSize(str, &width, &titleHeight);
     }
     
@@ -244,7 +245,7 @@ void DebugMenu::doRender(IMenuRender* renderer)
     }
     else
     {
-        snprintf(subMenuTitle, sizeof(subMenuTitle), "[Build %s]", "Add version info here");
+        snprintf(subMenuTitle, sizeof(subMenuTitle), "[Revision %s]", Revision);
         mRenderer->getStringSize(subMenuTitle, &width, &titleHeight);
     }
 
