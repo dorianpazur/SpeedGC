@@ -1,6 +1,8 @@
 
 #include "World.h"
 #include "DebugAssistant.h"
+#include "ISimable.h"
+#include <BulletCollision/NarrowPhaseCollision/btPersistentManifold.h>
 
 World* World::gWorld = NULL;
 std::vector<Vehicle*> gVehicles;
@@ -49,6 +51,8 @@ World::World()
 	info.m_numIterations = 4;
 	
 	dynamicsWorld->setGravity(btVector3(0, -9.80665f, 0));
+
+	gContactProcessedCallback = &World::ContactProcessedCallback;
 
 	///-----initialization_end-----
 
@@ -136,6 +140,22 @@ void World::Simulate(float timestep)
 bool World::ShouldPauseWorld()
 {
 	return DebugMenuShouldPauseWorld();
+}
+
+//---------------------------------------------------------------------------------
+
+bool World::ContactProcessedCallback(btManifoldPoint& cp, void* body0, void* body1)
+{
+	ISimable* simable1 = (ISimable*)(((btCollisionObject*)body0)->getUserPointer());
+	ISimable* simable2 = (ISimable*)(((btCollisionObject*)body1)->getUserPointer());
+	
+	if (simable1)
+		simable1->OnCollide(simable2);
+	
+	if (simable2)
+		simable2->OnCollide(simable1);
+	
+	return true;
 }
 
 //---------------------------------------------------------------------------------

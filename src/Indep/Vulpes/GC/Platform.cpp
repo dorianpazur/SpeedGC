@@ -149,7 +149,7 @@ void vDisplayFrame()
 			for (size_t veh = 0; veh < gVehicles.size(); veh++)
 			{
 				btTransform trans;
-				btRigidBody* body = gVehicles[veh]->getBody();
+				btRigidBody* body = gVehicles[veh]->mBody;
 	
 				if (body->getMotionState())
 				{

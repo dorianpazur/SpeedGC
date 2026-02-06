@@ -1,18 +1,19 @@
-#pragma once
+#ifndef VEHICLE_VEHICLE_H
+#define VEHICLE_VEHICLE_H
+
 #include <btBulletDynamicsCommon.h>
 #include <BulletDynamics/Vehicle/btRaycastVehicle.h>
 
-class Vehicle
+#include "ISimable.h"
+
+class Vehicle : public ISimable
 {
 public:
     Vehicle(btDynamicsWorld* world, const btVector3& startPos);
-
     void Update(float throttle, float brake, float steering, float timestep);
-    btRigidBody* getBody() { return body; }
+	virtual void OnCollide(ISimable* other);
 
 private:
-    btRigidBody* body;
-	
 	btRaycastVehicle::btVehicleTuning mTuning;
 	btVehicleRaycaster* mRaycastVehicleRaycaster;
 	btRaycastVehicle* mRaycastVehicle;
@@ -21,3 +22,5 @@ private:
 	float mSteeringInput = 0.0f;
 	float mBrakeInput = 0.0f;
 };
+
+#endif

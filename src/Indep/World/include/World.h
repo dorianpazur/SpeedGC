@@ -22,6 +22,7 @@ class World
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
 	
 	static World* gWorld;
+	static bool ContactProcessedCallback(btManifoldPoint& cp, void* body0, void* body1);
 public:
 	btDiscreteDynamicsWorld* dynamicsWorld = NULL;
 	
