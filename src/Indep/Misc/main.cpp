@@ -21,6 +21,8 @@
 #include "World.h" // physics stuff
 #include "Vehicle.h"
 
+#include "Revision.h"
+
 #include <EABase/eabase.h> // platform checks
 
 void InitializeEverything(int argc, char** argv);
@@ -125,6 +127,7 @@ int main(int argc, char **argv)
 
 void InitializeEverything(int argc, char** argv)
 {
+	printf("Speed revision: %s\n", Revision);
 	#ifdef EA_PLATFORM_GAMECUBE
 	printf("Free memory before init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 	#endif
