@@ -35,7 +35,6 @@ extern tFile *gTestGLBFile;
 extern vModel *gTestModel;
 
 extern vModel *gCarModel;
-extern std::vector<Vehicle*> gVehicles;
 
 //---------------------------------------------------------------------------------
 

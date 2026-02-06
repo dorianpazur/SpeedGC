@@ -3,6 +3,7 @@
 #include "DebugAssistant.h"
 
 World* World::gWorld = NULL;
+std::vector<Vehicle*> gVehicles;
 
 //---------------------------------------------------------------------------------
 
@@ -118,7 +119,16 @@ World::World()
 void World::Simulate(float timestep)
 {
 	if (!ShouldPauseWorld())
+	{
+		for (size_t i = 0; i < gVehicles.size(); i++)
+		{
+			float engineForce = (PAD_TriggerR(i) / 255.0f);
+			float brakeForce = (PAD_TriggerL(i) / 255.0f);
+			gVehicles[i]->Update(engineForce, brakeForce, PAD_StickX(i) / 127.0f, timestep);
+		}
+		
 		dynamicsWorld->stepSimulation(timestep, 2);
+	}
 }
 
 //---------------------------------------------------------------------------------

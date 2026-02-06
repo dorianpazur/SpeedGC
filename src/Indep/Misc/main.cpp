@@ -33,7 +33,6 @@ void draw_init();
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
-std::vector<Vehicle*> gVehicles;
 vModel* gCarModel = nullptr;
 
 float CPUTime = 0.0f;
@@ -99,13 +98,6 @@ int main(int argc, char **argv)
 		{
 			bSplitScreen = true;
 			gVehicles.emplace_back(new Vehicle(World::GetInstance()->dynamicsWorld, btVector3(20, 10, 0)));
-		}
-
-		for (size_t i = 0; i < gVehicles.size(); i++)
-		{
-			float engineForce = (PAD_TriggerR(i) / 255.0f);
-			float brakeForce = (PAD_TriggerL(i) / 255.0f);
-			gVehicles[i]->Update(engineForce, brakeForce, PAD_StickX(i) / 127.0f, frameTime * 0.001f);
 		}
 		
 		if (gDebugMenuIOHandler)

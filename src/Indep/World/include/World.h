@@ -3,9 +3,15 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <vector>
 #include <cstdint>
+#include <EABase/eabase.h>
+#ifdef EA_PLATFORM_GAMECUBE
+#include <gccore.h>
+#endif
 
 #include "btBulletDynamicsCommon.h"
+#include "Vehicle.h"
 
 class World
 {
@@ -28,5 +34,7 @@ public:
 	World();
 	~World();
 };
+
+extern std::vector<Vehicle*> gVehicles;
 
 #endif
