@@ -134,6 +134,7 @@ void InitializeEverything(int argc, char** argv)
 	#endif
 	
 	InitializePlatform(argc, argv);
+	vTextureCache::Init();
 	draw_init();
 	World::Initialize();
 

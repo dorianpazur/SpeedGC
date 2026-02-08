@@ -34,12 +34,14 @@ namespace vTextureCache
 				
 				TPL_OpenTPLFromMemory(&tpl, RawData, file->filesize);
 				TPL_GetTexture(&tpl, 0, &GXTextureObj);
+				GX_InvalidateTexAll();
 			}
 			
 			~CachedTexturePlat()
 			{
 				free(RawData);
 				RawData = NULL;
+				GX_InvalidateTexAll();
 			}
 			
 			void GetTexturePlatInfo(uint32_t &width, uint32_t &height)
@@ -78,6 +80,7 @@ namespace vTextureCache
 	extern bool LoadTextureFromPath(const char* path);
 	extern CachedTexture* GetTexture(tHash nameHash, bool returnDefaultTextureIfNotFound = true);
 	extern void ReleaseTexture(tHash nameHash);
+	extern void Init();
 	extern void Uninit();
 }
 

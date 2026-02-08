@@ -267,6 +267,9 @@ void InitializePlatform(int argc, char** argv) {
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 	}
 	
+	// clear texture cache
+	GX_InvalidateTexAll();
+	
 	// clear
 	GX_SetCopyClear(background, 0x00ffffff);
 	
