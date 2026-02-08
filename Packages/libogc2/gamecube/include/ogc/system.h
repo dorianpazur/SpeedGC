@@ -2,7 +2,7 @@
 
 system.h -- OS functions and initialization
 
-Copyright (C) 2004 - 2025
+Copyright (C) 2004 - 2026
 Michael Wiedenbauer (shagkur)
 Dave Murphy (WinterMute)
 Extrems' Corner.org
@@ -299,6 +299,29 @@ void SYS_Init(void);
 
 
 /*!
+ * \fn bool SYS_MainLoop(void)
+ * \brief Performs default processing of reset and power button events.
+ *
+ * This function checks the state of the reset (and on Wii, power) buttons. If either button is pressed
+ * this function returns false, indicating that the application should quit. Call this function in your
+ * main loop like this:
+ *
+ * @code
+ * while (SYS_MainLoop()) {
+ *   VIDEO_WaitVSync();
+ *   // processing etc ...
+ * }
+ * @endcode
+ *
+ * If this function returns false, returning from main() or calling exit() ignores the reload stub, and
+ * libogc2 will automatically reset or power off the console.
+ *
+ * \return Returns true if the application should continue running, false if it should clean up and exit.
+ */
+bool SYS_MainLoop(void);
+
+
+/*!
  * \fn void* SYS_AllocateFramebuffer(const GXRModeObj *rmode)
  * \brief Allocate cacheline aligned memory for the external framebuffer based on the rendermode object.
  * \param[in] rmode pointer to the video/render mode configuration
@@ -401,6 +424,7 @@ u16 SYS_SetFontEncoding(u16 enc);
 u32 SYS_InitFont(sys_fontheader *font_data);
 void SYS_GetFontTexture(s32 c,void **image,s32 *xpos,s32 *ypos,s32 *width);
 void SYS_GetFontTexel(s32 c,void *image,s32 pos,s32 stride,s32 *width);
+s32 SYS_GetFontWidth(s32 c);
 void SYS_ResetSystem(s32 reset,u32 reset_code,s32 force_menu);
 void SYS_RegisterResetFunc(sys_resetinfo *info);
 void SYS_UnregisterResetFunc(sys_resetinfo *info);

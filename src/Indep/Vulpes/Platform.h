@@ -9,6 +9,6 @@
 
 extern void vDisplayFrame();
 extern void InitializePlatform(int argc, char** argv);
-extern void PollInputs();
+extern void UpdatePlatform();
 
 #endif

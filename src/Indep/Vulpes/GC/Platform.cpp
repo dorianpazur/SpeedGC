@@ -1,5 +1,6 @@
 // Gamecube-specific stuff
 
+#include <ogc/system.h>
 #include <Vulpes/vulpes.h>
 #include <tWare/Time.h>
 #include <tWare/File.h>
@@ -291,7 +292,11 @@ void InitializePlatform(int argc, char** argv) {
 
 //---------------------------------------------------------------------------------
 
-void PollInputs()
+extern bool bWantsExit;
+
+void UpdatePlatform()
 {
+	if (!SYS_MainLoop())
+		bWantsExit = true;
 	PAD_ScanPads();
 }

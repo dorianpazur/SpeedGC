@@ -41,6 +41,8 @@ float gAvgFps = 0.0f;
 
 extern bool bSplitScreen;
 
+bool bWantsExit = false;
+
 //---------------------------------------------------------------------------------
 
 void Main_DisplayFrame()
@@ -70,7 +72,7 @@ int main(int argc, char **argv)
 	int avgfpsaccumcount = 0;
 	float fps = 0.0f;
 	
-	while(1)
+	while(!bWantsExit)
 	{
 		unsigned int CPUTimeStart = tGetTicker();
 		unsigned int now = tGetTicker();
@@ -92,7 +94,7 @@ int main(int argc, char **argv)
 			avgfpsaccumcount = 0;
 		}
 		
-		PollInputs();
+		UpdatePlatform();
 		
 		if (gVehicles.size() < 2 && PAD_ButtonsDown(1) & PAD_BUTTON_START)
 		{

@@ -2,7 +2,7 @@
 // libansnd
 // Another Sound Library for Wii and GameCube homebrew.
 //------------------------------------------------------------------------
-// Copyright (c) 2025 James Sawyer
+// Copyright (c) 2025-2026 James Sawyer
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -713,6 +713,19 @@ typedef void (*ansnd_audio_callback_t) (void* audio_buffer, u32 buffer_length, v
  * @ingroup non-voices
  */
 s32 ansnd_register_audio_callback(ansnd_audio_callback_t callback, void* callback_arguments);
+
+/**
+ * @brief Gets a descriptive string for an error code.
+ * 
+ * This function returns a verbose string describing an error code.
+ * 
+ * @param[in] error The error code.
+ * 
+ * @return The string.
+ * 
+ * @ingroup non-voices
+ */
+const char* ansnd_get_error_string(s32 error);
 
 #ifdef __cplusplus
 }
