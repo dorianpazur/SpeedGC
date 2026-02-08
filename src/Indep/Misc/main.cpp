@@ -33,7 +33,7 @@ void draw_init();
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
-vModel* gCarModel = nullptr;
+vModel* gCarModel = NULL;
 
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
@@ -42,6 +42,7 @@ float gAvgFps = 0.0f;
 extern bool bSplitScreen;
 
 bool bWantsExit = false;
+bool bWantsReset = false;
 
 //---------------------------------------------------------------------------------
 
@@ -60,60 +61,66 @@ void Main_DisplayFrame()
 
 int main(int argc, char **argv)
 {
-	#ifdef EA_PLATFORM_GAMECUBE
-	SYS_STDIO_Report(true); // enable logging to dolphin logs
-	#endif
-	
-	InitializeEverything(argc, argv);
-	
-	unsigned int prevFrameTime = tGetTicker();
-	
-	float avgfpsaccum = 0.0f;
-	int avgfpsaccumcount = 0;
-	float fps = 0.0f;
-	
-	while(!bWantsExit)
+	do
 	{
-		unsigned int CPUTimeStart = tGetTicker();
-		unsigned int now = tGetTicker();
+		bWantsReset = false;
+		#ifdef EA_PLATFORM_GAMECUBE
+		SYS_STDIO_Report(true); // enable logging to dolphin logs
+		#endif
 		
-		float frameTime = tGetTickerDifference(prevFrameTime, now);
-		prevFrameTime = now;
+		InitializeEverything(argc, argv);
 		
-		if (frameTime > 1000.0f/12.0f) // limit frame time
-			frameTime = 1000.0f/12.0f;
+		unsigned int prevFrameTime = tGetTicker();
 		
-		fps = 1.0f / (frameTime * 0.001f);
+		float avgfpsaccum = 0.0f;
+		int avgfpsaccumcount = 0;
+		float fps = 0.0f;
 		
-		if (avgfpsaccumcount++ < 10)
-			avgfpsaccum += fps;
-		else
+		while (!bWantsExit && !bWantsReset)
 		{
-			gAvgFps = avgfpsaccum / 10.0f;
-			avgfpsaccum = 0;
-			avgfpsaccumcount = 0;
-		}
-		
-		UpdatePlatform();
-		
-		if (gVehicles.size() < 2 && PAD_ButtonsDown(1) & PAD_BUTTON_START)
-		{
-			bSplitScreen = true;
-			gVehicles.emplace_back(new Vehicle(World::GetInstance()->dynamicsWorld, btVector3(20, 10, 0)));
-		}
-		
-		if (gDebugMenuIOHandler)
-			gDebugMenuIOHandler->PollInput();
-		
-		World::GetInstance()->Simulate(frameTime * 0.001f);
+			unsigned int CPUTimeStart = tGetTicker();
+			unsigned int now = tGetTicker();
 			
-		CPUTime = tGetTickerDifference(CPUTimeStart, tGetTicker());
+			float frameTime = tGetTickerDifference(prevFrameTime, now);
+			prevFrameTime = now;
+			
+			if (frameTime > 1000.0f/12.0f) // limit frame time
+				frameTime = 1000.0f/12.0f;
+			
+			fps = 1.0f / (frameTime * 0.001f);
+			
+			if (avgfpsaccumcount++ < 10)
+				avgfpsaccum += fps;
+			else
+			{
+				gAvgFps = avgfpsaccum / 10.0f;
+				avgfpsaccum = 0;
+				avgfpsaccumcount = 0;
+			}
+			
+			UpdatePlatform();
+			
+			if (gDebugMenuIOHandler)
+				gDebugMenuIOHandler->PollInput();
+			
+			World::GetInstance()->Simulate(frameTime * 0.001f);
+				
+			CPUTime = tGetTickerDifference(CPUTimeStart, tGetTicker());
+			
+			Main_DisplayFrame();
+		}
 		
-		Main_DisplayFrame();
-	}
+		delete gTestModel;
+		gTestModel = NULL;
+		delete gCarModel;
+		gCarModel = NULL;
+		
+		World::Uninit();
+		vTextureCache::Uninit();
+		
+	} while (bWantsReset);
 	
-	delete gTestModel;
-
+	
 	return 0;
 }
 
@@ -129,27 +136,6 @@ void InitializeEverything(int argc, char** argv)
 	InitializePlatform(argc, argv);
 	draw_init();
 	World::Initialize();
-	
-	// CREATE CUBE VEHICLE
-
-	// Vehicle constructor creates the body internally
-	gVehicles.emplace_back(new Vehicle(World::GetInstance()->dynamicsWorld, btVector3(0, 10, 0)));
-	
-	btCollisionShape* groundShape = new btBoxShape(btVector3(400, 1, 400)); //the gound
-
-	btTransform groundTransform;
-	groundTransform.setIdentity();
-	groundTransform.setOrigin(btVector3(0, -1, 0)); //the ground position
-
-	btDefaultMotionState* groundMotion =
-		new btDefaultMotionState(groundTransform);
-
-	//the fixed ground 
-	btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
-
-	btRigidBody* groundBody = new btRigidBody(groundInfo);
-	//add body to the world
-	World::GetInstance()->dynamicsWorld->addRigidBody(groundBody);
 
 	DebugMenuInit();
 	

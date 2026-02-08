@@ -147,10 +147,10 @@ void vDisplayFrame()
 		
 		if (gCarModel)
 		{
-			for (size_t veh = 0; veh < gVehicles.size(); veh++)
+			for (size_t veh = 0; veh < World::GetInstance()->mVehicles.size(); veh++)
 			{
 				btTransform trans;
-				btRigidBody* body = gVehicles[veh]->mBody;
+				btRigidBody* body = World::GetInstance()->mVehicles[veh]->mBody;
 	
 				if (body->getMotionState())
 				{
@@ -223,45 +223,49 @@ void vDisplayFrame()
 //---------------------------------------------------------------------------------
 
 void InitializePlatform(int argc, char** argv) {
-	VIDEO_Init();
-	PAD_Init();
-	
-	rmode = VIDEO_GetPreferredMode(NULL);
-
-	void *gp_fifo = NULL;
-	gp_fifo = memalign(32,GX_FIFO_MINSIZE);
-	memset(gp_fifo,0,GX_FIFO_MINSIZE);
-	
-	xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-	xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-	//console_init(xfb[currentBuffer],20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
-	
-	FILE* checkFile = NULL;
-	// check if SD gecko is present and game is at the especified location
-	if (fatInitDefault() && (checkFile = fopen("./Speed/Speed.dol", "rb")))
+	static bool initialized = false;
+	if (!initialized)
 	{
-		printf("\n\nFound SD Gecko\n");
-		tChangeBaseDir("./Speed/");
-	}
-	else // otherwise try loading from DVD
-	{
-		printf("\n\nMounting DVD\n");
+		VIDEO_Init();
+		PAD_Init();
 		
-		DVD_Init();
-		ISO9660_Mount("dvd", &__io_gcdvd);
+		rmode = VIDEO_GetPreferredMode(NULL);
+	
+		void *gp_fifo = NULL;
+		gp_fifo = memalign(32,GX_FIFO_MINSIZE);
+		memset(gp_fifo,0,GX_FIFO_MINSIZE);
 		
-		tChangeBaseDir("dvd://");
+		xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+		xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+		//console_init(xfb[currentBuffer],20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
+		
+		FILE* checkFile = NULL;
+		// check if SD gecko is present and game is at the especified location
+		if (fatInitDefault() && (checkFile = fopen("./Speed/Speed.dol", "rb")))
+		{
+			printf("\n\nFound SD Gecko\n");
+			tChangeBaseDir("./Speed/");
+		}
+		else // otherwise try loading from DVD
+		{
+			printf("\n\nMounting DVD\n");
+			
+			DVD_Init();
+			ISO9660_Mount("dvd", &__io_gcdvd);
+			
+			tChangeBaseDir("dvd://");
+		}
+		
+		VIDEO_Configure(rmode);
+		VIDEO_SetNextFramebuffer(xfb[currentBuffer]);
+		VIDEO_SetBlack(FALSE);
+		VIDEO_Flush();
+		VIDEO_WaitVSync();
+		if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
+		
+		// initialize GX
+		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 	}
-	
-	VIDEO_Configure(rmode);
-	VIDEO_SetNextFramebuffer(xfb[currentBuffer]);
-	VIDEO_SetBlack(FALSE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
-	
-	// initialize GX
-	GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 	
 	// clear
 	GX_SetCopyClear(background, 0x00ffffff);
@@ -288,15 +292,23 @@ void InitializePlatform(int argc, char** argv) {
 	Mtx44 matrix;
 	guOrtho(matrix, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 	GX_LoadProjectionMtx(matrix, GX_ORTHOGRAPHIC);
+	
+	initialized = true;
+	bSplitScreen = false;
 }
 
 //---------------------------------------------------------------------------------
 
-extern bool bWantsExit;
+extern bool bWantsReset;
 
 void UpdatePlatform()
-{
-	if (!SYS_MainLoop())
-		bWantsExit = true;
+{	
 	PAD_ScanPads();
+	
+	int buttonsPressed = PAD_ButtonsHeld(0);
+	
+	if (SYS_ResetButtonDown() || (buttonsPressed & PAD_TRIGGER_R && buttonsPressed & PAD_TRIGGER_Z && buttonsPressed & PAD_BUTTON_B && buttonsPressed & PAD_BUTTON_START))
+	{
+		bWantsReset = true;
+	}
 }

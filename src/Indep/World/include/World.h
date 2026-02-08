@@ -27,15 +27,16 @@ public:
 	btDiscreteDynamicsWorld* dynamicsWorld = NULL;
 	
 	static void Initialize();
+	static void Uninit();
 	static World* GetInstance();
 	
 	void Simulate(float timestep);
 	bool ShouldPauseWorld();
 	
+	std::vector<Vehicle*> mVehicles;
+	
 	World();
 	~World();
 };
-
-extern std::vector<Vehicle*> gVehicles;
 
 #endif

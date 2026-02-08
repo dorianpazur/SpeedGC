@@ -8,8 +8,33 @@
 
 namespace vTextureCache
 {
+	struct CacheEntry
+	{
+		CachedTexture* texture = NULL;
+		size_t refcount = 1;
+		
+		CacheEntry()
+		{
+			
+		};
+		
+		CacheEntry(CachedTexture* texture)
+		{
+			this->texture = texture;
+		};
+		
+		~CacheEntry()
+		{
+			if (texture)
+			{
+				delete texture;
+				texture = NULL;
+			}
+		};
+	};
+	
 	CachedTexture* gDefaultTexture = NULL;
-	std::unordered_map<tHash, CachedTexture*> gTextureCache;
+	std::unordered_map<tHash, CacheEntry> gTextureCache;
 	
 	//---------------------------------------------------------------------------------
 
@@ -54,9 +79,9 @@ namespace vTextureCache
 		
 		hash = tStringHash(name);
 		
-		if (CachedTexture* existingTexture = GetTexture(hash, false))
+		if (gTextureCache.contains(hash))
 		{
-			existingTexture->refcount++;
+			gTextureCache[hash].refcount++;
 			return true;
 		}
 		
@@ -68,7 +93,7 @@ namespace vTextureCache
 		
 		CachedTexture* texture = new CachedTexture(file, hash, name);
 		
-		gTextureCache.insert({hash, texture});
+		gTextureCache.emplace(hash, texture);
 		
 		if (hash == CTStringHash("DefaultTexture"))
 		{
@@ -87,7 +112,7 @@ namespace vTextureCache
 	{
 		if (gTextureCache.contains(nameHash))
 		{
-			return gTextureCache[nameHash];
+			return gTextureCache[nameHash].texture;
 		}
 		else if (returnDefaultTextureIfNotFound)
 		{
@@ -100,25 +125,31 @@ namespace vTextureCache
 	}
 	
 	//---------------------------------------------------------------------------------
-
+	
 	void ReleaseTexture(tHash nameHash)
 	{
 		if (gTextureCache.contains(nameHash))
 		{
-			gTextureCache[nameHash]->refcount--;
+			gTextureCache[nameHash].refcount--;
 			
-			if (!gTextureCache[nameHash]->refcount)
+			if (!gTextureCache[nameHash].refcount)
 			{
 				if (gDefaultTexture && gDefaultTexture->nameHash == nameHash)
 				{
-					gTextureCache[nameHash]->refcount = 1; // we don't want to delete this!
+					gTextureCache[nameHash].refcount = 1; // we don't want to delete this!
 				}
 				else
 				{
-					delete gTextureCache[nameHash];
 					gTextureCache.erase(nameHash);
 				}
 			}
 		}
+	}
+	
+	//---------------------------------------------------------------------------------
+	
+	void Uninit()
+	{
+		gTextureCache.clear();
 	}
 }

@@ -66,8 +66,6 @@ namespace vTextureCache
 		uint32_t width = 0;
 		uint32_t height = 0;
 		
-		size_t refcount = 1;
-		
 		CachedTexture(tFile* file, tHash hash, const char* debugName) : CachedTexturePlat(file)
 		{
 			nameHash = hash;
@@ -80,6 +78,7 @@ namespace vTextureCache
 	extern bool LoadTextureFromPath(const char* path);
 	extern CachedTexture* GetTexture(tHash nameHash, bool returnDefaultTextureIfNotFound = true);
 	extern void ReleaseTexture(tHash nameHash);
+	extern void Uninit();
 }
 
 #endif

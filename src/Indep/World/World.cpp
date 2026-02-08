@@ -3,9 +3,9 @@
 #include "DebugAssistant.h"
 #include "ISimable.h"
 #include <BulletCollision/NarrowPhaseCollision/btPersistentManifold.h>
+#include <Vulpes/Platform.h>
 
 World* World::gWorld = NULL;
-std::vector<Vehicle*> gVehicles;
 
 //---------------------------------------------------------------------------------
 
@@ -13,6 +13,17 @@ void World::Initialize()
 {
 	if (!gWorld)
 		gWorld = new World();
+}
+
+//---------------------------------------------------------------------------------
+
+void World::Uninit()
+{
+	if (gWorld)
+	{
+		delete gWorld;
+		gWorld = NULL;
+	}
 }
 
 //---------------------------------------------------------------------------------
@@ -56,39 +67,26 @@ World::World()
 
 	///-----initialization_end-----
 
-	//keep track of the shapes, we release memory at exit.
-	//make sure to re-use collision shapes among rigid bodies whenever possible!
+	// CREATE CUBE VEHICLE
+
+	// Vehicle constructor creates the body internally
+	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(0, 10, 0)));
 	
-	///create a few basic rigid bodies
-	
-	//the ground is a cube of side 100 at position y = -56.
-	//the sphere will hit it at y = -6, with center at -5
-	{
-		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(50.), btScalar(100.)));
-		
-		collisionShapes.push_back(groundShape);
-		
-		btTransform groundTransform;
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -50, 0));
-	
-		btScalar mass(0.);
-	
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-	
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-	
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-		btRigidBody* body = new btRigidBody(rbInfo);
-	
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-	}
+	btCollisionShape* groundShape = new btBoxShape(btVector3(400, 1, 400)); //the gound
+
+	btTransform groundTransform;
+	groundTransform.setIdentity();
+	groundTransform.setOrigin(btVector3(0, -1, 0)); //the ground position
+
+	btDefaultMotionState* groundMotion =
+		new btDefaultMotionState(groundTransform);
+
+	//the fixed ground 
+	btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
+
+	btRigidBody* groundBody = new btRigidBody(groundInfo);
+	//add body to the world
+	dynamicsWorld->addRigidBody(groundBody);
 	
 	{
 		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(100.), btScalar(10.)));
@@ -124,11 +122,17 @@ void World::Simulate(float timestep)
 {
 	if (!ShouldPauseWorld())
 	{
-		for (size_t i = 0; i < gVehicles.size(); i++)
+		if (mVehicles.size() < 2 && PAD_ButtonsDown(1) & PAD_BUTTON_START)
+		{
+			bSplitScreen = true;
+			mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
+		}
+		
+		for (size_t i = 0; i < mVehicles.size(); i++)
 		{
 			float engineForce = (PAD_TriggerR(i) / 255.0f);
 			float brakeForce = (PAD_TriggerL(i) / 255.0f);
-			gVehicles[i]->Update(engineForce, brakeForce, PAD_StickX(i) / 127.0f, timestep);
+			mVehicles[i]->Update(engineForce, brakeForce, PAD_StickX(i) / 127.0f, timestep);
 		}
 		
 		dynamicsWorld->stepSimulation(timestep, 2);
@@ -191,4 +195,11 @@ World::~World()
 	delete overlappingPairCache;
 	delete dispatcher;
 	delete collisionConfiguration;
+	
+	for (int i = 0; i < mVehicles.size(); i++)
+	{
+		delete mVehicles[i];
+	}
+	
+	mVehicles.clear();
 }
