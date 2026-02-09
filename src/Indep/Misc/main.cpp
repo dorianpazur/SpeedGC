@@ -12,6 +12,8 @@
 #include "ScreenPrintf.h"
 
 #include <Vulpes/vulpes.h> // graphics
+#include "InputManager.h"
+
 
 // debug stuff
 #include "DebugMenu.h"
@@ -61,6 +63,7 @@ void Main_DisplayFrame()
 
 int main(int argc, char **argv)
 {
+	InputManager::Initialize(); 
 	do
 	{
 		bWantsReset = false;
@@ -98,8 +101,12 @@ int main(int argc, char **argv)
 				avgfpsaccumcount = 0;
 			}
 			
-			UpdatePlatform();
-			
+			InputManager::Update();
+
+			if (InputManager::ShouldReset())
+				bWantsReset = true;
+
+
 			if (gDebugMenuIOHandler)
 				gDebugMenuIOHandler->PollInput();
 			
