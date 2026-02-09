@@ -19,6 +19,7 @@ const btVector3 wheelAxleCS(-1, 0, 0);
 
 Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 {
+	mWorld = world;
     // Cube collision shape (car)
     btCollisionShape* shape = new btCompoundShape(true, 3);
 	
@@ -65,15 +66,15 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 	mBody->setRestitution(0.0);
 	mBody->setUserPointer(this);
 	
-    world->addRigidBody(mBody);
+    mWorld->addRigidBody(mBody);
 	
-	mRaycastVehicleRaycaster = new btDefaultVehicleRaycaster(world);
+	mRaycastVehicleRaycaster = new btDefaultVehicleRaycaster(mWorld);
 	mRaycastVehicle = new btRaycastVehicle(mTuning, mBody, mRaycastVehicleRaycaster);
 
 	///never deactivate the vehicle
 	mBody->setActivationState(DISABLE_DEACTIVATION);
 
-	world->addVehicle(mRaycastVehicle);
+	mWorld->addVehicle(mRaycastVehicle);
 
 	float connectionHeight = 0.5f;
 
@@ -102,6 +103,32 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 		wheel.m_wheelsDampingCompression = suspensionCompression;
 		wheel.m_frictionSlip = wheelFriction;
 		wheel.m_rollInfluence = rollInfluence;
+	}
+}
+
+Vehicle::~Vehicle()
+{
+	if (mBody)
+	{
+		// get compound shape
+		btCompoundShape* compoundShape = (btCompoundShape*)(mBody->getCollisionShape());
+		
+		if (compoundShape)
+		{
+			// delete its children
+			for (int i = compoundShape->getNumChildShapes() - 1; i >= 0; i--) {
+				btCollisionShape* childShape = compoundShape->getChildShape(i);
+				compoundShape->removeChildShapeByIndex(i);
+				delete childShape;
+			}
+			delete compoundShape; // delete the compound shape itself
+		}
+		
+		//if (mBody->getMotionState())
+		//	delete mBody->getMotionState();
+		
+		delete mBody;
+		mBody = NULL;
 	}
 }
 

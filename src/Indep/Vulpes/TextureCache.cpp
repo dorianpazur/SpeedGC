@@ -4,11 +4,12 @@
 //	
 
 #include <Vulpes/TextureCache.h>
+#include <tWare/Align.h>
 #include <unordered_map>
 
 namespace vTextureCache
 {
-	struct CacheEntry
+	struct ALIGN(32) CacheEntry
 	{
 		CachedTexture* texture = NULL;
 		size_t refcount = 1;

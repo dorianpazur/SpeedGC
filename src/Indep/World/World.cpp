@@ -74,7 +74,9 @@ World::World()
 	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(0, 10, 0)));
 	
 	btCollisionShape* groundShape = new btBoxShape(btVector3(400, 1, 400)); //the gound
-
+	
+	collisionShapes.push_back(groundShape);
+	
 	btTransform groundTransform;
 	groundTransform.setIdentity();
 	groundTransform.setOrigin(btVector3(0, -1, 0)); //the ground position

@@ -52,7 +52,7 @@ void Main_DisplayFrame()
 	
 	vDisplayFrame();
 	
-	GPUTime = tGetTickerDifference(GPUTimeTemp, tGetTicker());
+	GPUTime = (float)tGetTickerDifference(GPUTimeTemp);
 	
 	DisplayDebugScreenPrints();
 }
@@ -72,22 +72,22 @@ int main(int argc, char **argv)
 		
 		unsigned int prevFrameTime = tGetTicker();
 		
-		float avgfpsaccum = 0.0f;
+		double avgfpsaccum = 0.0f;
 		int avgfpsaccumcount = 0;
-		float fps = 0.0f;
+		double fps = 0.0f;
 		
 		while (!bWantsExit && !bWantsReset)
 		{
 			unsigned int CPUTimeStart = tGetTicker();
 			unsigned int now = tGetTicker();
 			
-			float frameTime = tGetTickerDifference(prevFrameTime, now);
+			double frameTime = tGetTickerDifference(prevFrameTime, now);
 			prevFrameTime = now;
 			
-			if (frameTime > 1000.0f/12.0f) // limit frame time
-				frameTime = 1000.0f/12.0f;
+			if (frameTime > 1000.0/12.0) // limit frame time
+				frameTime = 1000.0/12.0;
 			
-			fps = 1.0f / (frameTime * 0.001f);
+			fps = 1.0 / (frameTime * 0.001);
 			
 			if (avgfpsaccumcount++ < 10)
 				avgfpsaccum += fps;
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 			
 			World::GetInstance()->Simulate(frameTime * 0.001f);
 				
-			CPUTime = tGetTickerDifference(CPUTimeStart, tGetTicker());
+			CPUTime = (float)tGetTickerDifference(CPUTimeStart);
 			
 			Main_DisplayFrame();
 		}
@@ -134,6 +134,7 @@ void InitializeEverything(int argc, char** argv)
 	#endif
 	
 	InitializePlatform(argc, argv);
+	tInitTicker();
 	vTextureCache::Init();
 	draw_init();
 	World::Initialize();

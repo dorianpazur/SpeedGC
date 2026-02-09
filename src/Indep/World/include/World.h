@@ -12,8 +12,9 @@
 
 #include "btBulletDynamicsCommon.h"
 #include "Vehicle.h"
+#include <tWare/Align.h>
 
-class World
+class ALIGN(32) World
 {
 	btDefaultCollisionConfiguration* collisionConfiguration = NULL;
 	btCollisionDispatcher* dispatcher = NULL;

@@ -8,6 +8,7 @@
 
 #include <tWare/Hash.h>
 #include <tWare/File.h>
+#include <tWare/Align.h>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
@@ -19,7 +20,7 @@
 namespace vTextureCache
 {
 	#ifdef GEKKO
-		struct CachedTexturePlat 
+		struct CachedTexturePlat
 		{
 			GXTexObj GXTextureObj;
 			
@@ -61,7 +62,7 @@ namespace vTextureCache
 		};
 	#endif
 	
-	struct CachedTexture : CachedTexturePlat
+	struct ALIGN(32) CachedTexture : CachedTexturePlat
 	{
 		tHash nameHash;
 		char debugName[20];
