@@ -37,10 +37,10 @@ tFile* tOpenFile(const char* path)
 		long alignedSize = (size + 1) + 16 - ((size + 1) % 16);
 		
 		file->data = memalign(32, alignedSize); // create buffer
-		memset(file->data, 0, alignedSize);
 
 		if (file->data)
 		{
+			memset(file->data, 0, alignedSize);
 			if (!fread(file->data, size, 1, cFile)) // read the file into the buffer
 			{
 				// clean up and return null
