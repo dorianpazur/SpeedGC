@@ -9,6 +9,7 @@
 #include <tWare/Time.h>
 #include <tWare/File.h>
 #include <tWare/Hash.h>
+#include <tWare/Debug.h>
 #include "ScreenPrintf.h"
 
 #include <Vulpes/vulpes.h> // graphics
