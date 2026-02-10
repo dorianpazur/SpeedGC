@@ -9,17 +9,18 @@
 #include <tWare/Hash.h>
 #include <tWare/File.h>
 #include <tWare/Align.h>
+#include <EABase/eabase.h>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
 #include <malloc.h>
-#ifdef GEKKO
+#ifdef EA_PLATFORM_GAMECUBE
 	#include <gccore.h>
 #endif
 
 namespace vTextureCache
 {
-	#ifdef GEKKO
+	#ifdef EA_PLATFORM_GAMECUBE
 		struct CachedTexturePlat
 		{
 			GXTexObj GXTextureObj;

@@ -151,7 +151,7 @@ namespace vTextureCache
 	
 	void Init()
 	{
-		gTextureCache.reserve(128);
+		gTextureCache.reserve(256);
 		gTextureCache.clear();
 	}
 	
