@@ -255,9 +255,21 @@ void tMemoryPrintAllocationsByAddress(int poolNum)
 	tGetMemoryPool(poolNum)->PrintAllocationsByAddress();
 }
 
+#undef new
+
 void* operator new(size_t size) throw(std::bad_alloc)
 {
 	void* ptr = tWareMalloc(size, NULL, 0, ALLOC_PARAMS(0, 0));
+
+	if (!ptr)
+		throw new std::bad_alloc;
+
+	return ptr;
+}
+
+void* operator new(size_t size, const char* debugName, uint32_t lineNum) throw(std::bad_alloc)
+{
+	void* ptr = tWareMalloc(size, debugName, lineNum, ALLOC_PARAMS(0, 0));
 
 	if (!ptr)
 		throw new std::bad_alloc;

@@ -19,15 +19,7 @@ struct tFile
 	char filename[TFILE_MAX_PATH] = { '\0' };
 	size_t filesize = 0;
 	
-	void* operator new(size_t size) throw(std::bad_alloc)
-	{
-		void* ptr = tWareMalloc(size, "File", __LINE__, ALLOC_PARAMS(0, 0));
-
-		if (!ptr)
-			throw new std::bad_alloc;
-
-		return ptr;
-	}
+	DEF_TWARE_NEW_OVERRIDE(tFile)
 
 	~tFile()
 	{

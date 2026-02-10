@@ -13,16 +13,17 @@
 #define ALLOC_PARAMS(poolNum, alignment) (poolNum & 0xF) | ((alignment & 0x1FFC) << 6)
 #define DEFAULT_ALIGNMENT 16
 
-extern void* tWareMalloc(size_t size, const char* debugText, size_t debugLine, uint32_t allocParams);
-extern void tFree(void* const ptr);
-extern void tInitializeMemory();
-extern void tMemoryPrintAllocationsByAddress(int poolNum);
-
 enum tMemoryPools
 {
 	MAIN_POOL,
 	TMEMORY_POOL_COUNT,
 };
+
+extern void* tWareMalloc(size_t size, const char* debugText, size_t debugLine, uint32_t allocParams);
+#define tMalloc(size) tWareMalloc(size, __FILE__, __LINE__, ALLOC_PARAMS(MAIN_POOL, 0));
+extern void tFree(void* const ptr);
+extern void tInitializeMemory();
+extern void tMemoryPrintAllocationsByAddress(int poolNum);
 
 struct tMemoryPool : tTNode<tMemoryPool>
 {
@@ -86,5 +87,16 @@ public:
 		tFree(p);
 	}
 };
+
+extern void* operator new(size_t size, const char* debugName, uint32_t lineNum) throw(std::bad_alloc);
+
+#define DEF_TWARE_NEW_OVERRIDE(debugName) \
+void* operator new(size_t size) throw(std::bad_alloc) \
+{ \
+	void* ptr = tWareMalloc(size, #debugName, 0, ALLOC_PARAMS(0, 0)); \
+	if (!ptr) \
+		throw new std::bad_alloc; \
+	return ptr; \
+}
 
 #endif
