@@ -4,6 +4,7 @@
 //	
 
 #include <tWare/Memory.h>
+#include <tWare/Debug.h>
 
 tMemoryPoolInfo MemoryPoolInfoTable[TMEMORY_POOL_COUNT];
 tMemoryPool* MemoryPools[TMEMORY_POOL_COUNT];
@@ -51,7 +52,7 @@ void* tMemoryPool::AllocateMemory(size_t size, uint32_t alignment, const char* d
 		newBlockSize += sizeof(Block);
 
 		if (block->Size < newBlockSize)
-			__debugbreak;
+			tBreak();
 
 		block->Size -= newBlockSize;
 
@@ -240,7 +241,7 @@ void tFree(void* const ptr)
 
 	if (memoryBlock->MagicNumber != 0xDEADBEEF)
 	{
-		__debugbreak(); // not our pointer!
+		tBreak(); // not our pointer!
 	}
 	else
 	{

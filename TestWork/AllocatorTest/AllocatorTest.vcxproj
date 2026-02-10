@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Allocator.cpp" />
+    <ClCompile Include="tWare\Debug.cpp" />
     <ClCompile Include="tWare\File.cpp" />
     <ClCompile Include="tWare\Hash.cpp" />
     <ClCompile Include="tWare\List.cpp" />
@@ -140,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tWare\Align.h" />
+    <ClInclude Include="tWare\Debug.h" />
     <ClInclude Include="tWare\File.h" />
     <ClInclude Include="tWare\Hash.h" />
     <ClInclude Include="tWare\List.h" />

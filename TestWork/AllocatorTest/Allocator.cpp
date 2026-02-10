@@ -10,6 +10,7 @@
 #include <EABase/eabase.h>
 #include <tWare/File.h>
 #include <tWare/Memory.h>
+#include <tWare/Debug.h>
 
 class ALIGN(32) TestClass
 {

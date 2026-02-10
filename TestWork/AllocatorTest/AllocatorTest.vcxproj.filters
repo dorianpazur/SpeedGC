@@ -36,6 +36,9 @@
     <ClCompile Include="tWare\Memory.cpp">
       <Filter>Source Files\tWare</Filter>
     </ClCompile>
+    <ClCompile Include="tWare\Debug.cpp">
+      <Filter>Source Files\tWare</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tWare\Align.h">
@@ -54,6 +57,9 @@
       <Filter>Source Files\tWare</Filter>
     </ClInclude>
     <ClInclude Include="tWare\Memory.h">
+      <Filter>Source Files\tWare</Filter>
+    </ClInclude>
+    <ClInclude Include="tWare\Debug.h">
       <Filter>Source Files\tWare</Filter>
     </ClInclude>
   </ItemGroup>
