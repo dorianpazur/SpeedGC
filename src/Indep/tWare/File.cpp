@@ -18,6 +18,11 @@ char gBaseDir[TFILE_MAX_PATH + 1] { '\0' };
 // abstracted in order to allow for an archive format to potentially be used
 tFile* tOpenFile(const char* path)
 {
+	if (gOpenFiles.capacity() == 0)
+	{
+		gOpenFiles.reserve(32); // pre-reserve file list to avoid memory fragmentation
+	}
+
 	char realPath[TFILE_MAX_PATH + 1] = { 0 };
 	snprintf(realPath, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
 	FILE* cFile = fopen(realPath, "rb");
