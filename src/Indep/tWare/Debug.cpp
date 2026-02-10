@@ -68,7 +68,7 @@ void tBreak()
 {
 #if defined(EA_COMPILER_MSVC) && defined(EA_PLATFORM_WINDOWS)
 	__debugbreak();
-#elifdef EA_PLATFORM_GAMECUBE
+#elif defined(EA_PLATFORM_GAMECUBE)
 	OSPanic(__FILE__, __LINE__, "Breakpoint hit");
 #else
 	*(uint8_t*)0 = 0; // trigger access violation as a last resort
