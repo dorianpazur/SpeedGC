@@ -187,6 +187,7 @@ void InitializeEverything(int argc, char** argv)
 	#endif
 	
 	tMemoryPrintAllocationsByAddress(MAIN_POOL);
+	tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
 }
 
 //---------------------------------------------------------------------------------
