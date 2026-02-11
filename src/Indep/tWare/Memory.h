@@ -18,6 +18,7 @@ enum tMemoryPools
 {
 	MAIN_POOL,
 	PHYSICS_POOL,
+	TINYGLTF_POOL,
 	TMEMORY_POOL_COUNT,
 };
 
@@ -93,7 +94,7 @@ public:
 
 #ifdef EA_COMPILER_MSVC
 
-//extern void* operator new(size_t size, const char* debugName, uint32_t lineNum) throw(std::bad_alloc);
+extern void* operator new(size_t size, const char* debugName, uint32_t lineNum) throw(std::bad_alloc);
 
 #define DEF_TWARE_NEW_OVERRIDE(debugName) \
 void* operator new(size_t size) throw(std::bad_alloc) \
@@ -107,14 +108,28 @@ void operator delete(void* ptr) throw() \
 { \
 	return tFree(ptr); \
 }
+
+#define DEF_TWARE_NEW_OVERRIDE_POOL(debugName, poolNum) \
+void* operator new(size_t size) throw(std::bad_alloc) \
+{ \
+	void* ptr = tWareMalloc(size, #debugName, 0, ALLOC_PARAMS(poolNum, 0)); \
+	if (!ptr) \
+		throw new std::bad_alloc; \
+	return ptr; \
+} \
+void operator delete(void* ptr) throw() \
+{ \
+	return tFree(ptr); \
+}
+
 #else
 
-//extern void* operator new(size_t size, const char* debugName, uint32_t lineNum);
+extern void* operator new(size_t size, const char* debugName, uint32_t lineNum);
 
-#define DEF_TWARE_NEW_OVERRIDE(debugName) \
+#define DEF_TWARE_NEW_OVERRIDE(debugName, poolNum) \
 void* operator new(size_t size) \
 { \
-	return tWareMalloc(size, #debugName, 0, ALLOC_PARAMS(0, 0)); \
+	return tWareMalloc(size, #debugName, 0, ALLOC_PARAMS(poolNum, 0)); \
 } \
 void operator delete(void* ptr) \
 { \

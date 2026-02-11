@@ -27,7 +27,7 @@ struct MenuWidget : tTNode<MenuWidget> {
     unsigned int textColor;
     void(*callbackFunction)();
 	
-	DEF_TWARE_NEW_OVERRIDE(MenuWidget)
+	DEF_TWARE_NEW_OVERRIDE(MenuWidget, MAIN_POOL)
 	
     MenuWidget();
     MenuWidget(const char* n, int h, int w, void(*f)());

@@ -73,7 +73,7 @@ namespace vTextureCache
 		uint32_t width = 0;
 		uint32_t height = 0;
 		
-		DEF_TWARE_NEW_OVERRIDE(CachedTexture)
+		DEF_TWARE_NEW_OVERRIDE(CachedTexture, MAIN_POOL)
 		
 		CachedTexture(tFile* file, tHash hash, const char* debugName) : CachedTexturePlat(file)
 		{

@@ -29,8 +29,8 @@
 
 void InitializeEverything(int argc, char** argv);
 void InitializePlatform(int argc, char** argv);
- 
-void draw_init();
+void InitializeMemory();
+void LoadAssets();
 
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
@@ -163,23 +163,12 @@ void InitializeEverything(int argc, char** argv)
 	printf("Free arena memory before init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 	#endif
 	
-	static bool initializedMemory = false;
-	
-	if (!initializedMemory)
-	{
-		tInitializeMemory();
-		const size_t kPhysicsMemoryPoolSize = 0x600000; // 6mb
-		tInitMemoryPool(PHYSICS_POOL, tWareMalloc(kPhysicsMemoryPoolSize, "Physics Pool Heap", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kPhysicsMemoryPoolSize, "Physics Pool");
-		btAlignedAllocSetCustom(btAllocOverride, tFree);
-		btAlignedAllocSetCustomAligned(btAlignedAllocOverride, tFree);
-		initializedMemory = true;
-	}
-	
+	InitializeMemory();
 	InitializePlatform(argc, argv);
 	tInitTicker();
 	vTextureCache::Init();
 	DebugMenuInit();
-	draw_init();
+	LoadAssets();
 	World::Initialize();
 	
 	#ifdef EA_PLATFORM_GAMECUBE
@@ -192,7 +181,29 @@ void InitializeEverything(int argc, char** argv)
 
 //---------------------------------------------------------------------------------
 
-void draw_init()
+void InitializeMemory()
+{
+	static bool initializedMemory = false;
+	
+	if (!initializedMemory)
+	{
+		tInitializeMemory();
+		
+		const size_t kPhysicsMemoryPoolSize = 0x600000; // 6mb
+		tInitMemoryPool(PHYSICS_POOL, tWareMalloc(kPhysicsMemoryPoolSize, "Physics Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kPhysicsMemoryPoolSize, "Physics Pool");
+		btAlignedAllocSetCustom(btAllocOverride, tFree);
+		btAlignedAllocSetCustomAligned(btAlignedAllocOverride, tFree);
+		
+		const size_t kTinyGLTFMemoryPoolSize = 0x50000; // 0.5mb
+		tInitMemoryPool(TINYGLTF_POOL, tWareMalloc(kTinyGLTFMemoryPoolSize, "TinyGLTF Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kTinyGLTFMemoryPoolSize, "TinyGLTF Pool");
+		
+		initializedMemory = true;
+	}
+}
+
+//---------------------------------------------------------------------------------
+
+void LoadAssets()
 {
 	printf("draw_init\n");
 	

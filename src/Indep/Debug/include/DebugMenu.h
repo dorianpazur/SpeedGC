@@ -13,7 +13,7 @@ extern int gLastCurSelection;
 struct DebugMenu;
 struct DebugMenuAlloc : tTNode<DebugMenuAlloc>
 {
-	DEF_TWARE_NEW_OVERRIDE(DebugMenuAlloc)
+	DEF_TWARE_NEW_OVERRIDE(DebugMenuAlloc, MAIN_POOL)
     DebugMenu* menu;
 };
 
@@ -40,7 +40,7 @@ private:
     static tTList<DebugMenuAlloc>* mAllocations;
 
 public:
-	DEF_TWARE_NEW_OVERRIDE(DebugMenu)
+	DEF_TWARE_NEW_OVERRIDE(DebugMenu, MAIN_POOL)
     DebugMenu();
     ~DebugMenu();
     static DebugMenu* create(const char* name, DebugMenu* parent);

@@ -11,7 +11,7 @@ public:
     btRigidBody* mBody = NULL;
 	btDynamicsWorld* mWorld = NULL;
 	
-	DEF_TWARE_NEW_OVERRIDE(ISimable)
+	DEF_TWARE_NEW_OVERRIDE(ISimable, MAIN_POOL)
 	
 	virtual void OnCollide(ISimable* other);
 	

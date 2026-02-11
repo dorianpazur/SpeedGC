@@ -19,7 +19,7 @@ struct tFile
 	char filename[TFILE_MAX_PATH] = { '\0' };
 	size_t filesize = 0;
 	
-	DEF_TWARE_NEW_OVERRIDE(tFile)
+	DEF_TWARE_NEW_OVERRIDE(tFile, MAIN_POOL)
 
 	~tFile()
 	{

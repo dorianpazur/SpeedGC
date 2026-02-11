@@ -234,8 +234,8 @@ void tInitializeMemory()
 	if (!bInitializedMemory)
 	{
 		SYS_STDIO_Report(true);
-		size_t mainPoolSize = 0xE00000;//(((intptr_t)SYS_GetArenaHi() & 0xFFFFFFE0) - ((intptr_t)SYS_GetArenaLo() & 0xFFFFFFE0) & 0xFFFFFFE0) - 0x40000;
-		printf("Main pool size: %lu\n", mainPoolSize);
+		size_t mainPoolSize = (((intptr_t)SYS_GetArenaHi() - (intptr_t)SYS_GetArenaLo()) & 0xFFF00000) - 0x200000; // keep 2 mb in the heap
+		printf("Main pool size: 0x%08x\n", mainPoolSize);
 		tInitMemoryPool(0, malloc(mainPoolSize), mainPoolSize, "Main Pool");
 		bInitializedMemory = true;
 	}
@@ -289,43 +289,43 @@ void tMemoryPrintAllocationsByAddress(int poolNum)
 	tGetMemoryPool(poolNum)->PrintAllocationsByAddress();
 }
 
-//#ifdef EA_COMPILER_MSVC
-//void* operator new(size_t size) throw(std::bad_alloc)
-//#else
-//void* operator new(size_t size)
-//#endif
-//{
-//	void* ptr = tWareMalloc(size, NULL, 0, ALLOC_PARAMS(0, 0));
-//	
-//	#ifdef EA_COMPILER_MSVC
-//	if (!ptr)
-//		throw new std::bad_alloc;
-//	#endif
-//
-//	return ptr;
-//}
-//
-//#ifdef EA_COMPILER_MSVC
-//void* operator new(size_t size, const char* debugName, uint32_t lineNum) throw(std::bad_alloc)
-//#else
-//void* operator new(size_t size, const char* debugName, uint32_t lineNum)
-//#endif
-//{
-//	void* ptr = tWareMalloc(size, debugName, lineNum, ALLOC_PARAMS(0, 0));
-//
-//	#ifdef EA_COMPILER_MSVC
-//	if (!ptr)
-//		throw new std::bad_alloc;
-//	#endif
-//
-//	return ptr;
-//}
-//
-//#ifdef EA_COMPILER_MSVC
-//void operator delete(void* p) throw()
-//#else
-//void operator delete(void* p) _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
-//#endif
-//{
-//	tFree(p);
-//}
+#ifdef EA_COMPILER_MSVC
+void* operator new(size_t size) throw(std::bad_alloc)
+#else
+void* operator new(size_t size)
+#endif
+{
+	void* ptr = tWareMalloc(size, NULL, 0, ALLOC_PARAMS(0, 0));
+	
+	#ifdef EA_COMPILER_MSVC
+	if (!ptr)
+		throw new std::bad_alloc;
+	#endif
+
+	return ptr;
+}
+
+#ifdef EA_COMPILER_MSVC
+void* operator new(size_t size, const char* debugName, uint32_t lineNum) throw(std::bad_alloc)
+#else
+void* operator new(size_t size, const char* debugName, uint32_t lineNum)
+#endif
+{
+	void* ptr = tWareMalloc(size, debugName, lineNum, ALLOC_PARAMS(0, 0));
+
+	#ifdef EA_COMPILER_MSVC
+	if (!ptr)
+		throw new std::bad_alloc;
+	#endif
+
+	return ptr;
+}
+
+#ifdef EA_COMPILER_MSVC
+void operator delete(void* p) throw()
+#else
+void operator delete(void* p) _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
+#endif
+{
+	tFree(p);
+}

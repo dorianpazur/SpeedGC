@@ -28,7 +28,7 @@ class ALIGN(32) World
 public:
 	btDiscreteDynamicsWorld* dynamicsWorld = NULL;
 	
-	DEF_TWARE_NEW_OVERRIDE(World)
+	DEF_TWARE_NEW_OVERRIDE(World, MAIN_POOL)
 	
 	static void Initialize();
 	static void Uninit();

@@ -5,7 +5,7 @@
 
 struct SubmenuWidget : public MenuWidget
 {
-	DEF_TWARE_NEW_OVERRIDE(SubmenuWidget)
+	DEF_TWARE_NEW_OVERRIDE(SubmenuWidget, MAIN_POOL)
     struct DebugMenu* theMenu;
 
     SubmenuWidget(const char* name, struct DebugMenu* var) : MenuWidget() {

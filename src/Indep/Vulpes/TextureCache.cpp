@@ -14,7 +14,7 @@ namespace vTextureCache
 		CachedTexture* texture = NULL;
 		size_t refcount = 1;
 		
-		DEF_TWARE_NEW_OVERRIDE(CacheEntry)
+		DEF_TWARE_NEW_OVERRIDE(CacheEntry, MAIN_POOL)
 		
 		CacheEntry() = default;
 		

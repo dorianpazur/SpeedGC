@@ -14,7 +14,7 @@ private:
     bool mActiveShift = false;
 
 public:
-	DEF_TWARE_NEW_OVERRIDE(DebugMenuInputHandler)
+	DEF_TWARE_NEW_OVERRIDE(DebugMenuInputHandler, MAIN_POOL)
     DebugMenuInputHandler();
     void PollInput();
     void Exit();

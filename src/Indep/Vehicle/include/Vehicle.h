@@ -10,7 +10,7 @@
 class ALIGN(32) Vehicle : public ISimable
 {
 public:
-	DEF_TWARE_NEW_OVERRIDE(Vehicle)
+	DEF_TWARE_NEW_OVERRIDE(Vehicle, MAIN_POOL)
     Vehicle(btDynamicsWorld* world, const btVector3& startPos);
 	~Vehicle();
     void Update(float throttle, float brake, float steering, float timestep);

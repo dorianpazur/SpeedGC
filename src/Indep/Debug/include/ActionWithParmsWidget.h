@@ -9,7 +9,7 @@ private:
     void (*callbackWithParm)(void*);
     void* parmValue;
 public:
-	DEF_TWARE_NEW_OVERRIDE(ActionWithParmsWidget)
+	DEF_TWARE_NEW_OVERRIDE(ActionWithParmsWidget, MAIN_POOL)
     virtual void onAction(MenuWidget::actions action, bool repeat) override;
     ActionWithParmsWidget(const char* name, void(*f)(void*), void* parm);
 };
