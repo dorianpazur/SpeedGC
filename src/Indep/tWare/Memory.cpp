@@ -92,7 +92,7 @@ void* tMemoryPool::AllocateMemory(size_t size, uint32_t alignment, const char* d
 	}
 	else
 	{
-		return NULL; // we failed!
+		tBreak(); // we failed!
 	}
 }
 
