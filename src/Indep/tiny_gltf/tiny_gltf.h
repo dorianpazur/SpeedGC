@@ -37,6 +37,8 @@
 #ifndef TINY_GLTF_H_
 #define TINY_GLTF_H_
 
+#include <tWare/Memory.h>
+
 #include <array>
 #include <cassert>
 #include <cmath>  // std::fabs
@@ -255,6 +257,7 @@ bool DecodeDataURI(std::vector<unsigned char> *out, std::string &mime_type,
 // Simple class to represent JSON object
 class Value {
  public:
+  DEF_TWARE_NEW_OVERRIDE(Value, TINYGLTF_POOL)
   typedef std::vector<Value> Array;
   typedef std::map<std::string, Value> Object;
 
@@ -424,6 +427,7 @@ using ColorValue = std::array<double, 4>;
 // === legacy interface ====
 // TODO(syoyo): Deprecate `Parameter` class.
 struct Parameter {
+  DEF_TWARE_NEW_OVERRIDE(Parameter, TINYGLTF_POOL)
   bool bool_value = false;
   bool has_number_value = false;
   std::string string_value;
@@ -516,6 +520,7 @@ typedef std::map<std::string, Parameter> ParameterMap;
 typedef std::map<std::string, Value> ExtensionMap;
 
 struct AnimationChannel {
+  DEF_TWARE_NEW_OVERRIDE(AnimationChannel, TINYGLTF_POOL)
   int sampler{-1};          // required
   int target_node{-1};      // optional index of the node to target (alternative
                             // target should be provided by extension)
@@ -538,6 +543,7 @@ struct AnimationChannel {
 };
 
 struct AnimationSampler {
+  DEF_TWARE_NEW_OVERRIDE(AnimationSampler, TINYGLTF_POOL)
   int input{-1};              // required
   int output{-1};             // required
   std::string interpolation;  // "LINEAR", "STEP","CUBICSPLINE" or user defined
@@ -555,6 +561,7 @@ struct AnimationSampler {
 };
 
 struct Animation {
+  DEF_TWARE_NEW_OVERRIDE(Animation, TINYGLTF_POOL)
   std::string name;
   std::vector<AnimationChannel> channels;
   std::vector<AnimationSampler> samplers;
@@ -571,6 +578,7 @@ struct Animation {
 };
 
 struct Skin {
+  DEF_TWARE_NEW_OVERRIDE(Skin, TINYGLTF_POOL)
   std::string name;
   int inverseBindMatrices{-1};  // required here but not in the spec
   int skeleton{-1};             // The index of the node used as a skeleton root
@@ -589,6 +597,7 @@ struct Skin {
 };
 
 struct Sampler {
+  DEF_TWARE_NEW_OVERRIDE(Sampler, TINYGLTF_POOL)
   std::string name;
   // glTF 2.0 spec does not define default value for `minFilter` and
   // `magFilter`. Set -1 in TinyGLTF(issue #186)
@@ -620,6 +629,7 @@ struct Sampler {
 };
 
 struct Image {
+  DEF_TWARE_NEW_OVERRIDE(Image, TINYGLTF_POOL)
   std::string name;
   int width{-1};
   int height{-1};
@@ -653,6 +663,7 @@ struct Image {
 };
 
 struct Texture {
+  DEF_TWARE_NEW_OVERRIDE(Texture, TINYGLTF_POOL)
   std::string name;
 
   int sampler{-1};
@@ -671,6 +682,7 @@ struct Texture {
 };
 
 struct TextureInfo {
+  DEF_TWARE_NEW_OVERRIDE(TextureInfo, TINYGLTF_POOL)
   int index{-1};    // required.
   int texCoord{0};  // The set index of texture's TEXCOORD attribute used for
                     // texture coordinate mapping.
@@ -688,6 +700,7 @@ struct TextureInfo {
 };
 
 struct NormalTextureInfo {
+  DEF_TWARE_NEW_OVERRIDE(NormalTextureInfo, TINYGLTF_POOL)
   int index{-1};    // required
   int texCoord{0};  // The set index of texture's TEXCOORD attribute used for
                     // texture coordinate mapping.
@@ -708,6 +721,7 @@ struct NormalTextureInfo {
 };
 
 struct OcclusionTextureInfo {
+  DEF_TWARE_NEW_OVERRIDE(OcclusionTextureInfo, TINYGLTF_POOL)
   int index{-1};    // required
   int texCoord{0};  // The set index of texture's TEXCOORD attribute used for
                     // texture coordinate mapping.
@@ -728,6 +742,7 @@ struct OcclusionTextureInfo {
 
 // pbrMetallicRoughness class defined in glTF 2.0 spec.
 struct PbrMetallicRoughness {
+  DEF_TWARE_NEW_OVERRIDE(PbrMetallicRoughness, TINYGLTF_POOL)
   std::vector<double> baseColorFactor{1.0, 1.0, 1.0, 1.0};  // len = 4. default [1,1,1,1]
   TextureInfo baseColorTexture;
   double metallicFactor{1.0};   // default 1
@@ -751,6 +766,7 @@ struct PbrMetallicRoughness {
 // members not in the values could be included in the ParameterMap
 // to keep a single material model
 struct Material {
+  DEF_TWARE_NEW_OVERRIDE(Material, TINYGLTF_POOL)
   std::string name;
 
   std::vector<double> emissiveFactor{0.0, 0.0, 0.0};  // length 3. default [0, 0, 0]
@@ -784,6 +800,7 @@ struct Material {
 };
 
 struct BufferView {
+  DEF_TWARE_NEW_OVERRIDE(BufferView, TINYGLTF_POOL)
   std::string name;
   int buffer{-1};        // Required
   size_t byteOffset{0};  // minimum 0, default 0
@@ -807,6 +824,7 @@ struct BufferView {
 };
 
 struct Accessor {
+  DEF_TWARE_NEW_OVERRIDE(Accessor, TINYGLTF_POOL)
   int bufferView{-1};  // optional in spec but required here since sparse
                        // accessor are not supported
   std::string name;
@@ -828,6 +846,7 @@ struct Accessor {
       maxValues;  // optional. integer value is promoted to double
 
   struct Sparse {
+    DEF_TWARE_NEW_OVERRIDE(Sparse, TINYGLTF_POOL)
     int count{0};
     bool isSparse{false};
     struct {
@@ -898,6 +917,7 @@ struct Accessor {
 };
 
 struct PerspectiveCamera {
+  DEF_TWARE_NEW_OVERRIDE(PerspectiveCamera, TINYGLTF_POOL)
   double aspectRatio{0.0};  // min > 0
   double yfov{0.0};         // required. min > 0
   double zfar{0.0};         // min > 0
@@ -916,6 +936,7 @@ struct PerspectiveCamera {
 };
 
 struct OrthographicCamera {
+  DEF_TWARE_NEW_OVERRIDE(OrthographicCamera, TINYGLTF_POOL)
   double xmag{0.0};   // required. must not be zero.
   double ymag{0.0};   // required. must not be zero.
   double zfar{0.0};   // required. `zfar` must be greater than `znear`.
@@ -934,6 +955,7 @@ struct OrthographicCamera {
 };
 
 struct Camera {
+  DEF_TWARE_NEW_OVERRIDE(Camera, TINYGLTF_POOL)
   std::string type;  // required. "perspective" or "orthographic"
   std::string name;
 
@@ -953,6 +975,7 @@ struct Camera {
 };
 
 struct Primitive {
+  DEF_TWARE_NEW_OVERRIDE(Primitive, TINYGLTF_POOL)
   std::map<std::string, int> attributes;  // (required) A dictionary object of
                                           // integer, where each integer
                                           // is the index of the accessor
@@ -978,6 +1001,7 @@ struct Primitive {
 };
 
 struct Mesh {
+  DEF_TWARE_NEW_OVERRIDE(Mesh, TINYGLTF_POOL)
   std::string name;
   std::vector<Primitive> primitives;
   std::vector<double> weights;  // weights to be applied to the Morph Targets
@@ -995,6 +1019,7 @@ struct Mesh {
 
 class Node {
  public:
+  DEF_TWARE_NEW_OVERRIDE(Node, TINYGLTF_POOL)
   Node() = default;
 
   DEFAULT_METHODS(Node)
@@ -1025,6 +1050,7 @@ class Node {
 };
 
 struct Buffer {
+  DEF_TWARE_NEW_OVERRIDE(Buffer, TINYGLTF_POOL)
   std::string name;
   std::vector<unsigned char> data;
   std::string
@@ -1043,6 +1069,7 @@ struct Buffer {
 };
 
 struct Asset {
+  DEF_TWARE_NEW_OVERRIDE(Asset, TINYGLTF_POOL)
   std::string version = "2.0";  // required
   std::string generator;
   std::string minVersion;
@@ -1060,6 +1087,7 @@ struct Asset {
 };
 
 struct Scene {
+  DEF_TWARE_NEW_OVERRIDE(Scene, TINYGLTF_POOL)
   std::string name;
   std::vector<int> nodes;
   std::vector<int> audioEmitters;  // KHR_audio global emitters
@@ -1077,6 +1105,7 @@ struct Scene {
 };
 
 struct SpotLight {
+  DEF_TWARE_NEW_OVERRIDE(SpotLight, TINYGLTF_POOL)
   double innerConeAngle{0.0};
   double outerConeAngle{0.7853981634};
 
@@ -1093,6 +1122,7 @@ struct SpotLight {
 };
 
 struct Light {
+  DEF_TWARE_NEW_OVERRIDE(Light, TINYGLTF_POOL)
   std::string name;
   std::vector<double> color;
   double intensity{1.0};
@@ -1114,6 +1144,7 @@ struct Light {
 };
 
 struct PositionalEmitter {
+  DEF_TWARE_NEW_OVERRIDE(PositionalEmitter, TINYGLTF_POOL)
   double coneInnerAngle{6.283185307179586};
   double coneOuterAngle{6.283185307179586};
   double coneOuterGain{0.0};
@@ -1134,6 +1165,7 @@ struct PositionalEmitter {
 };
 
 struct AudioEmitter {
+  DEF_TWARE_NEW_OVERRIDE(AudioEmitter, TINYGLTF_POOL)
   std::string name;
   double gain{1.0};
   bool loop{false};
@@ -1175,6 +1207,7 @@ struct AudioEmitter {
 };
 
 struct AudioSource {
+  DEF_TWARE_NEW_OVERRIDE(AudioSource, TINYGLTF_POOL)
   std::string name;
   std::string uri;
   int bufferView{-1};  // (required if no uri)
@@ -1198,6 +1231,7 @@ struct AudioSource {
 
 class Model {
  public:
+  DEF_TWARE_NEW_OVERRIDE(Model, TINYGLTF_POOL)
   Model() = default;
   DEFAULT_METHODS(Model)
 
@@ -1274,6 +1308,7 @@ bool URIDecode(const std::string &in_uri, std::string *out_uri,
 /// A structure containing URI callbacks and a pointer to their user data.
 ///
 struct URICallbacks {
+  DEF_TWARE_NEW_OVERRIDE(URICallbacks, TINYGLTF_POOL)
   URIEncodeFunction encode;  // Optional encode method
   URIDecodeFunction decode;  // Required decode method
 
@@ -1317,6 +1352,7 @@ using GetFileSizeFunction =
 /// their user data.
 ///
 struct FsCallbacks {
+  DEF_TWARE_NEW_OVERRIDE(FsCallbacks, TINYGLTF_POOL)
   FileExistsFunction FileExists;
   ExpandFilePathFunction ExpandFilePath;
   ReadWholeFileFunction ReadWholeFile;
@@ -1394,6 +1430,8 @@ class TinyGLTF {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc++98-compat"
 #endif
+  
+  DEF_TWARE_NEW_OVERRIDE(TinyGLTF, TINYGLTF_POOL)
 
   TinyGLTF() = default;
 
@@ -1834,6 +1872,8 @@ rapidjson::Document::AllocatorType &GetAllocator() {
 #endif
 
 struct JsonDocument : public rapidjson::Document {
+	
+  DEF_TWARE_NEW_OVERRIDE(JsonDocument, TINYGLTF_POOL)
   JsonDocument() {
     assert(s_pActiveDocument ==
            nullptr);  // When using default allocator, only one document can be
@@ -1901,6 +1941,7 @@ namespace tinygltf {
 /// callbacks.
 ///
 struct LoadImageDataOption {
+  DEF_TWARE_NEW_OVERRIDE(LoadImageDataOption, TINYGLTF_POOL)
   // true: preserve image channels(e.g. load as RGB image if the image has RGB
   // channels) default `false`(channels are expanded to RGBA for backward
   // compatibility).

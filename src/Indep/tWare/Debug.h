@@ -19,6 +19,11 @@ extern "C"
 #include <Windows.h>
 #endif
 
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_REVOLUTION)
+extern void tBreak(const char* filename, int linenum);
+#define tBreak() tBreak(__FILE__, __LINE__)
+#else
 extern void tBreak();
+#endif
 
 #endif

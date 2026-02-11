@@ -4,10 +4,11 @@
 //
 
 #include <tWare/Debug.h>
+#undef tBreak
 
 // reverse-engineered from Dolphin SDK by doldecomp guys
 // ASM routines ported from Metrowerks to GCC syntax
-#ifdef EA_PLATFORM_GAMECUBE
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_REVOLUTION)
 extern "C"
 {
 	u32 OSGetStackPointer();
@@ -64,12 +65,16 @@ extern "C"
 }
 #endif
 
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_REVOLUTION)
+void tBreak(const char* filename, int linenum)
+#else
 void tBreak()
+#endif
 {
 #if defined(EA_COMPILER_MSVC) && defined(EA_PLATFORM_WINDOWS)
 	__debugbreak();
 #elif defined(EA_PLATFORM_GAMECUBE)
-	OSPanic(__FILE__, __LINE__, "Breakpoint hit");
+	OSPanic(filename, linenum, "Breakpoint hit");
 #else
 	*(uint8_t*)0 = 0; // trigger access violation as a last resort
 #endif

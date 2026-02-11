@@ -49,6 +49,8 @@ World::World()
 	
 	collisionConfiguration = new btDefaultCollisionConfiguration(collisionConstructionInfo);
 	
+	tMemoryPrintAllocationsByAddress(MAIN_POOL);
+	
 	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
 	///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
@@ -173,6 +175,14 @@ World::~World()
 	
 	///-----cleanup_start-----
 	
+	// remove vehicles
+	for (int i = 0; i < mVehicles.size(); i++)
+	{
+		delete mVehicles[i];
+	}
+	
+	mVehicles.clear();
+	
 	//remove the rigidbodies from the dynamics world and delete them
 	for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
 	{
@@ -194,15 +204,9 @@ World::~World()
 		delete shape;
 	}
 	
+	delete dynamicsWorld;
 	delete solver;
 	delete overlappingPairCache;
 	delete dispatcher;
 	delete collisionConfiguration;
-	
-	for (int i = 0; i < mVehicles.size(); i++)
-	{
-		delete mVehicles[i];
-	}
-	
-	mVehicles.clear();
 }

@@ -50,11 +50,10 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
     btVector3 inertia(0, 0, 0);
     shape->calculateLocalInertia(mass, inertia);
 	
-    btDefaultMotionState* motion =
-        new btDefaultMotionState(transform);
+    mMotionState = btDefaultMotionState(transform);
 	
     btRigidBody::btRigidBodyConstructionInfo info(
-        mass, motion, shape, inertia);
+        mass, &mMotionState, shape, inertia);
 	
     mBody = new btRigidBody(info);
 	
@@ -108,8 +107,19 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 
 Vehicle::~Vehicle()
 {
+	if (mRaycastVehicle)
+	{
+		mWorld->removeVehicle(mRaycastVehicle);
+		delete mRaycastVehicle;
+	}
+	
+	if (mRaycastVehicleRaycaster)
+		delete mRaycastVehicleRaycaster;
+	
 	if (mBody)
 	{
+		mWorld->removeRigidBody(mBody);
+		
 		// get compound shape
 		btCompoundShape* compoundShape = (btCompoundShape*)(mBody->getCollisionShape());
 		
@@ -124,11 +134,8 @@ Vehicle::~Vehicle()
 			delete compoundShape; // delete the compound shape itself
 		}
 		
-		//if (mBody->getMotionState())
-		//	delete mBody->getMotionState();
-		
 		delete mBody;
-		mBody = NULL;
+		mBody = NULL;	
 	}
 }
 

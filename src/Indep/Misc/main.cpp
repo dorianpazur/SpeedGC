@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 
+#include <tWare/Memory.h>
 #include <tWare/Time.h>
 #include <tWare/File.h>
 #include <tWare/Hash.h>
@@ -28,8 +29,8 @@
 
 void InitializeEverything(int argc, char** argv);
 void InitializePlatform(int argc, char** argv);
- 
-void draw_init();
+void InitializeMemory();
+void LoadAssets();
 
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
@@ -60,10 +61,28 @@ void Main_DisplayFrame()
 
 //---------------------------------------------------------------------------------
 
+void* btAllocOverride(size_t size)
+{
+	return tWareMalloc(size, "Bullet physics", 0, ALLOC_PARAMS(PHYSICS_POOL, 16));
+}
+
+void* btAlignedAllocOverride(size_t size, int alignment)
+{
+	return tWareMalloc(size, "Bullet physics", 0, ALLOC_PARAMS(PHYSICS_POOL, alignment));
+}
+
+//---------------------------------------------------------------------------------
+
 int main(int argc, char **argv)
 {
 	do
 	{
+		if (bWantsReset)
+		{
+			puts("Resetting...");
+			tMemoryPrintAllocationsByAddress(MAIN_POOL);
+			tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
+		}
 		bWantsReset = false;
 		#ifdef EA_PLATFORM_GAMECUBE
 		SYS_STDIO_Report(true); // enable logging to dolphin logs
@@ -111,16 +130,26 @@ int main(int argc, char **argv)
 			Main_DisplayFrame();
 		}
 		
-		delete gTestModel;
-		gTestModel = NULL;
-		delete gCarModel;
-		gCarModel = NULL;
+		printf("Memory at exit:");
+		tMemoryPrintAllocationsByAddress(MAIN_POOL);
+		tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
+		
+		if (gTestModel)
+		{
+			delete gTestModel;
+			gTestModel = NULL;
+		}
+		
+		if (gCarModel)
+		{
+			delete gCarModel;
+			gCarModel = NULL;
+		}
 		
 		World::Uninit();
 		vTextureCache::Uninit();
 		
 	} while (bWantsReset);
-	
 	
 	return 0;
 }
@@ -131,29 +160,57 @@ void InitializeEverything(int argc, char** argv)
 {
 	printf("Speed revision: %s\n", Revision);
 	#ifdef EA_PLATFORM_GAMECUBE
-	printf("Free memory before init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
+	printf("Free arena memory before init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 	#endif
 	
+	InitializeMemory();
 	InitializePlatform(argc, argv);
 	tInitTicker();
 	vTextureCache::Init();
-	draw_init();
-	World::Initialize();
-
 	DebugMenuInit();
+	LoadAssets();
+	World::Initialize();
 	
 	#ifdef EA_PLATFORM_GAMECUBE
-	printf("Free memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
+	printf("Free arena memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 	#endif
+	
+	tMemoryPrintAllocationsByAddress(MAIN_POOL);
+	tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
 }
 
 //---------------------------------------------------------------------------------
 
-void draw_init()
+void InitializeMemory()
 {
+	static bool initializedMemory = false;
+	
+	if (!initializedMemory)
+	{
+		tInitializeMemory();
+		
+		const size_t kPhysicsMemoryPoolSize = 0x600000; // 6mb
+		tInitMemoryPool(PHYSICS_POOL, tWareMalloc(kPhysicsMemoryPoolSize, "Physics Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kPhysicsMemoryPoolSize, "Physics Pool");
+		btAlignedAllocSetCustom(btAllocOverride, tFree);
+		btAlignedAllocSetCustomAligned(btAlignedAllocOverride, tFree);
+		
+		const size_t kTinyGLTFMemoryPoolSize = 0x50000; // 0.5mb
+		tInitMemoryPool(TINYGLTF_POOL, tWareMalloc(kTinyGLTFMemoryPoolSize, "TinyGLTF Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kTinyGLTFMemoryPoolSize, "TinyGLTF Pool");
+		
+		initializedMemory = true;
+	}
+}
+
+//---------------------------------------------------------------------------------
+
+void LoadAssets()
+{
+	printf("draw_init\n");
+	
 	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
 	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
 	
 	//gTestModel = new vModel("sonic/sonic.glb");
+	
 	gCarModel = new vModel("Vehicles/Test/test_ship.glb");
 }

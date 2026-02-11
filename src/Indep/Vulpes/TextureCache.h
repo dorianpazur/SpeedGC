@@ -9,6 +9,7 @@
 #include <tWare/Hash.h>
 #include <tWare/File.h>
 #include <tWare/Align.h>
+#include <tWare/Memory.h>
 #include <EABase/eabase.h>
 #include <cstdlib>
 #include <cstring>
@@ -27,10 +28,12 @@ namespace vTextureCache
 			
 			u32 format = 0;
 			
+			char debugName[80];
+			
 			CachedTexturePlat(tFile* file)
 			{
-				size_t alignedFileSize = file->filesize + 32 - (file->filesize % 32);
-				RawData = memalign(32, alignedFileSize);
+				snprintf(debugName, 79, "Texture %s", file->filename);
+				RawData = tWareMalloc(file->filesize, debugName, __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 				
 				memcpy(RawData, file->data, file->filesize);
 				
@@ -41,7 +44,7 @@ namespace vTextureCache
 			
 			~CachedTexturePlat()
 			{
-				free(RawData);
+				tFree(RawData);
 				RawData = NULL;
 				GX_InvalidateTexAll();
 			}
@@ -69,6 +72,8 @@ namespace vTextureCache
 		char debugName[20];
 		uint32_t width = 0;
 		uint32_t height = 0;
+		
+		DEF_TWARE_NEW_OVERRIDE(CachedTexture, MAIN_POOL)
 		
 		CachedTexture(tFile* file, tHash hash, const char* debugName) : CachedTexturePlat(file)
 		{

@@ -14,10 +14,9 @@ namespace vTextureCache
 		CachedTexture* texture = NULL;
 		size_t refcount = 1;
 		
-		CacheEntry()
-		{
-			
-		};
+		DEF_TWARE_NEW_OVERRIDE(CacheEntry, MAIN_POOL)
+		
+		CacheEntry() = default;
 		
 		CacheEntry(CachedTexture* texture)
 		{
@@ -151,7 +150,12 @@ namespace vTextureCache
 	
 	void Init()
 	{
-		gTextureCache.reserve(256);
+		static bool Initialized = false;
+		if (!Initialized)
+		{
+			gTextureCache.reserve(256);
+			Initialized = true;
+		}
 		gTextureCache.clear();
 	}
 	
