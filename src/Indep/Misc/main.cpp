@@ -190,12 +190,12 @@ void InitializeMemory()
 	{
 		tInitializeMemory();
 		
-		const size_t kPhysicsMemoryPoolSize = 0x600000; // 6mb
+		const size_t kPhysicsMemoryPoolSize = 0x200000; // 2mb
 		tInitMemoryPool(PHYSICS_POOL, tWareMalloc(kPhysicsMemoryPoolSize, "Physics Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kPhysicsMemoryPoolSize, "Physics Pool");
 		btAlignedAllocSetCustom(btAllocOverride, tFree);
 		btAlignedAllocSetCustomAligned(btAlignedAllocOverride, tFree);
 		
-		const size_t kTinyGLTFMemoryPoolSize = 0x50000; // 0.5mb
+		const size_t kTinyGLTFMemoryPoolSize = 0x20; // 32 bytes
 		tInitMemoryPool(TINYGLTF_POOL, tWareMalloc(kTinyGLTFMemoryPoolSize, "TinyGLTF Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kTinyGLTFMemoryPoolSize, "TinyGLTF Pool");
 		
 		initializedMemory = true;

@@ -27,6 +27,7 @@ extern void* tWareMalloc(size_t size, const char* debugText, size_t debugLine, u
 extern void tFree(void* const ptr);
 extern void tInitializeMemory();
 extern void tInitMemoryPool(int poolNum, void* memory, size_t memorySize, const char* debugName);
+extern int tCountFreeMemory(int poolNum);
 extern void tMemoryPrintAllocationsByAddress(int poolNum);
 
 struct tMemoryPool : tTNode<tMemoryPool>
@@ -64,6 +65,7 @@ struct tMemoryPool : tTNode<tMemoryPool>
 
 	// debugging
 	void PrintAllocationsByAddress();
+	int GetAmountFree();
 };
 
 struct tMemoryPoolInfo

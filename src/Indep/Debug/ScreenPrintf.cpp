@@ -144,7 +144,8 @@ void DisplayDebugScreenPrints()
     ScreenPrintf(-300, -30, "C: %.2fms", CPUTime);
 	ScreenPrintf(-200, -30, "G: %.2fms", GPUTime);
 	ScreenPrintf(-300, -15, "F: %.2ffps", gAvgFps);
-	ScreenPrintf(-300, 45, "Memory = %dK", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
+	ScreenPrintf(-300, 45, "Main = %dK  Phys = %dK", tCountFreeMemory(MAIN_POOL) / 1024, tCountFreeMemory(PHYSICS_POOL) / 1024);
+	ScreenPrintf(-300, 60, "Heap = %dK", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 }
 
 void DrawScreenPrintfs()

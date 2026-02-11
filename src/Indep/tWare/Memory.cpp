@@ -202,6 +202,24 @@ void tMemoryPool::PrintAllocationsByAddress()
 	}
 }
 
+int tMemoryPool::GetAmountFree()
+{
+	int amountFree = 0;
+	
+	for (Block* block = BlockList.EndOfList()->GetPrev(); block != BlockList.GetHead()->GetPrev(); block = block->GetPrev())
+	{
+		if (!block->Occupied)
+			amountFree += block->Size;
+	}
+	
+	return amountFree;
+}
+
+int tCountFreeMemory(int poolNum)
+{
+	return MemoryPools[poolNum]->GetAmountFree();
+}
+
 void tInitMemoryPool(int poolNum, void* memory, size_t memorySize, const char* debugName)
 {
 	tMemoryPoolInfo& poolInfo = MemoryPoolInfoTable[poolNum];
@@ -234,7 +252,7 @@ void tInitializeMemory()
 	if (!bInitializedMemory)
 	{
 		SYS_STDIO_Report(true);
-		size_t mainPoolSize = (((intptr_t)SYS_GetArenaHi() - (intptr_t)SYS_GetArenaLo()) & 0xFFF00000) - 0x200000; // keep 2 mb in the heap
+		size_t mainPoolSize = (((intptr_t)SYS_GetArenaHi() - (intptr_t)SYS_GetArenaLo()) & 0xFFF00000) - 0x100000; // keep 1mb in the heap
 		printf("Main pool size: 0x%08x\n", mainPoolSize);
 		tInitMemoryPool(0, malloc(mainPoolSize), mainPoolSize, "Main Pool");
 		bInitializedMemory = true;
