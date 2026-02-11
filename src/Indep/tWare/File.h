@@ -7,6 +7,7 @@
 #ifndef TWAREFILE_H
 #define TWAREFILE_H
 
+#include <tWare/Memory.h>
 #include <cstdlib>
 #include <cstdint>
 
@@ -18,11 +19,13 @@ struct tFile
 	char filename[TFILE_MAX_PATH] = { '\0' };
 	size_t filesize = 0;
 	
+	DEF_TWARE_NEW_OVERRIDE(tFile)
+
 	~tFile()
 	{
 		if (data)
 		{
-			free(data);
+			tFree(data);
 			data = NULL;
 		}
 	}

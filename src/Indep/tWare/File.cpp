@@ -11,7 +11,7 @@
 #include <malloc.h>
 
 // TODO: make this std::unordered_map (Ross' suggestion)
-std::vector<tFile*> gOpenFiles;
+std::vector<tFile*, tStdAllocator<tFile*>> gOpenFiles;
 
 char gBaseDir[TFILE_MAX_PATH + 1] { '\0' };
 
@@ -41,7 +41,7 @@ tFile* tOpenFile(const char* path)
 		// align to 16 bytes and ensure an extra padding byte always exists for text
 		long alignedSize = (size + 1) + 16 - ((size + 1) % 16);
 		
-		file->data = memalign(32, alignedSize); // create buffer
+		file->data = tWareMalloc(alignedSize, "FileData", __LINE__, ALLOC_PARAMS(0, 32)); // create buffer
 
 		if (file->data)
 		{

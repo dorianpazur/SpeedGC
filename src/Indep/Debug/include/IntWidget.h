@@ -13,6 +13,7 @@ private:
     int increment;
     int* theVar;
 public:
+	DEF_TWARE_NEW_OVERRIDE(IntWidget)
     virtual void onAction(MenuWidget::actions action, bool repeat) override;
     virtual void render(IMenuRender* renderer, int x, int y) override;
     int* getValue() const { return theVar; }

@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <Vulpes/vulpes.h>
 #include <tWare/Time.h>
+#include <tWare/Memory.h>
 
 extern bool DoScreenPrintf;
 

@@ -10,6 +10,7 @@
 class ALIGN(32) Vehicle : public ISimable
 {
 public:
+	DEF_TWARE_NEW_OVERRIDE(Vehicle)
     Vehicle(btDynamicsWorld* world, const btVector3& startPos);
 	~Vehicle();
     void Update(float throttle, float brake, float steering, float timestep);
@@ -19,6 +20,7 @@ private:
 	btRaycastVehicle::btVehicleTuning mTuning;
 	btVehicleRaycaster* mRaycastVehicleRaycaster;
 	btRaycastVehicle* mRaycastVehicle;
+	btDefaultMotionState mMotionState;
 	
 	float mThrottleInput = 0.0f;
 	float mSteeringInput = 0.0f;

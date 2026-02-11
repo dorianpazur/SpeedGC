@@ -11,6 +11,7 @@ private:
     float increment;
     float* theVar;
 public:
+	DEF_TWARE_NEW_OVERRIDE(FloatWidget)
     virtual void onAction(MenuWidget::actions action, bool repeat) override;
     virtual void render(IMenuRender* renderer, int x, int y) override;
     float* getValue() const { return theVar; }

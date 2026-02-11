@@ -11,6 +11,7 @@ private:
     int currentValueIndex;
     int maxValueIndex;
 public:
+	DEF_TWARE_NEW_OVERRIDE(StringToIndexInListWidget)
     virtual void onAction(MenuWidget::actions action, bool repeat) override;
     virtual void render(IMenuRender* renderer, int x, int y) override;
 

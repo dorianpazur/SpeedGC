@@ -21,8 +21,13 @@ void DebugMenuAllocate()
 
 void DebugMenuInit()
 {
-    gDebugMenuIOHandler = new DebugMenuInputHandler();
-    DebugMenuAllocate();
+	const bool initialized = false;
+	if (!initialized)
+	{
+		gDebugMenuIOHandler = new DebugMenuInputHandler();
+		DebugMenuAllocate();
+		initialized = true;
+	}
 }
 
 void ExitDebugMenu()

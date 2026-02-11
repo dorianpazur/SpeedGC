@@ -1,7 +1,7 @@
 #ifndef DEBUG_DEBUGMENUINPUTHANDLER_H
 #define DEBUG_DEBUGMENUINPUTHANDLER_H
 
-#include "DebugMenuInputHandler.h"
+#include <tWare/Memory.h>
 
 class DebugMenuInputHandler 
 {
@@ -14,6 +14,7 @@ private:
     bool mActiveShift = false;
 
 public:
+	DEF_TWARE_NEW_OVERRIDE(DebugMenuInputHandler)
     DebugMenuInputHandler();
     void PollInput();
     void Exit();

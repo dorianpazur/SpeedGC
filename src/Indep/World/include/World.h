@@ -13,6 +13,7 @@
 #include "btBulletDynamicsCommon.h"
 #include "Vehicle.h"
 #include <tWare/Align.h>
+#include <tWare/Memory.h>
 
 class ALIGN(32) World
 {
@@ -27,6 +28,8 @@ class ALIGN(32) World
 public:
 	btDiscreteDynamicsWorld* dynamicsWorld = NULL;
 	
+	DEF_TWARE_NEW_OVERRIDE(World)
+	
 	static void Initialize();
 	static void Uninit();
 	static World* GetInstance();
@@ -34,7 +37,7 @@ public:
 	void Simulate(float timestep);
 	bool ShouldPauseWorld();
 	
-	std::vector<Vehicle*> mVehicles;
+	std::vector<Vehicle*, tStdAllocator<Vehicle*>> mVehicles;
 	
 	World();
 	~World();

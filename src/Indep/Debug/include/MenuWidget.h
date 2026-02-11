@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <tWare/Memory.h>
 #include <tWare/List.h>
 #include "IMenuRender.h"
 
@@ -25,7 +26,9 @@ struct MenuWidget : tTNode<MenuWidget> {
     bool bExitMenuAfterSelected;
     unsigned int textColor;
     void(*callbackFunction)();
-
+	
+	DEF_TWARE_NEW_OVERRIDE(MenuWidget)
+	
     MenuWidget();
     MenuWidget(const char* n, int h, int w, void(*f)());
 

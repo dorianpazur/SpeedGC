@@ -12,6 +12,7 @@ private:
     int maxValueIndex;
     bool mCallAtSelection;
 public:
+	DEF_TWARE_NEW_OVERRIDE(StringToIndexInListWithCallbackWidget)
     virtual void onAction(MenuWidget::actions action, bool repeat) override;
     virtual void render(IMenuRender* renderer, int x, int y) override;
 
