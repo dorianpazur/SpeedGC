@@ -41,7 +41,7 @@ void tMemoryPool::Init(void* memoryBlock, size_t size, const char* name, uint32_
 
 void* tMemoryPool::AllocateMemory(size_t size, uint32_t alignment, const char* debugText, uint32_t debugLine)
 {
-	printf("Allocating %u bytes for %s\n", size, debugText);
+	//printf("Allocating %u bytes for %s\n", size, debugText);
 	size_t originalSize = size; // purely for debugging
 	Block* block = GetFirstFreeBlockThatFitsSize(tGetNextAlignedSizeOrAddress(size + sizeof(Block), alignment));
 
@@ -145,10 +145,14 @@ tMemoryPool::Block* tMemoryPool::GetLargestFreeBlock()
 		}
 	}
 
-	if (largest)
-		printf("Largest free block size: 0x%lx\n", largest->Size);
-	else
+	//if (largest)
+	//	printf("Largest free block size: 0x%lx\n", largest->Size);
+	//else
+	if (!largest)
+	{
 		printf("No free blocks!");
+		PrintAllocationsByAddress();
+	}
 
 	return largest;
 }
@@ -265,7 +269,6 @@ void tFree(void* const ptr)
 		if (memoryBlock->MagicNumber == 0xDEADDEAD)
 		{
 			printf("tFree: This pointer has already been freed! 0x%08x (magic no. 0x%08x)\n", (intptr_t)memoryBlock, memoryBlock->MagicNumber);
-			return;
 		}
 		else
 		{

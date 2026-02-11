@@ -21,7 +21,7 @@ void DebugMenuAllocate()
 
 void DebugMenuInit()
 {
-	const bool initialized = false;
+	static bool initialized = false;
 	if (!initialized)
 	{
 		gDebugMenuIOHandler = new DebugMenuInputHandler();
