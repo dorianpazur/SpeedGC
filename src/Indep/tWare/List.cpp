@@ -1,5 +1,7 @@
 #include <tWare/List.h>
 
+tNode::~tNode() {};
+
 tNode *tList::GetNode(int ordinal_number)
 {
     int n = 0;

@@ -12,7 +12,7 @@ public:
         Next = NULL;
         Prev = NULL;
     }
-    ~tNode() {}
+    virtual ~tNode();
     tNode* GetNext() 
     {
         return Next;
