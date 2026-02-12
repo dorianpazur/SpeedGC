@@ -6,6 +6,7 @@
 class ActionWidget : public MenuWidget
 {
 public:
+	DEF_TWARE_NEW_OVERRIDE(ActionWidget, MAIN_POOL)
     ActionWidget(const char* name, void(*f)());
 };
 

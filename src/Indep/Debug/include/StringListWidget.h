@@ -16,6 +16,7 @@ private:
     int currentValue;
     int maxValue;
 public:
+	DEF_TWARE_NEW_OVERRIDE(StringListWidget, MAIN_POOL)
     virtual void onAction(MenuWidget::actions action, bool repeat) override;
     virtual void render(IMenuRender* renderer, int x, int y) override;
     int getCurrentValue() const { return currentValue; }

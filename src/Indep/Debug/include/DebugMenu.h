@@ -10,11 +10,7 @@ extern void DebugMenuInit();
 extern const char* gLastCurMenuName;
 extern int gLastCurSelection;
 
-struct DebugMenu;
-struct DebugMenuAlloc : tTNode<DebugMenuAlloc>
-{
-    DebugMenu* menu;
-};
+struct DebugMenuAlloc;
 
 struct DebugMenu : tTNode<DebugMenu>
 {
@@ -39,6 +35,7 @@ private:
     static tTList<DebugMenuAlloc>* mAllocations;
 
 public:
+	DEF_TWARE_NEW_OVERRIDE(DebugMenu, MAIN_POOL)
     DebugMenu();
     ~DebugMenu();
     static DebugMenu* create(const char* name, DebugMenu* parent);
@@ -81,6 +78,20 @@ private:
     void doRenderBackground(IMenuRender* renderer) const;
     bool selectionFitsOnScreen();
     MenuWidget* getWidget(int n);
+};
+
+struct DebugMenuAlloc : tTNode<DebugMenuAlloc>
+{
+	DEF_TWARE_NEW_OVERRIDE(DebugMenuAlloc, MAIN_POOL)
+    DebugMenu* menu;
+	~DebugMenuAlloc()
+	{
+		if (menu)
+		{
+			delete menu;
+			menu = NULL;
+		}
+	}
 };
 
 extern DebugMenuInputHandler* gDebugMenuIOHandler;

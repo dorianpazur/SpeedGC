@@ -3,6 +3,7 @@
 
 #include <tWare/Hash.h>
 #include <tWare/Align.h>
+#include <tWare/Memory.h>
 #include <tiny_gltf/tiny_gltf.h>
 #include <cstdint>
 #include <Vulpes/TextureCache.h>
@@ -36,6 +37,8 @@ struct ALIGN(32) vMesh
 	
 	TextureHashes mTextures;
 	
+	DEF_TWARE_NEW_OVERRIDE(vMesh, MAIN_POOL)
+	
 	vMesh() {};
 	vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char* basePath);
 	
@@ -43,24 +46,26 @@ struct ALIGN(32) vMesh
 	{
 		if (mVertices)
 		{
-			free(mVertices);
+			tFree(mVertices);
 		}
 		if (mIndices)
 		{
-			free(mIndices);
+			tFree(mIndices);
 		}
 	}
 private:
 	void CreateBuffer(size_t vertexCount)
 	{
 		mVertexBufferSize = sizeof(vVertex)*vertexCount;
-		mVertices = (vVertex*)memalign(32, mVertexBufferSize);
+		mVertices = (vVertex*)tWareMalloc(mVertexBufferSize, "VertexBuffer", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 	}
 };
 
 struct ALIGN(32) vSolid
 {
 	std::vector<vMesh> mMeshes;
+		
+	DEF_TWARE_NEW_OVERRIDE(vSolid, MAIN_POOL)
 	
 	vSolid(tinygltf::Model *model, tinygltf::Node &node, const char* basePath = "")
 	{	
@@ -79,6 +84,9 @@ struct ALIGN(32) vSolid
 struct ALIGN(32) vModel
 {
 	std::vector<vSolid> mSolids;
+	
+	DEF_TWARE_NEW_OVERRIDE(vModel, MAIN_POOL)
+	
 	void BuildFromGLTFModel(tinygltf::Model* model, const char* basePath = "");
 	vModel(tinygltf::Model *model, const char* basePath = "");
 	vModel(const char *path);

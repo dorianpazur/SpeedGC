@@ -6,6 +6,7 @@
 class DebugMenuRender : public IMenuRender
 {
 public:
+	DEF_TWARE_NEW_OVERRIDE(DebugMenuRender, MAIN_POOL)
     virtual void renderOverlay(int x, int y, int width, int height, float alpha, unsigned int color);
     virtual void print(int x, int y, unsigned int color, const char* str);
     virtual void getStringSize(const char* str, int* x, int* y);

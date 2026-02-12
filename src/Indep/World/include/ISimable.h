@@ -2,6 +2,7 @@
 #define WORLD_ISIMABLE_H
 
 #include <tWare/Align.h>
+#include <tWare/Memory.h>
 #include <btBulletDynamicsCommon.h>
 
 class ISimable
@@ -9,6 +10,8 @@ class ISimable
 public:
     btRigidBody* mBody = NULL;
 	btDynamicsWorld* mWorld = NULL;
+	
+	DEF_TWARE_NEW_OVERRIDE(ISimable, MAIN_POOL)
 	
 	virtual void OnCollide(ISimable* other);
 	

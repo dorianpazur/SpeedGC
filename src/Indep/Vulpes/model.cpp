@@ -105,7 +105,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 	
 	mIndexCount = indexAccessor.count;
 	
-	mIndices = (uint16_t*)malloc(mIndexCount * sizeof(uint16_t));
+	mIndices = (uint16_t*)tWareMalloc(mIndexCount * sizeof(uint16_t), "ModelIndices", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0));
 	
 	for (size_t i = 0; i < mIndexCount; i += 3)
 	{
@@ -191,29 +191,32 @@ vModel::vModel(const char* path)
 	if (!loaded)
 		printf("Failed to load glTF: %s\n", glbFile->filename);
 	else
-		printf("Loaded glTF: %s\n", glbFile->filename);;
+		printf("Loaded glTF: %s\n", glbFile->filename);
 	
 	tCloseFile(glbFile);
 	
-	// find base path
-	
-	// isolate filename from path
-	for (filenameIndex = strlen(path) - 1; filenameIndex >= 0; filenameIndex--)	
+	if (loaded)
 	{
-		if (path[filenameIndex] == '/' || path[filenameIndex] == '\\')
+		// find base path
+		
+		// isolate filename from path
+		for (filenameIndex = strlen(path) - 1; filenameIndex >= 0; filenameIndex--)	
 		{
-			break;
+			if (path[filenameIndex] == '/' || path[filenameIndex] == '\\')
+			{
+				break;
+			}
 		}
+		
+		if (filenameIndex < 0)
+			filenameIndex = 0;
+		
+		memcpy(basePath, path, filenameIndex); // copy the path up to but not including the filename
+		
+		printf("Base path of model: %s\n", basePath);
+		
+		BuildFromGLTFModel(&model, basePath);
 	}
-	
-	if (filenameIndex < 0)
-		filenameIndex = 0;
-	
-	memcpy(basePath, path, filenameIndex); // copy the path up to but not including the filename
-	
-	printf("Base path of model: %s\n", basePath);
-	
-	BuildFromGLTFModel(&model, basePath);
 }
 
 //---------------------------------------------------------------------------------

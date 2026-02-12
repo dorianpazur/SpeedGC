@@ -204,7 +204,6 @@ void DebugMenu::destroy()
     DebugMenu::mRootMenu = NULL;
     DebugMenu::mCurrentMenu = NULL;
     DebugMenu::mNewestMenu = NULL;
-    
 }
 
 bool DebugMenu::isActive()
