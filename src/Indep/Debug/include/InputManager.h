@@ -4,6 +4,7 @@
 #include <EABase/eabase.h>
 #include <vector>
 #include "InputCommand.h"
+#include <tWare/Memory.h>
 
 // InputManager: handles reading controller input
 // Right now it's focused on GameCube but the interface can be extended later.
@@ -19,6 +20,7 @@ struct PlayerInputState
 class InputManager
 {
 public:
+	DEF_TWARE_NEW_OVERRIDE(InputManager, MAIN_POOL)
 	static void Initialize();
 	static void Update(); // call once per frame before using input
 
