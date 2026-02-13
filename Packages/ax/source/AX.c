@@ -1,0 +1,40 @@
+#include <gccore.h>
+#include <dolphin/ax.h>
+
+#include "__ax.h"
+
+#ifdef DEBUG
+const char* __AXVersion = "<< Dolphin SDK - AX\tdebug build: "__DATE__" "__TIME__" (0x2301) >>";
+#else
+const char* __AXVersion = "<< Dolphin SDK - AX\trelease build: "__DATE__" "__TIME__" (0x2301) >>";
+#endif
+
+void AXInit(void) {
+    AXInitEx(0);
+}
+
+void AXInitEx(u32 outputBufferMode) {
+#ifdef DEBUG
+    OSReport("Initializing AX\n");
+#endif
+    OSRegisterVersion(__AXVersion);
+
+    __AXAllocInit();
+    __AXVPBInit();
+    __AXSPBInit();
+    __AXAuxInit();
+    __AXClInit();
+    __AXOutInit(outputBufferMode);
+}
+
+void AXQuit(void) {
+#ifdef DEBUG
+    OSReport("Shutting down AX\n");
+#endif
+    __AXAllocQuit();
+    __AXVPBQuit();
+    __AXSPBQuit();
+    __AXAuxQuit();
+    __AXClQuit();
+    __AXOutQuit();
+}

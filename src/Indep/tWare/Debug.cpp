@@ -5,10 +5,13 @@
 
 #include <tWare/Debug.h>
 #undef tBreak
+#if defined(EA_PLATFORM_GAMECUBE)
+#include <dolphin/os.h>
+#endif
 
 // reverse-engineered from Dolphin SDK by doldecomp guys
 // ASM routines ported from Metrowerks to GCC syntax
-#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_REVOLUTION)
+#if 0//defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_REVOLUTION)
 extern "C"
 {
 	u32 OSGetStackPointer();

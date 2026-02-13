@@ -1,6 +1,7 @@
 // Gamecube-specific stuff
 
 #include <ogc/system.h>
+#include <dolphin/ax.h>
 #include <Vulpes/vulpes.h>
 #include <tWare/Time.h>
 #include <tWare/File.h>
@@ -228,6 +229,12 @@ void InitializePlatform(int argc, char** argv) {
 	{
 		VIDEO_Init();
 		PAD_Init();
+		
+		// audio
+		AR_Init(NULL, 0);
+		ARQ_Init();
+		AUDIO_Init(NULL);
+		AXInit();
 		
 		rmode = VIDEO_GetPreferredMode(NULL);
 	

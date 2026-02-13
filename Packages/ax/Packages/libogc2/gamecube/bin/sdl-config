@@ -1,0 +1,60 @@
+#!/bin/sh
+
+prefix=/opt/devkitpro/libogc2/gamecube
+exec_prefix=${prefix}
+exec_prefix_set=no
+libdir=${exec_prefix}/lib
+
+#usage="\
+#Usage: sdl-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--cflags] [--libs]"
+usage="\
+Usage: sdl-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--cflags] [--libs] [--static-libs]"
+
+if test $# -eq 0; then
+      echo "${usage}" 1>&2
+      exit 1
+fi
+
+while test $# -gt 0; do
+  case "$1" in
+  -*=*) optarg=`echo "$1" | LC_ALL="C" sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) optarg= ;;
+  esac
+
+  case $1 in
+    --prefix=*)
+      prefix=$optarg
+      if test $exec_prefix_set = no ; then
+        exec_prefix=$optarg
+      fi
+      ;;
+    --prefix)
+      echo $prefix
+      ;;
+    --exec-prefix=*)
+      exec_prefix=$optarg
+      exec_prefix_set=yes
+      ;;
+    --exec-prefix)
+      echo $exec_prefix
+      ;;
+    --version)
+      echo 1.2.15
+      ;;
+    --cflags)
+      echo -I${prefix}/include/SDL -D_GNU_SOURCE=1 -DGEKKO -mogc -mcpu=750 -meabi -msdata=sysv -mhard-float                          -Wall -O2                          -I/opt/devkitpro/libogc2/gamecube/include                          -I/opt/devkitpro/portlibs/gamecube/include                          -I/opt/devkitpro/portlibs/ppc/include
+      ;;
+#    --libs)
+#      echo -L${exec_prefix}/lib  -DGEKKO -mogc -mcpu=750 -meabi -msdata=sysv -mhard-float                   -lSDLmain -lSDL  -L/opt/devkitpro/libogc2/gamecube/lib -lopengx -lstdc++ -logc -lm                   -L/opt/devkitpro/libogc2/gamecube/lib -laesnd -lfat -logc -lm                   -L/opt/devkitpro/portlibs/gamecube/lib                   -L/opt/devkitpro/portlibs/ppc/lib
+#      ;;
+#    --static-libs)
+    --libs|--static-libs)
+      echo -L${exec_prefix}/lib  -DGEKKO -mogc -mcpu=750 -meabi -msdata=sysv -mhard-float                   -lSDLmain -lSDL  -L/opt/devkitpro/libogc2/gamecube/lib -lopengx -lstdc++ -logc -lm                   -L/opt/devkitpro/libogc2/gamecube/lib -laesnd -lfat -logc -lm                   -L/opt/devkitpro/portlibs/gamecube/lib                   -L/opt/devkitpro/portlibs/ppc/lib  -liconv -lm
+      ;;
+    *)
+      echo "${usage}" 1>&2
+      exit 1
+      ;;
+  esac
+  shift
+done
