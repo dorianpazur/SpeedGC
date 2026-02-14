@@ -6,6 +6,7 @@
 #include <tWare/Time.h>
 #include <tWare/File.h>
 #include <tWare/Hash.h>
+#include <tWare/Math.h>
 
 #include "DebugMenu.h"
 #include "DebugAssistant.h"
@@ -24,8 +25,8 @@ static GXRModeObj *rmode = NULL;
 f32 yscale;
 u32 xfbHeight;
 GXColor background = {0x7F, 0x40, 0xFF, 0xff};
-Mtx44 viewMtx[2];
-Mtx44 projMtx[2]; // view and perspective matrices
+tMatrix4 viewMtx[2];
+tMatrix4 projMtx[2]; // view and perspective matrices
 
 bool bSplitScreen = false;
 bool bWideScreen = true;
@@ -44,11 +45,11 @@ void vDisplayFrame()
 {
 	static vVector3 camTarget[2];
 	
-	Mtx guiMtx;
+	tMatrix4 guiMtx;
 	Mtx identityMtx;
 		
 	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,twkDeflicker,rmode->vfilter);
-	guOrtho(guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
+	guOrtho(*(Mtx44*)&guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
 	guMtxIdentity(identityMtx);
 	
 	// setup our camera at the origin
@@ -56,12 +57,12 @@ void vDisplayFrame()
 	guVector cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
 		look = {camTarget[0].x, camTarget[0].y, camTarget[0].z};
-	guLookAt(viewMtx[0], &cam, &up, &look);
+	guLookAt(*(Mtx44*)&viewMtx[0], &cam, &up, &look);
 	
 	cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
 		look = {camTarget[1].x, camTarget[1].y, camTarget[1].z};
-	guLookAt(viewMtx[1], &cam, &up, &look);
+	guLookAt(*(Mtx44*)&viewMtx[1], &cam, &up, &look);
 	
 	// setup our projection matrix
 	// this creates a perspective matrix with a view angle of 60,
@@ -78,8 +79,8 @@ void vDisplayFrame()
 	if (bWideScreen)
 		aspect *= 1.33333334f;
 	
-	guPerspective(projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
-	GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
+	guPerspective(*(Mtx44*)&projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	GX_LoadProjectionMtx(*(Mtx44*)&projMtx[0], GX_PERSPECTIVE);
 	
 	w = rmode->viWidth;
 	h = rmode->viHeight;
@@ -89,14 +90,14 @@ void vDisplayFrame()
 	if (bSplitScreen)
 		aspect *= 2.0f;
 	
-	guPerspective(projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	guPerspective(*(Mtx44*)&projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
 	
 	GX_InvVtxCache();
 	GX_InvalidateTexAll();
 	
 	for (int viewNum = 0; viewNum < (bSplitScreen ? 2 : 1); viewNum++)
 	{
-		GX_LoadProjectionMtx(projMtx[0], GX_PERSPECTIVE);
+		GX_LoadProjectionMtx(*(Mtx44*)&projMtx[0], GX_PERSPECTIVE);
 		if (bSplitScreen)
 		{
 			GX_SetViewport(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2,0,1); // TODO - add actual view class
@@ -109,7 +110,7 @@ void vDisplayFrame()
 		}
 		
 		float transformFlt[16];
-		Mtx44 transform;
+		tMatrix4 transform;
 		
 		vPoly poly;
 	
@@ -143,7 +144,7 @@ void vDisplayFrame()
 		*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
 		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 		
-		GX_LoadPosMtxImm(viewMtx[viewNum], GX_PNMTX0);
+		GX_LoadPosMtxImm(*(Mtx44*)&viewMtx[viewNum], GX_PNMTX0);
 		vPolyRender(&poly, vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
 		
 		if (gCarModel)
@@ -185,7 +186,7 @@ void vDisplayFrame()
 				transform[1][3] = transformFlt[13];
 				transform[2][3] = transformFlt[14];
 	
-				gCarModel->Render(viewMtx[viewNum], transform);
+				gCarModel->Render(&viewMtx[viewNum], &transform);
 			}
 		}
 	}
@@ -194,7 +195,7 @@ void vDisplayFrame()
 	GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
 	GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
 	
-	GX_LoadProjectionMtx(guiMtx, GX_ORTHOGRAPHIC);
+	GX_LoadProjectionMtx(*(Mtx44*)&guiMtx, GX_ORTHOGRAPHIC);
 	GX_LoadPosMtxImm(identityMtx, GX_PNMTX0);
 	
 	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);

@@ -233,34 +233,33 @@ void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, cons
 
 //---------------------------------------------------------------------------------
 
-void vModel::Render(Mtx view, Mtx transform)
+void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 {
 	const float LARGE_NUMBER = 9999999999.0f;
-	Mtx44 mv; // modelview matrix.	
-	Mtx44 WtoL; // world to local matrix.	
-	Mtx44 VtoWtmp; // view to world matrix.	
-	Mtx44 VtoW; // view to world matrix.	
+	tMatrix4 mv; // modelview matrix.	
+	tMatrix4 WtoL; // world to local matrix.	
+	tMatrix4 VtoWtmp; // view to world matrix.	
+	tMatrix4 VtoW; // view to world matrix.	
 	
 	// bad naming: this means multiply a by b and put the result into c (ab)
-	guMtxConcat(view,transform,mv);
+	tMulMatrix(&mv, view, transform);
 	
 	// load the modelview matrix into matrix memory
-	GX_LoadPosMtxImm(mv, GX_PNMTX0);
+	GX_LoadPosMtxImm(*(Mtx44*)&mv, GX_PNMTX0);
 	
-	guMtxInverse(transform, WtoL);
-	guMtxInverse(view, VtoWtmp);
-    guMtxTranspose(VtoWtmp,VtoW);
+	tInvertMatrix(&WtoL, transform);
+	tInvertMatrix(&VtoWtmp, view);
+    tTransposeMatrix(&VtoW, &VtoWtmp);
 	
 	GX_SetCullMode(GX_CULL_BACK);
 	
 	for (size_t solid = 0; solid < mSolids.size(); solid++)
 	{	
-
 		// light test
 		
-		guVector lpos;
-		guVector rimPos;
-		guVector rimPos2;
+		tVector3 lpos;
+		tVector3 rimPos;
+		tVector3 rimPos2;
 		
 		GXLightObj lobj;
 		GXLightObj lspecobj;
@@ -290,11 +289,11 @@ void vModel::Render(Mtx view, Mtx transform)
 		rimPos2.y = -0.35f * LARGE_NUMBER;
 		rimPos2.z = -0.35f * LARGE_NUMBER;
 		
-		guVecMultiply(WtoL,&lpos,&lpos);
-		guVecMultiply(VtoW,&rimPos,&rimPos);
-		guVecMultiply(VtoW,&rimPos2,&rimPos2);
-		guVecMultiply(WtoL,&rimPos,&rimPos);
-		guVecMultiply(WtoL,&rimPos2,&rimPos2);
+		tMulVector(&lpos,&WtoL,&lpos);
+		tMulVector(&rimPos,&VtoW,&rimPos);
+		tMulVector(&rimPos2,&VtoW,&rimPos2);
+		tMulVector(&rimPos,&WtoL,&rimPos);
+		tMulVector(&rimPos2,&WtoL,&rimPos2);
 		
 		GX_InitLightPos(&lobj,lpos.x,lpos.y,lpos.z);
 		GX_InitLightColor(&lobj,lightColor[0]);

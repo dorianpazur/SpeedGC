@@ -4,6 +4,7 @@
 #include <tWare/Hash.h>
 #include <tWare/Align.h>
 #include <tWare/Memory.h>
+#include <tWare/Math.h>
 #include <tiny_gltf/tiny_gltf.h>
 #include <cstdint>
 #include <Vulpes/TextureCache.h>
@@ -90,7 +91,7 @@ struct ALIGN(32) vModel
 	void BuildFromGLTFModel(tinygltf::Model* model, const char* basePath = "");
 	vModel(tinygltf::Model *model, const char* basePath = "");
 	vModel(const char *path);
-	void Render(Mtx view, Mtx transform);
+	void Render(tMatrix4 *view, tMatrix4 *transform);
 	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, const char* basePath = "");
 };
 
