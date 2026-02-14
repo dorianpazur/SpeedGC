@@ -351,8 +351,8 @@ static void __MIXSetPan(MIXChannel* channel) {
     int pan, span;
     int ipan, ispan;
 
-    //ASSERTLINE(281, (channel->pan <= 127) && (channel->pan >= 0));
-    //ASSERTLINE(282, (channel->span <= 127) && (channel->span >= 0));
+    ASSERTLINE(281, (channel->pan <= 127) && (channel->pan >= 0));
+    ASSERTLINE(282, (channel->span <= 127) && (channel->span >= 0));
 
     pan = channel->pan;
     ipan = 127 - pan;
@@ -414,8 +414,8 @@ void MIXInit(void) {
 void MIXQuit(void) {}
 
 void MIXSetSoundMode(u32 mode) {
-    //ASSERTLINE(421, (mode == MIX_SOUND_MODE_MONO) || (mode == MIX_SOUND_MODE_STEREO) ||
-    //                (mode == MIX_SOUND_MODE_SURROUND) || (mode == MIX_SOUND_MODE_DPL2));
+    ASSERTLINE(421, (mode == MIX_SOUND_MODE_MONO) || (mode == MIX_SOUND_MODE_STEREO) ||
+                    (mode == MIX_SOUND_MODE_SURROUND) || (mode == MIX_SOUND_MODE_DPL2));
     __MIXSoundMode = mode;
 }
 
@@ -429,7 +429,7 @@ void MIXInitChannel(AXVPB* axvpb, u32 mode, int input, int auxA, int auxB, int p
     u16 mixerCtrl;
     u16* p;
 
-    //ASSERTLINE(478, axvpb);
+    ASSERTLINE(478, axvpb);
 
     c = &__MIXChannel[axvpb->index];
 
@@ -574,7 +574,7 @@ void MIXInitChannel(AXVPB* axvpb, u32 mode, int input, int auxA, int auxB, int p
 }
 
 void MIXReleaseChannel(AXVPB* axvpb) {
-    //ASSERTLINE(657, axvpb);
+    ASSERTLINE(657, axvpb);
     __MIXChannel[axvpb->index].axvpb = 0;
 }
 

@@ -1,5 +1,5 @@
-#ifndef __AI_H__
-#define __AI_H__
+#ifndef _DOLPHIN_AI_H_
+#define _DOLPHIN_AI_H_
 
 #ifdef __cplusplus
 extern "C" {

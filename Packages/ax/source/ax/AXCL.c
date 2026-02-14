@@ -58,7 +58,7 @@ void __AXNextFrame(void* sbuffer, void* buffer) {
     case 2:
         break;
     default:
-        //ASSERTMSGLINE(193, 0, "Unknown AX mode!");
+        ASSERTMSGLINE(193, 0, "Unknown AX mode!");
     }
 
     data = (u32)__AXGetPBs();
@@ -147,8 +147,8 @@ void __AXClInit(void) {
 #ifdef DEBUG
     OSReport("Initializing AXCL code module\n");
 #endif
-    //ASSERTLINE(338, ((u32)&__AXCommandList[0][0] & 0x1F) == 0);
-    //ASSERTLINE(339, ((u32)&__AXCommandList[1][0] & 0x1F) == 0);
+    ASSERTLINE(338, ((u32)&__AXCommandList[0][0] & 0x1F) == 0);
+    ASSERTLINE(339, ((u32)&__AXCommandList[1][0] & 0x1F) == 0);
     __AXClMode = 0;
     __AXCommandListPosition = 0;
     __AXClWrite = (void*)&__AXCommandList;

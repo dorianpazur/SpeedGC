@@ -23,7 +23,7 @@ include $(BASEDIR)/Packages/libogc2/gamecube_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	
 DATA		:=	data
 INCLUDES	:=
 
@@ -48,6 +48,8 @@ LIBDIRS	:=
 #---------------------------------------------------------------------------------
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
+
+include $(wildcard ./source/sources.mk)
 
 export OUTPUT	:=	$(CURDIR)/lib/lib$(TARGET).a
 

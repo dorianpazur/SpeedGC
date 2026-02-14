@@ -22,8 +22,8 @@ AXPROFILE* __AXGetCurrentProfile(void) {
 }
 
 void AXInitProfile(AXPROFILE* profile, u32 maxProfiles) {
-    //ASSERTLINE(60, profile);
-    //ASSERTLINE(61, maxProfiles);
+    ASSERTLINE(60, profile);
+    ASSERTLINE(61, maxProfiles);
 
     __AXProfile = profile;
     __AXMaxProfiles = maxProfiles;

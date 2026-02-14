@@ -31,7 +31,7 @@ static u32 __AXCheckStacks(void) {
 }
 
 AXVPB* __AXGetStackHead(u32 priority) {
-    //ASSERTLINE(97, priority < AX_PRIORITY_STACKS);
+    ASSERTLINE(97, priority < AX_PRIORITY_STACKS);
     return __AXStackHead[priority];
 }
 
@@ -74,7 +74,7 @@ void __AXAllocQuit(void) {
 }
 
 void __AXPushFreeStack(AXVPB* p) {
-    //ASSERTLINE(168, p->priority);
+    ASSERTLINE(168, p->priority);
     p->next = __AXStackHead[0];
     __AXStackHead[0] = p;
     p->priority = 0;
@@ -110,7 +110,7 @@ void __AXRemoveFromStack(AXVPB* p) {
     AXVPB* head;
     AXVPB* tail;
 
-    //ASSERTLINE(219, p->priority);
+    ASSERTLINE(219, p->priority);
 
     i = p->priority;
     head = __AXStackHead[i];
@@ -139,8 +139,8 @@ void __AXRemoveFromStack(AXVPB* p) {
 }
 
 void __AXPushStackHead(AXVPB* p, u32 priority) {
-    //ASSERTLINE(261, priority);
-    //ASSERTLINE(262, priority < AX_PRIORITY_STACKS);
+    ASSERTLINE(261, priority);
+    ASSERTLINE(262, priority < AX_PRIORITY_STACKS);
 
     p->next = __AXStackHead[priority];
     p->prev = 0;
@@ -159,8 +159,8 @@ void __AXPushStackHead(AXVPB* p, u32 priority) {
 AXVPB* __AXPopStackFromBottom(u32 priority) {
     AXVPB* p;
 
-    //ASSERTLINE(287, priority);
-    //ASSERTLINE(288, priority < AX_PRIORITY_STACKS);
+    ASSERTLINE(287, priority);
+    ASSERTLINE(288, priority < AX_PRIORITY_STACKS);
 
     p = NULL;
     if (__AXStackHead[priority]) {
@@ -180,8 +180,8 @@ AXVPB* __AXPopStackFromBottom(u32 priority) {
 void AXFreeVoice(AXVPB* p) {
     BOOL old;
     
-    //ASSERTLINE(322, p);
-    //ASSERTMSGLINE(326, p->priority != 0, "Calling AXFreeVoice() for voice that is already free\n");
+    ASSERTLINE(322, p);
+    ASSERTMSGLINE(326, p->priority != 0, "Calling AXFreeVoice() for voice that is already free\n");
 
     old = OSDisableInterrupts();
     __AXRemoveFromStack(p);
@@ -191,7 +191,7 @@ void AXFreeVoice(AXVPB* p) {
     __AXSetPBDefault(p);
     __AXPushFreeStack(p);
 
-    //ASSERTMSGLINE(343, __AXCheckStacks() != 0, "Voice list is trashed!\n");
+    ASSERTMSGLINE(343, __AXCheckStacks() != 0, "Voice list is trashed!\n");
     OSRestoreInterrupts(old);
 }
 
@@ -200,8 +200,8 @@ AXVPB* AXAcquireVoice(u32 priority, void (*callback)(void*), u32 userContext) {
     AXVPB* p;
     u32 i;
 
-    //ASSERTLINE(361, priority);
-    //ASSERTLINE(362, priority < AX_PRIORITY_STACKS);
+    ASSERTLINE(361, priority);
+    ASSERTLINE(362, priority < AX_PRIORITY_STACKS);
 
     old = OSDisableInterrupts();
     p = __AXPopFreeStack();
@@ -227,7 +227,7 @@ AXVPB* AXAcquireVoice(u32 priority, void (*callback)(void*), u32 userContext) {
         __AXSetPBDefault(p);
     }
 
-    //ASSERTMSGLINE(410, __AXCheckStacks() != 0, "Voice list is trashed!\n");
+    ASSERTMSGLINE(410, __AXCheckStacks() != 0, "Voice list is trashed!\n");
     OSRestoreInterrupts(old);
     return p;
 }
@@ -235,15 +235,15 @@ AXVPB* AXAcquireVoice(u32 priority, void (*callback)(void*), u32 userContext) {
 void AXSetVoicePriority(AXVPB* p, u32 priority) {
     BOOL old;
 
-    //ASSERTLINE(424, p);
-    //ASSERTMSGLINE(428, p->priority != 0, "Calling AXSetVoicePriority() for voice that is already free\n");
-    //ASSERTMSGLINE(433, priority, "Do not set voice priority to 0, use AXFreeVoice() to free voice\n");
-    //ASSERTLINE(435, priority < AX_PRIORITY_STACKS);
+    ASSERTLINE(424, p);
+    ASSERTMSGLINE(428, p->priority != 0, "Calling AXSetVoicePriority() for voice that is already free\n");
+    ASSERTMSGLINE(433, priority, "Do not set voice priority to 0, use AXFreeVoice() to free voice\n");
+    ASSERTLINE(435, priority < AX_PRIORITY_STACKS);
 
     old = OSDisableInterrupts();
     __AXRemoveFromStack(p);
     __AXPushStackHead(p, priority);
 
-    //ASSERTMSGLINE(442, __AXCheckStacks() != 0, "Voice list is trashed!\n");
+    ASSERTMSGLINE(442, __AXCheckStacks() != 0, "Voice list is trashed!\n");
     OSRestoreInterrupts(old);
 }

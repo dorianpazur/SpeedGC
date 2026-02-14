@@ -2,6 +2,7 @@
 #define DOLPHIN_OS_H
 
 #include <gccore.h>
+#include <dolphin/base.h>
 #include <ogc/system.h>
 #include <ogc/lwp_watchdog.h>
 #include <stdio.h>
@@ -16,7 +17,6 @@ extern "C" {
 typedef u64 OSTime;
 
 u32 OSGetStackPointer();
-void PPCHalt();
 BOOL OSDisableInterrupts();
 BOOL OSEnableInterrupts();
 BOOL OSRestoreInterrupts(BOOL level);
