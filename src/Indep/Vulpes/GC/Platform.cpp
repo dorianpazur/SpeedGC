@@ -224,6 +224,25 @@ void vDisplayFrame()
 
 //---------------------------------------------------------------------------------
 
+typedef struct
+{
+
+    s32 *l; // pointer to left aux channel buffer in main memory
+    s32 *r; // pointer to right aux channel buffer in main memory
+    s32 *s; // pointer to surround aux channel buffer in main memory
+
+} aux_data;
+
+void TestCallback(void *data, void *context)
+{
+	aux_data* auxData = (aux_data*)data;
+	for (int i = 0; i < 160; i++)
+	{
+		auxData->l[i] = ((i / 40) % 2) ? (1000) : (-1000);
+		auxData->r[i] = ((i / 40) % 2) ? (1000) : (-1000);
+	}
+}
+
 void InitializePlatform(int argc, char** argv) {
 	static bool initialized = false;
 	if (!initialized)
@@ -236,6 +255,7 @@ void InitializePlatform(int argc, char** argv) {
 		ARQ_Init();
 		AUDIO_Init(NULL);
 		AXInit();
+		AXRegisterAuxACallback(TestCallback, NULL);
 		
 		rmode = VIDEO_GetPreferredMode(NULL);
 	
