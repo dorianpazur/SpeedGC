@@ -1,0 +1,11 @@
+prefix=/opt/devkitpro/libogc2/gamecube
+exec_prefix=/opt/devkitpro/libogc2/gamecube
+libdir=/opt/devkitpro/libogc2/gamecube/lib
+includedir=/opt/devkitpro/libogc2/gamecube/include
+
+Name: PhysicsFS
+Description: PhysicsFS is a library to provide abstract access to various archives.
+URL: https://icculus.org/physfs/
+Version: 3.2.0
+Libs: -L${libdir} -lphysfs
+Cflags: -I${includedir}
