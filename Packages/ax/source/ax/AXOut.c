@@ -5,9 +5,9 @@
 
 #include "__ax.h"
 
-static s16 __AXOutBuffer[3][320];
-static s32 __AXOutSBuffer[160];
-static u16 __AXDramImage[8192];
+static s16 __AXOutBuffer[3][320] ATTRIBUTE_ALIGN(32);
+static s32 __AXOutSBuffer[160] ATTRIBUTE_ALIGN(32);
+static u16 __AXDramImage[8192] ATTRIBUTE_ALIGN(32);
 static DSPTaskInfo __AXDSPTask;
 AXPROFILE __AXLocalProfile;
 

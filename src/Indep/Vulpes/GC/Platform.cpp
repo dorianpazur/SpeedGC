@@ -2,6 +2,7 @@
 
 #include <ogc/system.h>
 #include <dolphin/ax.h>
+#include <dolphin/mix.h>
 #include <dolphin/os.h>
 #include <Vulpes/vulpes.h>
 #include <tWare/Time.h>
@@ -246,37 +247,41 @@ inline int16_t EndianSwapI16(int16_t i)
 	return *(int16_t*)&swap;
 }
 
-int32_t buf[160];
+int32_t buf[2][160] ATTRIBUTE_ALIGN(32);
 
-void TestCallback(void *data, void *context)
+void AudioFrameCallback()
 {
-	BOOL inter = OSDisableInterrupts();
+	static bool other = true;
 	
-	aux_data* auxData = (aux_data*)data;
-	
-	struct sample
-	{
-		int16_t l;
-	};
-	
-	sample* samples = (sample*)music->data;
-	
-	if (music && play)
+	if (music && music->data)
 	{
 		for (int i = 0; i < 160; i++)
 		{
-			sample &cur = samples[dspTime + i];
-			int32_t sample = cur.l;
+			buf[other ? 0 : 1][i] = ((int16_t*)music->data)[(dspTime++) % (music->filesize / 2)];
 		}
 		
-		memcpy(auxData->l, buf, sizeof(int32_t) * 160);
-		memcpy(auxData->r, buf, sizeof(int32_t) * 160);
-		
-		//printf("dspTime: %llu\n", dspTime);
-		dspTime = (dspTime + 160) % (music->filesize / sizeof(sample));
+		DCFlushRange(buf[other ? 0 : 1], 160 * sizeof(int32_t));
 	}
 	
-	OSRestoreInterrupts(inter);
+	MIXUpdateSettings();
+	
+	other = !other;
+}
+
+void AuxACallback(void *data, void *context)
+{
+	static bool other = false;
+	const int len = 160;
+	
+	aux_data* auxData = (aux_data*)data;
+	
+	memcpy(auxData->l, buf[other ? 0 : 1], sizeof(int32_t) * len);
+	memcpy(auxData->r, buf[other ? 0 : 1], sizeof(int32_t) * len);
+	
+	DCFlushRange(auxData->l, sizeof(int32_t) * len);
+	DCFlushRange(auxData->r, sizeof(int32_t) * len);
+	
+	other = !other;
 }
 
 void InitializePlatform(int argc, char** argv) {
@@ -291,7 +296,12 @@ void InitializePlatform(int argc, char** argv) {
 		ARQ_Init();
 		AUDIO_Init(NULL);
 		AXInit();
-		AXRegisterAuxBCallback(TestCallback, NULL);
+		AXSetCompressor(AX_COMPRESSOR_OFF);
+		AXRegisterAuxACallback(AuxACallback, NULL);
+		AXRegisterCallback(&AudioFrameCallback);
+		AXSetMode(AX_MODE_STEREO);
+		
+		DCFlushRangeNoSync(buf, sizeof(buf));
 		
 		rmode = VIDEO_GetPreferredMode(NULL);
 	

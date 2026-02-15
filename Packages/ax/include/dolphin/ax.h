@@ -212,6 +212,85 @@ typedef struct AX_AUX_DATA_DPL2 {
 
 typedef void (*AXCallback)();
 
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_DSP_CYCLES_PBSYNC        2000
+#define AX_DSP_CYCLES               (OS_BUS_CLOCK / 400)
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_MAX_VOICES               64
+
+#define AX_MS_PER_FRAME             5
+
+#define AX_IN_SAMPLES_PER_MS        32
+#define AX_IN_SAMPLES_PER_SEC       (AX_IN_SAMPLES_PER_MS * 1000)
+#define AX_IN_SAMPLES_PER_FRAME     (AX_IN_SAMPLES_PER_MS * AX_MS_PER_FRAME)
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_MODE_STEREO              0
+#define AX_MODE_SURROUND            1
+#define AX_MODE_DPL2                2
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_COMPRESSOR_OFF           0
+#define AX_COMPRESSOR_ON            1
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_PRIORITY_STACKS          32
+#define AX_PRIORITY_NODROP          (AX_PRIORITY_STACKS - 1)
+#define AX_PRIORITY_LOWEST          1
+#define AX_PRIORITY_FREE            0
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_SRC_TYPE_NONE            0
+#define AX_SRC_TYPE_LINEAR          1
+#define AX_SRC_TYPE_4TAP_8K         2
+#define AX_SRC_TYPE_4TAP_12K        3
+#define AX_SRC_TYPE_4TAP_16K        4
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_ADDR_ONESHOT             0
+#define AX_ADDR_LOOP                1
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_SYNC_NONEWPARAMS         0x00000000
+#define AX_SYNC_USER_SRCSELECT      0x00000001
+#define AX_SYNC_USER_MIXCTRL        0x00000002
+#define AX_SYNC_USER_STATE          0x00000004
+#define AX_SYNC_USER_TYPE           0x00000008
+#define AX_SYNC_USER_MIX            0x00000010
+#define AX_SYNC_USER_ITD            0x00000020
+#define AX_SYNC_USER_ITDTARGET      0x00000040
+#define AX_SYNC_USER_UPDATE         0x00000080
+#define AX_SYNC_USER_DPOP           0x00000100
+#define AX_SYNC_USER_VE             0x00000200
+#define AX_SYNC_USER_VEDELTA        0x00000400
+#define AX_SYNC_USER_FIR            0x00000800
+#define AX_SYNC_USER_ADDR           0x00001000
+#define AX_SYNC_USER_LOOP           0x00002000
+#define AX_SYNC_USER_LOOPADDR       0x00004000
+#define AX_SYNC_USER_ENDADDR        0x00008000
+#define AX_SYNC_USER_CURRADDR       0x00010000
+#define AX_SYNC_USER_ADPCM          0x00020000
+#define AX_SYNC_USER_SRC            0x00040000
+#define AX_SYNC_USER_SRCRATIO       0x00080000
+#define AX_SYNC_USER_ADPCMLOOP      0x00100000
+#define AX_SYNC_USER_LPF            0x00200000
+#define AX_SYNC_USER_LPF_COEF       0x00400000
+#define AX_SYNC_USER_ALLPARAMS      0x80000000
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+#define AX_OUTPUT_BUFFER_DOUBLE     0
+#define AX_OUTPUT_BUFFER_TRIPLE     1
+
 #define AX_DSP_SLAVE_LENGTH 0xF80
 #define AX_MAX_VOICES 64
 
@@ -256,6 +335,96 @@ typedef void (*AXCallback)();
 #define AX_SYNC_FLAG_COPYSELECT    (1 << 0)
 
 #define AX_PRIORITY_STACKS 32
+
+//  state
+#define AX_PB_STATE_STOP        0x0000
+#define AX_PB_STATE_RUN         0x0001
+
+//  type
+#define AX_PB_TYPE_NORMAL       0x0000
+#define AX_PB_TYPE_STREAM       0x0001  // no loop context programming for ADPCM
+
+//  format
+#define AX_PB_FORMAT_PCM16      0x000A  // signed 16 bit PCM mono
+#define AX_PB_FORMAT_PCM8       0x0019  // signed 8 bit PCM mono
+#define AX_PB_FORMAT_ADPCM      0x0000  // ADPCM encoded (both standard & extended)
+
+//  src select
+#define AX_PB_SRCSEL_POLYPHASE  0x0000  // N64 type polyphase filter (4-tap)
+#define AX_PB_SRCSEL_LINEAR     0x0001  // Linear interpolator
+#define AX_PB_SRCSEL_NONE       0x0002  // No SRC (1:1)
+
+//  coef select
+#define AX_PB_COEFSEL_8KHZ      0x0000  // 8KHz low pass response
+#define AX_PB_COEFSEL_12KHZ     0x0001  // 12.8KHz N64 type response
+#define AX_PB_COEFSEL_16KHZ     0x0002  // 16KHz response
+
+//  mixer ctrl
+#define AX_PB_MIXCTRL_L         0x0001  // main left mix
+#define AX_PB_MIXCTRL_R         0x0002  // main right mix
+#define AX_PB_MIXCTRL_S         0x0004  // main surround mix
+#define AX_PB_MIXCTRL_RAMP      0x0008  // main bus ramp (applies to LRS)
+
+#define AX_PB_MIXCTRL_A_L       0x0010  // AuxA left mix
+#define AX_PB_MIXCTRL_A_R       0x0020  // AuxA rigth mix
+#define AX_PB_MIXCTRL_A_LR_RAMP 0x0040  // AuxA bus ramp (applies to LR only)
+#define AX_PB_MIXCTRL_A_S       0x0080  // AuxA surround mix
+#define AX_PB_MIXCTRL_A_S_RAMP  0x0100  // AuxA bus ramp (applies to S only)
+
+#define AX_PB_MIXCTRL_B_L       0x0200  // AuxB left mix
+#define AX_PB_MIXCTRL_B_R       0x0400  // AuxB right mix
+#define AX_PB_MIXCTRL_B_LR_RAMP 0x0800  // AuxB bus ramp (applies to LR only)
+#define AX_PB_MIXCTRL_B_S       0x1000  // AuxB surround mix
+#define AX_PB_MIXCTRL_B_S_RAMP  0x2000  // AuxB bus ramp (applies to S only)
+
+#define AX_PB_MIXCTRL_B_DPL2    0x4000  // AuxB DPL2, does not apply ITD for surrounds
+
+//  IIR filter switch
+#define AX_PB_LPF_OFF           0x0000  // IIR filter switch
+#define AX_PB_LPF_ON            0x0001
+
+
+#define AX_PB_NEXTHI_OFF        0
+#define AX_PB_NEXTLO_OFF        1
+#define AX_PB_CURRHI_OFF        2
+#define AX_PB_CURRLO_OFF        3
+
+#define AX_PB_SRCSELECT_OFF     4
+#define AX_PB_COEFSELECT_OFF    5
+#define AX_PB_MIXERCTRL_OFF     6
+
+#define AX_PB_STATE_OFF         7
+#define AX_PB_TYPE_OFF          8
+
+#define AXPBMIX_OFF             9
+
+#define AXPBITD_OFF           (AXPBMIX_OFF      + AXPBMIX_SIZE)
+#define AXPBUPDATE_OFF        (AXPBITD_OFF      + AXPBITD_SIZE)
+#define AXPBDPOP_OFF          (AXPBUPDATE_OFF   + AXPBUPDATE_SIZE)
+#define AXPBVE_OFF            (AXPBDPOP_OFF     + AXPBDPOP_SIZE)
+#define AXPBFIR_OFF           (AXPBVE_OFF       + AXPBVE_SIZE)
+#define AXPBADDR_OFF          (AXPBFIR_OFF      + AXPBFIR_SIZE)
+#define AXPBADPCM_OFF         (AXPBADDR_OFF     + AXPBADDR_SIZE)
+#define AXPBSRC_OFF           (AXPBADPCM_OFF    + AXPBADPCM_SIZE)
+#define AXPBADPCMLOOP_OFF     (AXPBSRC_OFF      + AXPBSRC_SIZE)
+
+#define AX_PB_SIZE            (AXPBADPCMLOOP_OFF+AXPBADPCMLOOP_SIZE)
+
+#define AX_DSP_PATCHDATA_SIZE  128
+
+#define AXPBADDR_LOOP_OFF     0           // States for loopFlag field
+#define AXPBADDR_LOOP_ON      1
+
+
+#define AXPBADDR_LOOPFLAG_OFF         AXPBADDR_OFF
+#define AXPBADDR_FORMAT_OFF           (AXPBADDR_OFF+1)
+#define AXPBADDR_LOOPADDRESSHI_OFF    (AXPBADDR_OFF+2)
+#define AXPBADDR_LOOPADDRESSLO_OFF    (AXPBADDR_OFF+3)
+#define AXPBADDR_ENDADDRESSHI_OFF     (AXPBADDR_OFF+4)
+#define AXPBADDR_ENDADDRESSLO_OFF     (AXPBADDR_OFF+5)
+#define AXPBADDR_CURRENTADDRESSHI_OFF (AXPBADDR_OFF+6)
+#define AXPBADDR_CURRENTADDRESSLO_OFF (AXPBADDR_OFF+7)
+#define AXPBADDR_SIZE                 8
 
 // AX
 void AXInit(void);
@@ -313,6 +482,7 @@ u32 AXGetDspCycles(void);
 void AXSetVoiceLpf(AXVPB* p, AXPBLPF* lpf);
 void AXSetVoiceLpfCoefs(AXVPB* p, u16 a0, u16 b0);
 void AXGetLpfCoefs(u16 freq, u16* a0, u16* b0);
+void AXSetCompressor(u32);
 
 // DSPCode
 extern u16 axDspSlaveLength;

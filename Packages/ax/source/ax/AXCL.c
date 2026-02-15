@@ -1,9 +1,10 @@
 #include <dolphin/os.h>
 #include <dolphin/ax.h>
+#include <string.h>
 
 #include "__ax.h"
 
-static u16 __AXCommandList[2][384];
+static u16 __AXCommandList[2][384] ATTRIBUTE_ALIGN(32);
 
 static u32 __AXCommandListPosition;
 static u16* __AXClWrite;
@@ -147,6 +148,7 @@ void __AXClInit(void) {
 #ifdef DEBUG
     OSReport("Initializing AXCL code module\n");
 #endif
+	printf("What is this assert? %u\n", ((u32)&__AXCommandList[0][0] & 0x1F));
     ASSERTLINE(338, ((u32)&__AXCommandList[0][0] & 0x1F) == 0);
     ASSERTLINE(339, ((u32)&__AXCommandList[1][0] & 0x1F) == 0);
     __AXClMode = 0;

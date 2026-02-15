@@ -31,7 +31,7 @@ INCLUDES	:=
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O4 -Wall $(MACHDEP) $(INCLUDE)
+CFLAGS	= -g -Og -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-value $(MACHDEP) $(INCLUDE) -DDEBUG
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
