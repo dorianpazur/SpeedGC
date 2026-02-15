@@ -7,7 +7,7 @@
 #include <tWare/Memory.h>
 
 // InputManager: handles reading controller input
-// Right now it's focused on GameCube but the interface can be extended later.
+// now it's focused on GameCube but the interface can be extended later.
 
 struct PlayerInputState
 {
@@ -30,7 +30,7 @@ public:
 	static bool ShouldReset();
 
 	// Updated every call to Update()
-	static const std::vector<InputCommand>& GetCommands();
+	static const std::vector<InputCommand, tStdAllocator<InputCommand>>& GetCommands();
 
 private:
 	static void UpdateGameCubeInputs();

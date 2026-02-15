@@ -134,7 +134,7 @@ void World::Simulate(float timestep)
 		float brakeForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		float steering[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-		const std::vector<InputCommand>& cmds = InputManager::GetCommands();
+		const auto& cmds = InputManager::GetCommands();
 
 		for (const InputCommand& cmd : cmds)
 		{

@@ -10,7 +10,7 @@
 #endif
 
 static bool s_shouldReset = false;
-static std::vector<InputCommand> s_commands;
+static std::vector<InputCommand, tStdAllocator<InputCommand>> s_commands;
 
 void InputManager::Initialize()
 {
@@ -32,7 +32,7 @@ bool InputManager::ShouldReset()
 	return s_shouldReset;
 }
 
-const std::vector<InputCommand>& InputManager::GetCommands()
+const std::vector<InputCommand, tStdAllocator<InputCommand>>& InputManager::GetCommands()
 {
 	return s_commands;
 }
@@ -67,7 +67,7 @@ void InputManager::UpdateGameCubeInputs()
 	for (int i = 0; i < 4; ++i)
 	{
 		int buttonsDown = PAD_ButtonsDown(i);
-		s8  stickX = PAD_StickX(i);
+		s8  stickX = PAD_StickX(i);  //signed 8bit int for steering
 		u8  triggerL = PAD_TriggerL(i);
 		u8  triggerR = PAD_TriggerR(i);
 
