@@ -104,10 +104,10 @@ int main(int argc, char **argv)
 			double frameTime = tGetTickerDifference(prevFrameTime, now);
 			prevFrameTime = now;
 			
+			fps = 1.0 / (frameTime * 0.001);
+			
 			if (frameTime > 1000.0/12.0) // limit frame time
 				frameTime = 1000.0/12.0;
-			
-			fps = 1.0 / (frameTime * 0.001);
 			
 			if (avgfpsaccumcount++ < 10)
 				avgfpsaccum += fps;

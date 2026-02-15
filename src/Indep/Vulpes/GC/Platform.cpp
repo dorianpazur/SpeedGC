@@ -2,6 +2,7 @@
 
 #include <ogc/system.h>
 #include <dolphin/ax.h>
+#include <dolphin/os.h>
 #include <Vulpes/vulpes.h>
 #include <tWare/Time.h>
 #include <tWare/File.h>
@@ -38,6 +39,8 @@ extern tFile *gTestGLBFile;
 extern vModel *gTestModel;
 
 extern vModel *gCarModel;
+
+uint64_t dspTime = 0;
 
 //---------------------------------------------------------------------------------
 
@@ -203,6 +206,8 @@ void vDisplayFrame()
 	DebugMenu::render();
 	DebugMenu::renderBackground();
 	
+	ScreenPrintf(40, 40, "dspTime: %llu", dspTime);
+	
 	DrawScreenPrintfs();
 	
 	// push frame
@@ -226,21 +231,52 @@ void vDisplayFrame()
 
 typedef struct
 {
-
     s32 *l; // pointer to left aux channel buffer in main memory
     s32 *r; // pointer to right aux channel buffer in main memory
     s32 *s; // pointer to surround aux channel buffer in main memory
-
 } aux_data;
+
+tFile* music;
+bool play = false;
+
+inline int16_t EndianSwapI16(int16_t i)
+{
+	uint16_t* data = (uint16_t*)&i;
+	uint16_t swap = (*data >> 8) | (*data << 8);
+	return *(int16_t*)&swap;
+}
+
+int32_t buf[160];
 
 void TestCallback(void *data, void *context)
 {
+	BOOL inter = OSDisableInterrupts();
+	
 	aux_data* auxData = (aux_data*)data;
-	for (int i = 0; i < 160; i++)
+	
+	struct sample
 	{
-		auxData->l[i] = ((i / 40) % 2) ? (1000) : (-1000);
-		auxData->r[i] = ((i / 40) % 2) ? (1000) : (-1000);
+		int16_t l;
+	};
+	
+	sample* samples = (sample*)music->data;
+	
+	if (music && play)
+	{
+		for (int i = 0; i < 160; i++)
+		{
+			sample &cur = samples[dspTime + i];
+			int32_t sample = cur.l;
+		}
+		
+		memcpy(auxData->l, buf, sizeof(int32_t) * 160);
+		memcpy(auxData->r, buf, sizeof(int32_t) * 160);
+		
+		//printf("dspTime: %llu\n", dspTime);
+		dspTime = (dspTime + 160) % (music->filesize / sizeof(sample));
 	}
+	
+	OSRestoreInterrupts(inter);
 }
 
 void InitializePlatform(int argc, char** argv) {
@@ -255,7 +291,7 @@ void InitializePlatform(int argc, char** argv) {
 		ARQ_Init();
 		AUDIO_Init(NULL);
 		AXInit();
-		AXRegisterAuxACallback(TestCallback, NULL);
+		AXRegisterAuxBCallback(TestCallback, NULL);
 		
 		rmode = VIDEO_GetPreferredMode(NULL);
 	
@@ -283,6 +319,15 @@ void InitializePlatform(int argc, char** argv) {
 			
 			tChangeBaseDir("dvd://");
 		}
+		
+		music = tOpenFile("subwaysofyourmind.raw");
+		int16_t* data = (int16_t*)music->data;
+		for (size_t i = 0; i < music->filesize / 2; i++)
+		{
+			data[i] = EndianSwapI16(data[i]);
+		}
+		
+		play = true;
 		
 		VIDEO_Configure(rmode);
 		VIDEO_SetNextFramebuffer(xfb[currentBuffer]);
