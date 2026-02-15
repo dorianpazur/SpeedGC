@@ -148,7 +148,6 @@ void __AXClInit(void) {
 #ifdef DEBUG
     OSReport("Initializing AXCL code module\n");
 #endif
-	printf("What is this assert? %u\n", ((u32)&__AXCommandList[0][0] & 0x1F));
     ASSERTLINE(338, ((u32)&__AXCommandList[0][0] & 0x1F) == 0);
     ASSERTLINE(339, ((u32)&__AXCommandList[1][0] & 0x1F) == 0);
     __AXClMode = 0;
