@@ -263,8 +263,6 @@ void AudioFrameCallback()
 		DCFlushRange(buf[other ? 0 : 1], 160 * sizeof(int32_t));
 	}
 	
-	MIXUpdateSettings();
-	
 	other = !other;
 }
 
@@ -275,11 +273,11 @@ void AuxACallback(void *data, void *context)
 	
 	aux_data* auxData = (aux_data*)data;
 	
-	memcpy(auxData->l, buf[other ? 0 : 1], sizeof(int32_t) * len);
-	memcpy(auxData->r, buf[other ? 0 : 1], sizeof(int32_t) * len);
-	
-	DCFlushRange(auxData->l, sizeof(int32_t) * len);
-	DCFlushRange(auxData->r, sizeof(int32_t) * len);
+	for (int i = 0; i < len; i++)
+	{
+		auxData->l[i] += buf[other ? 0 : 1][i];
+		auxData->r[i] += buf[other ? 0 : 1][i];
+	}
 	
 	other = !other;
 }
