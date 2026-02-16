@@ -2,6 +2,7 @@
 #include "DebugAssistant.h"
 #include "DebugMenu.h"
 #include "ScreenPrintf.h"
+#include "InputManager.h"
 #include <gccore.h>
 
 DebugMenuInputHandler::DebugMenuInputHandler()
@@ -11,6 +12,10 @@ DebugMenuInputHandler::DebugMenuInputHandler()
 
 void DebugMenuInputHandler::PollInput()
 {
+	// skip pad reads if controller 0 disconnected (avoids invalid read on Dolphin)
+	if (!InputManager::IsControllerConnected(0))
+		return;
+
 	int buttonsDown = PAD_ButtonsDown(0);
 	int buttonsPressed = PAD_ButtonsHeld(0);
 	

@@ -164,6 +164,9 @@ void World::Simulate(float timestep)
 				break;
 			case InputCommandType::ResetRequested:
 				break; 				// handled in main through InputManager::ShouldReset()
+			case InputCommandType::ControllerDisconnected:
+				// game pause and show InputManager::IsControllerConnected
+				break;
 			default:
 				break;
 			}
