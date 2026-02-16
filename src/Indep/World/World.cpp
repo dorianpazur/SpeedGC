@@ -4,6 +4,8 @@
 #include "ISimable.h"
 #include <BulletCollision/NarrowPhaseCollision/btPersistentManifold.h>
 #include <Vulpes/Platform.h>
+#include "InputManager.h"
+#include "InputCommand.h"
 
 World* World::gWorld = NULL;
 
@@ -127,17 +129,53 @@ void World::Simulate(float timestep)
 {
 	if (!ShouldPauseWorld())
 	{
-		if (mVehicles.size() < 2 && PAD_ButtonsDown(1) & PAD_BUTTON_START)
+		// auto default inputs per vehicle this frame
+		float engineForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		float brakeForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		float steering[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		const auto& cmds = InputManager::GetCommands();
+
+		for (const InputCommand& cmd : cmds)
 		{
-			bSplitScreen = true;
-			mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
+			int idx = cmd.playerIndex;
+			if (idx < 0 || idx > 3)
+			{
+				continue;
+			}
+
+			switch (cmd.type)
+			{
+			case InputCommandType::Accelerate:
+				engineForce[idx] = cmd.value;
+				break;
+			case InputCommandType::Brake:
+				brakeForce[idx] = cmd.value;
+				break;
+			case InputCommandType::Steer:
+				steering[idx] = cmd.value;
+				break;
+			case InputCommandType::StartPressed:
+				if (idx == 1 && mVehicles.size() < 2)
+				{
+					bSplitScreen = true;
+					mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
+				}
+				break;
+			case InputCommandType::ResetRequested:
+				break; 				// handled in main through InputManager::ShouldReset()
+			default:
+				break;
+			}
 		}
 		
 		for (size_t i = 0; i < mVehicles.size(); i++)
 		{
-			float engineForce = (PAD_TriggerR(i) / 255.0f);
-			float brakeForce = (PAD_TriggerL(i) / 255.0f);
-			mVehicles[i]->Update(engineForce, brakeForce, PAD_StickX(i) / 127.0f, timestep);
+			int idx = (int)i;
+			if (idx < 0 || idx > 3)
+				continue;
+			//else if in range
+			mVehicles[i]->Update(engineForce[idx], brakeForce[idx], steering[idx], timestep); 
 		}
 		
 		dynamicsWorld->stepSimulation(timestep, 2);
