@@ -11,7 +11,8 @@ enum class InputCommandType
 	Brake,
 	Steer,
 	StartPressed,
-	ResetRequested
+	ResetRequested,
+	ControllerDisconnected
 };
 
 struct InputCommand

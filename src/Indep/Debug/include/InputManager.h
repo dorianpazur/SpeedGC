@@ -32,6 +32,9 @@ public:
 	// Updated every call to Update()
 	static const std::vector<InputCommand, tStdAllocator<InputCommand>>& GetCommands();
 
+	// controller connection state (GameCube only as it always true on other platforms)
+	static bool IsControllerConnected(int playerIndex);
+
 private:
 	static void UpdateGameCubeInputs();
 };
