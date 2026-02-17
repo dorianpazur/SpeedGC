@@ -16,6 +16,9 @@ public:
     void Update(float throttle, float brake, float steering, float timestep);
 	virtual void OnCollide(ISimable* other);
 
+	
+	virtual void Render(tMatrix4 * viewMtx, tMatrix4 * worldTransform) override;
+
 private:
 	btRaycastVehicle::btVehicleTuning mTuning;
 	btVehicleRaycaster* mRaycastVehicleRaycaster;

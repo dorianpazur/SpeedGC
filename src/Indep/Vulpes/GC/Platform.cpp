@@ -146,13 +146,19 @@ void vDisplayFrame()
 		GX_LoadPosMtxImm(*(Mtx44*)&viewMtx[viewNum], GX_PNMTX0);
 		vPolyRender(&poly, vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
 		
-		if (gCarModel)
+
+		World* world = World::GetInstance();
+		if (world && gCarModel && world->mVehicles.size() > 0) 
 		{
-			for (size_t veh = 0; veh < World::GetInstance()->mVehicles.size(); veh++)
+			for (size_t veh = 0; veh < world->mVehicles.size(); veh++)
 			{
+				Vehicle* vehicle = world->mVehicles[veh];
+				if (!vehicle || !vehicle->mBody)
+					continue;
+
 				btTransform trans;
-				btRigidBody* body = World::GetInstance()->mVehicles[veh]->mBody;
-	
+				btRigidBody* body = vehicle->mBody;
+
 				if (body->getMotionState())
 				{
 					body->getMotionState()->getWorldTransform(trans);
@@ -164,6 +170,7 @@ void vDisplayFrame()
 	
 				trans.getOpenGLMatrix(transformFlt);
 					
+
 				camTarget[veh].x = transformFlt[12];
 				camTarget[veh].y = transformFlt[13];
 				camTarget[veh].z = transformFlt[14];
@@ -185,7 +192,7 @@ void vDisplayFrame()
 				transform[1][3] = transformFlt[13];
 				transform[2][3] = transformFlt[14];
 	
-				gCarModel->Render(&viewMtx[viewNum], &transform);
+				vehicle->Render(&viewMtx[viewNum], &transform);
 			}
 		}
 	}
