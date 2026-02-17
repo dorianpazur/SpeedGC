@@ -138,6 +138,25 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 				vTextureCache::LoadTextureFromPath(texturePath);
 			}
 		}
+		
+		if (model->materials[primitive.material].extras.IsObject()) {
+			if (model->materials[primitive.material].extras.Has("effect")) {
+				const tinygltf::Value::Object &o =
+					model->materials[primitive.material].extras.Get<tinygltf::Value::Object>();
+				const tinygltf::Value &effect = o.find("effect")->second;
+
+				if (effect.IsString()) {
+					const std::string &str = effect.Get<std::string>();
+					//if (str.compare("curves") == 0) {
+					//	has_curves = true;
+					//}
+					
+					mEffectID = vEffect::GetEffectIDFromString(str.c_str());
+					
+					printf("Found desired effect: %s (%d)\n", str.c_str(), mEffectID);
+				}
+			}
+		}
 	}
 	
 	//printf("Done with mesh\n");
@@ -256,7 +275,7 @@ void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 	for (size_t solid = 0; solid < mSolids.size(); solid++)
 	{	
 		// light test
-		
+		/*
 		tVector3 lpos;
 		tVector3 rimPos;
 		tVector3 rimPos2;
@@ -336,6 +355,7 @@ void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 	
 		GX_SetChanAmbColor(GX_COLOR0A0, lightColor[1]);
 		GX_SetChanAmbColor(GX_COLOR1A1, lightColor[5]);
+		*/
 
 		for (size_t mesh = 0; mesh < mSolids[solid].mMeshes.size(); mesh++)
 		{
@@ -367,10 +387,29 @@ void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
 			
-			GX_LoadTexObj(&vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap)->GXTextureObj, GX_TEXMAP0);
+			/*GX_LoadTexObj(&vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap)->GXTextureObj, GX_TEXMAP0);
 			
 			// specular combining
 			GX_SetNumTexGens(1);
+			
+			static Mtx scrollMtx;
+			scrollMtx[0][0] = 1;
+			scrollMtx[0][1] = 0;
+			scrollMtx[0][2] = 0;
+			scrollMtx[1][0] = 0;
+			scrollMtx[1][1] = 1;
+			scrollMtx[1][2] = 0;
+			scrollMtx[2][0] = 0;
+			scrollMtx[2][1] = 0;
+			scrollMtx[2][2] = 1;
+			
+			scrollMtx[0][3] = 0;
+			scrollMtx[1][3] = 0.5f;
+			scrollMtx[2][3] = 0;
+
+			GX_LoadTexMtxImm(scrollMtx, GX_TEXMTX0, GX_TG_MTX2x4);
+			GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
+			
 			GX_SetNumTevStages(2);
 			
 			// diffuse
@@ -383,6 +422,13 @@ void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 			GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
 			GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC );
 			GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
+			*/
+			
+			vEffectStaticState::pCurrentEffect = vEffects[mSolids[solid].mMeshes[mesh].mEffectID];
+			
+			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap));
+			
+			vEffectStaticState::pCurrentEffect->Start();
 			
 			// have to step through index buffer manually
 			GX_Begin(GX_TRIANGLES, GX_VTXFMT0, mSolids[solid].mMeshes[mesh].mIndexCount);
@@ -397,6 +443,7 @@ void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 			}
 			
 			GX_End();
+			vEffectStaticState::pCurrentEffect->End();
 		}
 	}
 }

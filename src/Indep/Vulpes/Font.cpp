@@ -1,6 +1,5 @@
 #include <gccore.h>
-#include <Vulpes/Font.h>
-#include <Vulpes/TextureCache.h>
+#include <Vulpes/vulpes.h>
 
 float vGetFontKern(char c, tHash fontName)
 {
@@ -88,8 +87,6 @@ float vGetFontKern(char c, tHash fontName)
 
 void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName)
 {
-	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-	
 	GX_SetCullMode(GX_CULL_NONE);
 	
 	GX_ClearVtxDesc();
@@ -105,15 +102,18 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 	GX_SetNumTexGens(1);
 	GX_SetNumTevStages(1);
 	
+	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	
 	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
 	              GX_DF_NONE, GX_AF_NONE);
 	
 	vTextureCache::CachedTexture* fontTexture = vTextureCache::GetTexture(fontName);
 	
-	GX_LoadTexObj(&fontTexture->GXTextureObj, GX_TEXMAP0);
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
 	
-	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	vEffectStaticState::pCurrentEffect->SetTexture(fontTexture);
+	
+	vEffectStaticState::pCurrentEffect->Start();
 	
 	size_t characterCount = strlen(text);
 	
@@ -160,4 +160,5 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 	}
 	
 	GX_End();
+	vEffectStaticState::pCurrentEffect->End();
 }

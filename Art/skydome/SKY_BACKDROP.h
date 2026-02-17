@@ -1,0 +1,1 @@
+#define SKY_BACKDROP 0
