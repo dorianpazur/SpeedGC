@@ -38,6 +38,7 @@ tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
 
 vModel* gCarModel = NULL;
+vModel* gSkydomeModel = NULL;
 
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
@@ -172,6 +173,7 @@ void InitializeEverything(int argc, char** argv)
 	
 	InitializeMemory();
 	InitializePlatform(argc, argv);
+	vEffectInit();
 	tInitTicker();
 	vTextureCache::Init();
 	DebugMenuInit();
@@ -221,4 +223,5 @@ void LoadAssets()
 	//gTestModel = new vModel("sonic/sonic.glb");
 	
 	gCarModel = new vModel("Vehicles/Test/test_ship.glb");
+	gSkydomeModel = new vModel("Global/skydome.glb");
 }

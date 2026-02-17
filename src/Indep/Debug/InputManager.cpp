@@ -18,6 +18,7 @@ void InputManager::Initialize()
 {
 	s_shouldReset = false;
 	s_commands.clear();
+	s_commands.reserve(32);
 	for (int i = 0; i < 4; ++i)
 	{
 		s_controllerConnected[i] = true;

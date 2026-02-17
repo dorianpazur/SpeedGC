@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <Vulpes/TextureCache.h>
 #include <Vulpes/Vectors.h>
+#include <Vulpes/Effect.h>
 #include <malloc.h>
 
 struct ALIGN(32) vVertex {
@@ -37,6 +38,7 @@ struct ALIGN(32) vMesh
 	uint16_t* mIndices = NULL;
 	
 	TextureHashes mTextures;
+	VEFFECT_ID mEffectID = VEFFECT_STANDARD;
 	
 	DEF_TWARE_NEW_OVERRIDE(vMesh, MAIN_POOL)
 	

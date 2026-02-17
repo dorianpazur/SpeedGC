@@ -23,7 +23,7 @@ static GXRModeObj *rmode = NULL;
 
 f32 yscale;
 u32 xfbHeight;
-GXColor background = {0x7F, 0x40, 0xFF, 0xff};
+GXColor background = {0x00, 0x00, 0x00, 0xff};
 tMatrix4 viewMtx[2];
 tMatrix4 projMtx[2]; // view and perspective matrices
 
@@ -37,6 +37,7 @@ extern tFile *gTestGLBFile;
 extern vModel *gTestModel;
 
 extern vModel *gCarModel;
+extern vModel *gSkydomeModel;
 
 //---------------------------------------------------------------------------------
 
@@ -78,7 +79,7 @@ void vDisplayFrame()
 	if (bWideScreen)
 		aspect *= 1.33333334f;
 	
-	guPerspective(*(Mtx44*)&projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	guPerspective(*(Mtx44*)&projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.75F, 15000.0F);
 	GX_LoadProjectionMtx(*(Mtx44*)&projMtx[0], GX_PERSPECTIVE);
 	
 	w = rmode->viWidth;
@@ -89,7 +90,7 @@ void vDisplayFrame()
 	if (bSplitScreen)
 		aspect *= 2.0f;
 	
-	guPerspective(*(Mtx44*)&projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.1F, 1000.0F);
+	guPerspective(*(Mtx44*)&projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.75F, 15000.0F);
 	
 	GX_InvVtxCache();
 	GX_InvalidateTexAll();
@@ -110,6 +111,8 @@ void vDisplayFrame()
 		
 		float transformFlt[16];
 		tMatrix4 transform;
+		
+		gSkydomeModel->Render(&viewMtx[viewNum], &transform);
 		
 		vPoly poly;
 	
@@ -144,7 +147,15 @@ void vDisplayFrame()
 		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 		
 		GX_LoadPosMtxImm(*(Mtx44*)&viewMtx[viewNum], GX_PNMTX0);
-		vPolyRender(&poly, vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
+		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+	
+		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
+		
+		vEffectStaticState::pCurrentEffect->Start();
+		
+		vPolyRender(&poly);
+		
+		vEffectStaticState::pCurrentEffect->End();
 		
 
 		World* world = World::GetInstance();

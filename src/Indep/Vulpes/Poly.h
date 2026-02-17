@@ -14,6 +14,6 @@ struct vPoly {
 };
 
 void vPolyFERender(vPoly* poly, struct vTextureCache::CachedTexture* texture);
-void vPolyRender(vPoly* poly, struct vTextureCache::CachedTexture* texture);
+void vPolyRender(vPoly* poly);
 
 #endif
