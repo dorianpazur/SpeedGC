@@ -8,7 +8,7 @@ void ISimable::OnCollide(ISimable* other)
 {
 }
 
-void Render(tMatrix4* viewMtx)
+void ISimable::Render(tMatrix4* viewMtx)
 {
 }
 

@@ -161,4 +161,5 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 	
 	GX_End();
 	vEffectStaticState::pCurrentEffect->End();
+	vEffectStaticState::pCurrentEffect = NULL;
 }

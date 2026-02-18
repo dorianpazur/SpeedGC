@@ -254,5 +254,5 @@ void Vehicle::Render(tMatrix4* viewMtx)
 	transform[1][3] = transformFlt[13];
 	transform[2][3] = transformFlt[14];
 
-	gCarModel->Render(viewMtx, transform);
+	gCarModel->Render(viewMtx, &transform);
 }

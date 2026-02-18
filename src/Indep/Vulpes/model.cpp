@@ -445,5 +445,6 @@ void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 			GX_End();
 			vEffectStaticState::pCurrentEffect->End();
 		}
+		vEffectStaticState::pCurrentEffect = NULL;
 	}
 }

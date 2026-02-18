@@ -174,6 +174,7 @@ void InitializeEverything(int argc, char** argv)
 	InitializeMemory();
 	InitializePlatform(argc, argv);
 	vEffectInit();
+	vpInitViews();
 	tInitTicker();
 	vTextureCache::Init();
 	DebugMenuInit();

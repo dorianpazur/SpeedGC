@@ -30,6 +30,7 @@ void vPolyFERender(vPoly* poly, struct vTextureCache::CachedTexture* texture)
 	vPolyRender(&polyMod);
 	
 	vEffectStaticState::pCurrentEffect->End();
+	vEffectStaticState::pCurrentEffect = NULL;
 }
 
 //---------------------------------------------------------------------------------

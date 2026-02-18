@@ -19,7 +19,7 @@
 
 static uint8_t currentBuffer = 0;
 static void *xfb[2] = { NULL, NULL}; // double buffered
-static GXRModeObj *rmode = NULL;
+GXRModeObj *rmode = NULL;
 
 f32 yscale;
 u32 xfbHeight;
@@ -64,40 +64,23 @@ void vDisplayFrame()
 		look = {camTarget[1].x, camTarget[1].y, camTarget[1].z};
 	guLookAt(*(Mtx44*)&viewMtx[1], &cam, &up, &look);
 	
-	// setup our projection matrix
-	// this creates a perspective matrix with a view angle of 60,
-	// an aspect ratio of 4/3 (i'm not sure if that's the right
-	// way to do it but i just went by what made a square on my screen)
-	// and z near and far distances
-	f32 w = rmode->viWidth;
-	f32 h = rmode->viHeight;
-	f32 aspect = (f32)w/h;
-	f32 aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
-	
-	if (bSplitScreen)
-		aspect *= 2.0f;
-	if (bWideScreen)
-		aspect *= 1.33333334f;
-	
-	guPerspective(*(Mtx44*)&projMtx[0], 60 * aspectCorrect, aspect / aspectCorrect, 0.75F, 15000.0F);
-	GX_LoadProjectionMtx(*(Mtx44*)&projMtx[0], GX_PERSPECTIVE);
-	
-	w = rmode->viWidth;
-	h = rmode->viHeight;
-	aspect = (f32)w/h;
-	aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
-	
-	if (bSplitScreen)
-		aspect *= 2.0f;
-	
-	guPerspective(*(Mtx44*)&projMtx[1], 60 * aspectCorrect, aspect / aspectCorrect, 0.75F, 15000.0F);
+	// handle view stuff
+	MaybeChangeViewMode();
+	for (int viewNum = 0; viewNum < NUM_VVIEWS; viewNum++)
+	{
+		vViews[viewNum].CalculateViewMatricies();
+	}
 	
 	GX_InvVtxCache();
 	GX_InvalidateTexAll();
 	
-	for (int viewNum = 0; viewNum < (bSplitScreen ? 2 : 1); viewNum++)
+	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum < VVIEW_LAST_PLAYER; viewNum++)
 	{
-		GX_LoadProjectionMtx(*(Mtx44*)&projMtx[0], GX_PERSPECTIVE);
+		if (!vViews[viewNum].Active)
+			continue;
+		
+		GX_LoadProjectionMtx(*(Mtx44*)&vViews[viewNum].ProjectionMatrix, GX_PERSPECTIVE);
+		
 		if (bSplitScreen)
 		{
 			GX_SetViewport(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2,0,1); // TODO - add actual view class
@@ -112,7 +95,7 @@ void vDisplayFrame()
 		float transformFlt[16];
 		tMatrix4 transform;
 		
-		gSkydomeModel->Render(&viewMtx[viewNum], &transform);
+		gSkydomeModel->Render(&viewMtx[viewNum - 1], &transform);
 		
 		vPoly poly;
 	
@@ -146,7 +129,7 @@ void vDisplayFrame()
 		*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
 		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 		
-		GX_LoadPosMtxImm(*(Mtx44*)&viewMtx[viewNum], GX_PNMTX0);
+		GX_LoadPosMtxImm(*(Mtx44*)&viewMtx[viewNum - 1], GX_PNMTX0);
 		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
 	
 		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
@@ -185,7 +168,7 @@ void vDisplayFrame()
 					camTarget[veh].z = transformFlt[14];
 				}
 	
-				vehicle->Render(&viewMtx[viewNum]);
+				vehicle->Render(&viewMtx[viewNum - 1]);
 			}
 		}
 	}
@@ -194,7 +177,7 @@ void vDisplayFrame()
 	GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
 	GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
 	
-	GX_LoadProjectionMtx(*(Mtx44*)&guiMtx, GX_ORTHOGRAPHIC);
+	GX_LoadProjectionMtx(*(Mtx44*)&vViews[VVIEW_FE].ProjectionMatrix, GX_ORTHOGRAPHIC);
 	GX_LoadPosMtxImm(identityMtx, GX_PNMTX0);
 	
 	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
@@ -296,6 +279,13 @@ void InitializePlatform(int argc, char** argv) {
 	Mtx44 matrix;
 	guOrtho(matrix, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 	GX_LoadProjectionMtx(matrix, GX_ORTHOGRAPHIC);
+	
+	//if (!initialized)
+	//{
+	//	GXRModeObj rmodeObjTmp;
+	//	memcpy(&rmodeObjTmp, rmode, sizeof(GXRModeObj));
+	//	GX_AdjustForOverscan(&rmodeObjTmp, rmode, 0, 16);
+	//}
 	
 	initialized = true;
 	bSplitScreen = false;

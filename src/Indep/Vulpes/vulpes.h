@@ -9,5 +9,6 @@
 #include <Vulpes/TextureCache.h>
 #include <Vulpes/Font.h>
 #include <Vulpes/Poly.h>
+#include <Vulpes/View.h>
 
 #endif
