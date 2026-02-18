@@ -1,5 +1,10 @@
 #include "Vehicle.h"
 #include "ScreenPrintf.h"
+#include <Vulpes/model.h>
+
+
+// car model used for rendering all vehicles
+extern vModel* gCarModel;
 
 const float speedPowerDecline = 0.1f;
 const float enginePower = 17000.0f;
@@ -210,4 +215,13 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 void Vehicle::OnCollide(ISimable* other)
 {
 	ScreenPrintf(-80, -180, 0.0f, 0xFFFF0000, "collided!");
+}
+
+
+void Vehicle::Render(tMatrix4* viewMtx, tMatrix4* worldTransform)
+{
+	if (!gCarModel || !viewMtx || !worldTransform)
+		return;
+
+	gCarModel->Render(viewMtx, worldTransform);
 }
