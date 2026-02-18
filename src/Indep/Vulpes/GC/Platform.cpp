@@ -153,7 +153,6 @@ void vDisplayFrame()
 		vEffectStaticState::pCurrentEffect->Start();
 		vPolyRender(&poly);
 		vEffectStaticState::pCurrentEffect->End();
-		
 
 		World* world = World::GetInstance();
 		if (world && gCarModel && world->mVehicles.size() > 0) 
@@ -161,46 +160,32 @@ void vDisplayFrame()
 			for (size_t veh = 0; veh < world->mVehicles.size(); veh++)
 			{
 				Vehicle* vehicle = world->mVehicles[veh];
+				
 				if (!vehicle || !vehicle->mBody)
 					continue;
-
-				btTransform trans;
-				btRigidBody* body = vehicle->mBody;
-
-				if (body->getMotionState())
+				
+				if (veh < 2)
 				{
-					body->getMotionState()->getWorldTransform(trans);
+					btTransform trans;
+					btRigidBody* body = vehicle->mBody;
+	
+					if (body->getMotionState())
+					{
+						body->getMotionState()->getWorldTransform(trans);
+					}
+					else
+					{
+						trans = body->getWorldTransform();
+					}
+		
+					trans.getOpenGLMatrix(transformFlt);
+	
+					camTarget[veh].x = transformFlt[12];
+					camTarget[veh].y = transformFlt[13];
+					camTarget[veh].z = transformFlt[14];
 				}
-				else
-				{
-					trans = body->getWorldTransform();
-				}
 	
-				trans.getOpenGLMatrix(transformFlt);
-					
-
-				camTarget[veh].x = transformFlt[12];
-				camTarget[veh].y = transformFlt[13];
-				camTarget[veh].z = transformFlt[14];
-	
-				// Bullet (OpenGL) using GX matrix
-				transform[0][0] = transformFlt[0];
-				transform[1][0] = transformFlt[1];
-				transform[2][0] = transformFlt[2];
-	
-				transform[0][1] = transformFlt[4];
-				transform[1][1] = transformFlt[5];
-				transform[2][1] = transformFlt[6];
-	
-				transform[0][2] = transformFlt[8];
-				transform[1][2] = transformFlt[9];
-				transform[2][2] = transformFlt[10];
-	
-				transform[0][3] = transformFlt[12];
-				transform[1][3] = transformFlt[13];
-				transform[2][3] = transformFlt[14];
-	
-				vehicle->Render(&viewMtx[viewNum], &transform);
+				vehicle->Render(&viewMtx[viewNum]);
 			}
 		}
 	}

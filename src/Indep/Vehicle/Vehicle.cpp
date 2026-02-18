@@ -214,14 +214,45 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 
 void Vehicle::OnCollide(ISimable* other)
 {
-	ScreenPrintf(-80, -180, 0.0f, 0xFFFF0000, "collided!");
+	ScreenPrintf(-80, -180, 0.5f, 0xFFFF0000, "collided!");
 }
 
-
-void Vehicle::Render(tMatrix4* viewMtx, tMatrix4* worldTransform)
+void Vehicle::Render(tMatrix4* viewMtx)
 {
-	if (!gCarModel || !viewMtx || !worldTransform)
+	if (!gCarModel || !viewMtx || !mBody)
 		return;
+	
+	tMatrix4 transform;
+	float transformFlt[16];
+	btTransform trans;
+	
+	if (mBody->getMotionState())
+	{
+		mBody->getMotionState()->getWorldTransform(trans);
+	}
+	else
+	{
+		trans = mBody->getWorldTransform();
+	}
+	
+	trans.getOpenGLMatrix(transformFlt);
+	
+	// Bullet (OpenGL) using GX matrix
+	transform[0][0] = transformFlt[0];
+	transform[1][0] = transformFlt[1];
+	transform[2][0] = transformFlt[2];
+	
+	transform[0][1] = transformFlt[4];
+	transform[1][1] = transformFlt[5];
+	transform[2][1] = transformFlt[6];
+	
+	transform[0][2] = transformFlt[8];
+	transform[1][2] = transformFlt[9];
+	transform[2][2] = transformFlt[10];
+	
+	transform[0][3] = transformFlt[12];
+	transform[1][3] = transformFlt[13];
+	transform[2][3] = transformFlt[14];
 
-	gCarModel->Render(viewMtx, worldTransform);
+	gCarModel->Render(viewMtx, transform);
 }

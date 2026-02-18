@@ -17,9 +17,8 @@ public:
 	virtual void OnCollide(ISimable* other);
 	
 	// per object rendering by each ISimable subclass
-	// 'viewMtx' is the current camera view matrix, 
-	// 'worldTransform' is the world space transform 
-	virtual void Render(tMatrix4* viewMtx, tMatrix4* worldTransform) = 0;
+	// 'viewMtx' is the current camera view matrix (TODO: replace this with tView when it's done)
+	virtual void Render(tMatrix4* viewMtx);
 
 	virtual ~ISimable() = 0;
 };

@@ -17,7 +17,7 @@ public:
 	virtual void OnCollide(ISimable* other);
 
 	
-	virtual void Render(tMatrix4 * viewMtx, tMatrix4 * worldTransform) override;
+	virtual void Render(tMatrix4 * viewMtx) override;
 
 private:
 	btRaycastVehicle::btVehicleTuning mTuning;
