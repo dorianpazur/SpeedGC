@@ -150,11 +150,8 @@ void vDisplayFrame()
 		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
 	
 		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
-		
 		vEffectStaticState::pCurrentEffect->Start();
-		
 		vPolyRender(&poly);
-		
 		vEffectStaticState::pCurrentEffect->End();
 		
 		if (gCarModel)
@@ -218,7 +215,7 @@ void vDisplayFrame()
 	// push frame
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
-	GX_CopyDisp(xfb[currentBuffer],GX_TRUE);
+	GX_CopyDisp(xfb[currentBuffer],GX_FALSE);
 	
 	GX_DrawDone();
 	

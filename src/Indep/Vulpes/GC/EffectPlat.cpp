@@ -76,9 +76,6 @@ public:
 
 void vEffect_SKY::Start()
 {
-	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_TRUE);
-	
 	GX_SetNumChans(1);
 	GX_SetNumTevStages(1);
 	
@@ -87,6 +84,17 @@ void vEffect_SKY::Start()
 	
 	if (texture)
 	{
+		if (texture->nameHash == CTStringHash("SKY_BACKDROP"))
+		{
+			GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+			GX_SetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+		}
+		else
+		{
+			GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+			GX_SetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+		}
+		
 		GX_SetNumTexGens(1);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
@@ -98,6 +106,8 @@ void vEffect_SKY::Start()
 	}
 	else
 	{
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+		GX_SetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
 		GX_SetNumTexGens(0);
 		
 		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);

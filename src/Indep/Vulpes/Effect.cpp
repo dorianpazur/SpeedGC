@@ -23,7 +23,7 @@ VEFFECT_ID vEffect::GetEffectIDFromString(const char* str)
 	else if (strcmp(str, "FE") == 0)
 		return VEFFECT_FE;
 	else if (strcmp(str, "SKY") == 0)
-		return VEFFECT_FE;
+		return VEFFECT_SKY;
 	
 	return VEFFECT_STANDARD; // fallback to standard
 }
