@@ -79,8 +79,14 @@ void vDisplayFrame()
 		
 		float transformFlt[16];
 		tMatrix4 transform;
+		tMatrix4 skyTransform;
 		
-		gSkydomeModel->Render(&vViews[viewNum], &transform);
+		tInvertMatrix(&transform, &vViews[viewNum].ViewMatrix);
+		skyTransform[0][3] = transform[0][3];
+		skyTransform[1][3] = transform[1][3];
+		skyTransform[2][3] = transform[2][3];
+		
+		gSkydomeModel->Render(&vViews[viewNum], &skyTransform);
 		
 		vPoly poly;
 	
