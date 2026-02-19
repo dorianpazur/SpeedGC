@@ -30,13 +30,6 @@ bool bWideScreen = true;
 int twkVblankCount = 1;
 bool twkDeflicker = false;
 
-// test models
-extern tFile *gTestGLBFile;
-extern vModel *gTestModel;
-
-extern vModel *gCarModel;
-extern vModel *gSkydomeModel;
-
 const tMatrix4 gIdentityMatrix;
 
 //---------------------------------------------------------------------------------
@@ -48,6 +41,40 @@ void vDisplayFrame()
 	tMatrix4 guiMtx;
 		
 	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,twkDeflicker,rmode->vfilter);
+	
+	// TODO - replace this with camera movers
+	World* world = World::GetInstance();
+	if (world) 
+	{
+		for (size_t veh = 0; veh < world->mVehicles.size(); veh++)
+		{
+			Vehicle* vehicle = world->mVehicles[veh];
+			
+			if (!vehicle || !vehicle->mBody)
+				continue;
+			
+			if (veh >= 2)
+				break;
+			
+			btTransform trans;
+			btRigidBody* body = vehicle->mBody;
+	
+			if (body->getMotionState())
+			{
+				body->getMotionState()->getWorldTransform(trans);
+			}
+			else
+			{
+				trans = body->getWorldTransform();
+			}
+			
+			btVector3 origin = trans.getOrigin();
+	
+			camTarget[veh].x = origin.getX();
+			camTarget[veh].y = origin.getY();
+			camTarget[veh].z = origin.getZ();
+		}
+	}
 	
 	// setup our camera at the origin
 	// looking down the -z axis with y up
@@ -77,17 +104,10 @@ void vDisplayFrame()
 		vSetCurrentRenderTarget(vViews[viewNum].RenderTarget);
 		GX_LoadProjectionMtx(*(Mtx44*)&vViews[viewNum].ProjectionMatrix, GX_PERSPECTIVE);
 		
-		float transformFlt[16];
-		tMatrix4 transform;
-		tMatrix4 skyTransform;
+		// render the sky
+		StuffSky(&vViews[viewNum]);
 		
-		tInvertMatrix(&transform, &vViews[viewNum].ViewMatrix);
-		skyTransform[0][3] = transform[0][3];
-		skyTransform[1][3] = transform[1][3];
-		skyTransform[2][3] = transform[2][3];
-		
-		gSkydomeModel->Render(&vViews[viewNum], &skyTransform);
-		
+		// render test ground - TODO: replace this with actual track
 		vPoly poly;
 	
 		poly.Vertices[0].x = -100.0f;
@@ -127,41 +147,9 @@ void vDisplayFrame()
 		vEffectStaticState::pCurrentEffect->Start();
 		vPolyRender(&poly);
 		vEffectStaticState::pCurrentEffect->End();
-
-		World* world = World::GetInstance();
-		if (world && gCarModel && world->mVehicles.size() > 0) 
-		{
-			for (size_t veh = 0; veh < world->mVehicles.size(); veh++)
-			{
-				Vehicle* vehicle = world->mVehicles[veh];
-				
-				if (!vehicle || !vehicle->mBody)
-					continue;
-				
-				if (veh < 2)
-				{
-					btTransform trans;
-					btRigidBody* body = vehicle->mBody;
-	
-					if (body->getMotionState())
-					{
-						body->getMotionState()->getWorldTransform(trans);
-					}
-					else
-					{
-						trans = body->getWorldTransform();
-					}
 		
-					trans.getOpenGLMatrix(transformFlt);
-	
-					camTarget[veh].x = transformFlt[12];
-					camTarget[veh].y = transformFlt[13];
-					camTarget[veh].z = transformFlt[14];
-				}
-				
-				vehicle->Render(&vViews[viewNum]);
-			}
-		}
+		// render vehicles
+		DrawVehicles(&vViews[viewNum]);
 	}
 	
 	// gui

@@ -10,5 +10,6 @@
 #include <Vulpes/Font.h>
 #include <Vulpes/Poly.h>
 #include <Vulpes/View.h>
+#include <Vulpes/Render.h>
 
 #endif

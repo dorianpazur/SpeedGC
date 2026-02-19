@@ -33,6 +33,7 @@ void InitializeEverything(int argc, char** argv);
 void InitializePlatform(int argc, char** argv);
 void InitializeMemory();
 void LoadAssets();
+void MainLoop();
 
 tFile *gTestGLBFile = NULL;
 vModel *gTestModel = NULL;
@@ -94,48 +95,9 @@ int main(int argc, char **argv)
 		
 		InitializeEverything(argc, argv);
 		
-		unsigned int prevFrameTime = tGetTicker();
-		
-		double avgfpsaccum = 0.0f;
-		int avgfpsaccumcount = 0;
-		double fps = 0.0f;
-		
 		while (!bWantsExit && !bWantsReset)
 		{
-			unsigned int CPUTimeStart = tGetTicker();
-			unsigned int now = tGetTicker();
-			
-			double frameTime = tGetTickerDifference(prevFrameTime, now);
-			prevFrameTime = now;
-			
-			if (frameTime > 1000.0/12.0) // limit frame time
-				frameTime = 1000.0/12.0;
-			
-			fps = 1.0 / (frameTime * 0.001);
-			
-			if (avgfpsaccumcount++ < 10)
-				avgfpsaccum += fps;
-			else
-			{
-				gAvgFps = avgfpsaccum / 10.0f;
-				avgfpsaccum = 0;
-				avgfpsaccumcount = 0;
-			}
-			
-			InputManager::Update();
-
-			if (InputManager::ShouldReset())
-				bWantsReset = true;
-
-
-			if (gDebugMenuIOHandler)
-				gDebugMenuIOHandler->PollInput();
-			
-			World::GetInstance()->Simulate(frameTime * 0.001f);
-				
-			CPUTime = (float)tGetTickerDifference(CPUTimeStart);
-			
-			Main_DisplayFrame();
+			MainLoop();
 		}
 		
 		printf("Memory at exit:");
@@ -160,6 +122,51 @@ int main(int argc, char **argv)
 	} while (bWantsReset);
 	
 	return 0;
+}
+
+//---------------------------------------------------------------------------------
+
+void MainLoop()
+{
+	static unsigned int prevFrameTime = tGetTicker();
+	
+	static double avgfpsaccum = 0.0f;
+	static int avgfpsaccumcount = 0;
+	static double fps = 0.0f;
+	
+	unsigned int CPUTimeStart = tGetTicker();
+	unsigned int now = tGetTicker();
+	
+	double frameTime = tGetTickerDifference(prevFrameTime, now);
+	prevFrameTime = now;
+	
+	if (frameTime > 1000.0/12.0) // limit frame time
+		frameTime = 1000.0/12.0;
+	
+	fps = 1.0 / (frameTime * 0.001);
+	
+	if (avgfpsaccumcount++ < 10)
+		avgfpsaccum += fps;
+	else
+	{
+		gAvgFps = avgfpsaccum / 10.0f;
+		avgfpsaccum = 0;
+		avgfpsaccumcount = 0;
+	}
+	
+	InputManager::Update();
+	
+	if (InputManager::ShouldReset())
+		bWantsReset = true;
+	
+	if (gDebugMenuIOHandler)
+		gDebugMenuIOHandler->PollInput();
+	
+	World::GetInstance()->Simulate(frameTime * 0.001f);
+	
+	CPUTime = (float)tGetTickerDifference(CPUTimeStart);
+	
+	Main_DisplayFrame();
 }
 
 //---------------------------------------------------------------------------------
