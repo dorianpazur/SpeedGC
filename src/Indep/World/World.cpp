@@ -156,10 +156,12 @@ void World::Simulate(float timestep)
 				steering[idx] = cmd.value;
 				break;
 			case InputCommandType::StartPressed:
-				if (idx == 1 && mVehicles.size() < 2)
+				printf("World: StartPressed from idx=%d\n", idx);
+				if (idx > 0 && mVehicles.size() < 2)
 				{
 					bSplitScreen = true;
 					mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
+					printf("World: spawned second vehicle\n");
 				}
 				break;
 			case InputCommandType::ResetRequested:
