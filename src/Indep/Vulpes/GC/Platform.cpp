@@ -36,7 +36,8 @@ const tMatrix4 gIdentityMatrix;
 
 void vDisplayFrame()
 {
-	static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 100.0f, 0.0f) };
+	static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 0.0f, 0.0f) };
+	static tVector3 camPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 	
 	tMatrix4 guiMtx;
 		
@@ -68,22 +69,42 @@ void vDisplayFrame()
 				trans = body->getWorldTransform();
 			}
 			
-			btVector3 origin = trans.getOrigin();
-	
-			camTarget[veh].x = origin.getX();
-			camTarget[veh].y = origin.getY();
-			camTarget[veh].z = origin.getZ();
+			tMatrix4 transform;
+			float transformFlt[16];
+			trans.getOpenGLMatrix(transformFlt);
+			
+			// Bullet (OpenGL) using GX matrix
+			transform[0][0] = transformFlt[0];
+			transform[1][0] = transformFlt[1];
+			transform[2][0] = transformFlt[2];
+			
+			transform[0][1] = transformFlt[4];
+			transform[1][1] = transformFlt[5];
+			transform[2][1] = transformFlt[6];
+			
+			transform[0][2] = transformFlt[8];
+			transform[1][2] = transformFlt[9];
+			transform[2][2] = transformFlt[10];
+			
+			transform[0][3] = transformFlt[12];
+			transform[1][3] = transformFlt[13];
+			transform[2][3] = transformFlt[14];
+			
+			tVector3 camPosLocal = tVector3(0, 3.0, -10.0);
+			tVector3 camTargetLocal = tVector3(0, 2.0, 5.0);
+			tMulVector(&camPos[veh], &transform, &camPosLocal);
+			tMulVector(&camTarget[veh], &transform, &camTargetLocal);
 		}
 	}
 	
 	// setup our camera at the origin
 	// looking down the -z axis with y up
-	guVector cam = {0.0F, 5.0F, 18.0F},
+	guVector cam = {camPos[0].x, camPos[0].y, camPos[0].z},
 			up = {0.0F, 1.0F, 0.0F},
 		look = {camTarget[0].x, camTarget[0].y, camTarget[0].z};
 	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER1].ViewMatrix, &cam, &up, &look);
 	
-	cam = {0.0F, 5.0F, 18.0F},
+	cam = {camPos[1].x, camPos[1].y, camPos[1].z},
 			up = {0.0F, 1.0F, 0.0F},
 		look = {camTarget[1].x, camTarget[1].y, camTarget[1].z};
 	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER2].ViewMatrix, &cam, &up, &look);

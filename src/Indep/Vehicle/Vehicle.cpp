@@ -171,7 +171,8 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	
 	mBrakeInput = std::lerp(mBrakeInput, brake, 30.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, throttle, 30.0f * timestep);
-	mSteeringInput = std::lerp(mSteeringInput, -steering / (1.0 + std::min(3.0f, speed * 0.007f * mThrottleInput)), 5.0f * timestep);
+	float steeringTarget = -steering / (1.0 + std::min(3.0f, speed * 0.007f * mThrottleInput));
+	mSteeringInput = std::lerp(mSteeringInput, steeringTarget, (((std::abs(mSteeringInput) - std::abs(steeringTarget)) > 0.0f) ? 5.0f : 2.0f) * timestep);
 	
 	float angVelFrictionLoss = std::abs((mBody->getWorldTransform().getBasis().transpose() * mBody->getAngularVelocity()).getY()) * 0.5f;
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
