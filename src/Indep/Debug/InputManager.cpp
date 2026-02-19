@@ -113,11 +113,9 @@ void InputManager::UpdateGameCubeInputs()
 	}
 
 	// get input for all 4 players and build commands directly (skip disconnected
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
-		// only read from pads that PAD_ScanPads reports as present
-		bool padPresent = (padMask & PAD_CHAN_BIT(i)) != 0 || (i == 0 && padMask != 0);
-		if (!padPresent || !s_controllerConnected[i])
+		if (!s_controllerConnected[i])
 		{
 			continue;
 		}
@@ -163,7 +161,6 @@ void InputManager::UpdateGameCubeInputs()
 
 		if (startPressed)
 		{
-			printf("InputManager: Start from pad %d\n", i);
 			InputCommand cmd;
 			cmd.type = InputCommandType::StartPressed;
 			cmd.playerIndex = i;
