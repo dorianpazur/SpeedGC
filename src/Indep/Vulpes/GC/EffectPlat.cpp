@@ -1,6 +1,20 @@
 
 #include <Vulpes/Effect.h>
 
+struct __gx_texobj
+{
+	u32 tex_filt;
+	u32 tex_lod;
+	u32 tex_size;
+	u32 tex_maddr;
+	u32 usr_data;
+	u32 tex_fmt;
+	u32 tex_tlut;
+	u16 tex_tile_cnt;
+	u8 tex_tile_type;
+	u8 tex_flag;
+} __attribute__((packed));
+
 class vEffect_STANDARD : public vEffect
 {	
 public:
@@ -95,12 +109,14 @@ void vEffect_SKY::Start()
 			GX_SetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
 		}
 		
+		((__gx_texobj*)&texture->GXTextureObj)->tex_filt = (((__gx_texobj*)&texture->GXTextureObj)->tex_filt & ~0x0c) | ((GX_CLAMP) << 2);
+		
 		GX_SetNumTexGens(1);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
-			
+		
 		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
-	
+		
 		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 	}
