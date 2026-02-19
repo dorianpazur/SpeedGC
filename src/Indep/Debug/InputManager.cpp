@@ -12,7 +12,7 @@
 
 static bool s_shouldReset = false;
 static std::vector<InputCommand, tStdAllocator<InputCommand>> s_commands;
-static bool s_controllerConnected[4] = { true, true, true, true };
+static bool s_controllerConnected[4] = { false, false, false, false };
 
 void InputManager::Initialize()
 {
@@ -21,7 +21,7 @@ void InputManager::Initialize()
 	s_commands.reserve(32);
 	for (int i = 0; i < 4; ++i)
 	{
-		s_controllerConnected[i] = true;
+		s_controllerConnected[i] = false;
 	}
 }
 
@@ -63,15 +63,25 @@ void InputManager::UpdateGameCubeInputs()
 	// PAD_ScanPads returns a bitmask
 	// bit set = controller present on that channel
 	u32 padMask = PAD_ScanPads();
+	static u32 lastPadMask = 0;
+	static int frameCounter = 0;
+
+	// Helper function to check if controller is connected from padMask
+	// PAD_ScanPads may return either format:
+	// - High bits: 0x80000000, 0x40000000, etc. (PAD_CHAN_BIT format)
+	// - Low bits: 0x00000001, 0x00000002, etc. (simple bitmask)
+	auto CheckPadMask = [padMask](int i) -> bool {
+		return (padMask & PAD_CHAN_BIT(i)) != 0 || (padMask & (1u << i)) != 0;
+		};
 
 	s_shouldReset = false;
 	s_commands.clear();
 
 	// updtae controller connection state and push ControllerDisconnected on transition
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
-		//      if controller 1 is connected using bitmask  || 
-		bool connected = (padMask & PAD_CHAN_BIT(i)) != 0  || (i == 0 && padMask != 0);
+		// Check if controller is connected using bitmask (support both formats)
+		bool connected = CheckPadMask(i);
 		if (s_controllerConnected[i] && !connected) //detect the disconnection
 		{
 			s_controllerConnected[i] = false;
@@ -94,7 +104,7 @@ void InputManager::UpdateGameCubeInputs()
 	// Hardware reset button + special combo (only if controller 0 connected)
 	// never call PAD_* for disconnected channels (avoids invalid read on dolphin)
 	int buttonsPressed0 = 0;
-	if (padMask & PAD_CHAN_BIT(0))
+	if (CheckPadMask(0))
 		buttonsPressed0 = PAD_ButtonsHeld(0);
 	if (s_controllerConnected[0] &&
 		(SYS_ResetButtonDown() ||
@@ -113,9 +123,10 @@ void InputManager::UpdateGameCubeInputs()
 	}
 
 	// get input for all 4 players and build commands directly (skip disconnected
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
-		if (!s_controllerConnected[i])
+		// Never call PAD_* for disconnected channels (avoids invalid read on dolphin)
+		if (!CheckPadMask(i))
 		{
 			continue;
 		}
@@ -161,6 +172,7 @@ void InputManager::UpdateGameCubeInputs()
 
 		if (startPressed)
 		{
+			printf("Start pressed on controller %d\n", i);
 			InputCommand cmd;
 			cmd.type = InputCommandType::StartPressed;
 			cmd.playerIndex = i;

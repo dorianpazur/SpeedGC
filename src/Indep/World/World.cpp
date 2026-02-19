@@ -158,6 +158,8 @@ void World::Simulate(float timestep)
 			case InputCommandType::StartPressed:
 				if (idx == 1 && mVehicles.size() < 2)
 				{
+					printf("StartPressed received for player %d, current vehicles: %zu\n", idx, mVehicles.size());
+					printf("Adding second vehicle!\n");
 					bSplitScreen = true;
 					mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
 				}
