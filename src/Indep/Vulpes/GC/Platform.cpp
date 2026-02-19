@@ -43,7 +43,7 @@ const tMatrix4 gIdentityMatrix;
 
 void vDisplayFrame()
 {
-	static vVector3 camTarget[2];
+	static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 100.0f, 0.0f) };
 	
 	tMatrix4 guiMtx;
 		
