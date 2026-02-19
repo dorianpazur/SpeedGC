@@ -2,7 +2,6 @@
 #include "ScreenPrintf.h"
 #include <Vulpes/model.h>
 
-
 // car model used for rendering all vehicles
 extern vModel* gCarModel;
 
@@ -217,9 +216,9 @@ void Vehicle::OnCollide(ISimable* other)
 	ScreenPrintf(-80, -180, 0.5f, 0xFFFF0000, "collided!");
 }
 
-void Vehicle::Render(tMatrix4* viewMtx)
+void Vehicle::Render(vView* view)
 {
-	if (!gCarModel || !viewMtx || !mBody)
+	if (!gCarModel || !view || !mBody)
 		return;
 	
 	tMatrix4 transform;
@@ -254,5 +253,5 @@ void Vehicle::Render(tMatrix4* viewMtx)
 	transform[1][3] = transformFlt[13];
 	transform[2][3] = transformFlt[14];
 
-	gCarModel->Render(viewMtx, &transform);
+	gCarModel->Render(view, &transform);
 }

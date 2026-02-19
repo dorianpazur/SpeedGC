@@ -24,8 +24,6 @@ GXRModeObj *rmode = NULL;
 f32 yscale;
 u32 xfbHeight;
 GXColor background = {0x00, 0x00, 0x00, 0xff};
-tMatrix4 viewMtx[2];
-tMatrix4 projMtx[2]; // view and perspective matrices
 
 bool bSplitScreen = false;
 bool bWideScreen = true;
@@ -39,6 +37,8 @@ extern vModel *gTestModel;
 extern vModel *gCarModel;
 extern vModel *gSkydomeModel;
 
+const tMatrix4 gIdentityMatrix;
+
 //---------------------------------------------------------------------------------
 
 void vDisplayFrame()
@@ -46,56 +46,41 @@ void vDisplayFrame()
 	static vVector3 camTarget[2];
 	
 	tMatrix4 guiMtx;
-	Mtx identityMtx;
 		
 	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,twkDeflicker,rmode->vfilter);
-	guOrtho(*(Mtx44*)&guiMtx, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
-	guMtxIdentity(identityMtx);
 	
 	// setup our camera at the origin
 	// looking down the -z axis with y up
 	guVector cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
 		look = {camTarget[0].x, camTarget[0].y, camTarget[0].z};
-	guLookAt(*(Mtx44*)&viewMtx[0], &cam, &up, &look);
+	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER1].ViewMatrix, &cam, &up, &look);
 	
 	cam = {0.0F, 5.0F, 18.0F},
 			up = {0.0F, 1.0F, 0.0F},
 		look = {camTarget[1].x, camTarget[1].y, camTarget[1].z};
-	guLookAt(*(Mtx44*)&viewMtx[1], &cam, &up, &look);
+	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER2].ViewMatrix, &cam, &up, &look);
 	
 	// handle view stuff
+	gCurViewMode = bSplitScreen ? VIEW_MODE_TWOH : VIEW_MODE_ONE;
 	MaybeChangeViewMode();
 	for (int viewNum = 0; viewNum < NUM_VVIEWS; viewNum++)
 	{
 		vViews[viewNum].CalculateViewMatricies();
 	}
 	
-	GX_InvVtxCache();
-	GX_InvalidateTexAll();
-	
-	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum < VVIEW_LAST_PLAYER; viewNum++)
+	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
 	{
 		if (!vViews[viewNum].Active)
 			continue;
 		
+		vSetCurrentRenderTarget(vViews[viewNum].RenderTarget);
 		GX_LoadProjectionMtx(*(Mtx44*)&vViews[viewNum].ProjectionMatrix, GX_PERSPECTIVE);
-		
-		if (bSplitScreen)
-		{
-			GX_SetViewport(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2,0,1); // TODO - add actual view class
-			GX_SetScissor(0,(rmode->efbHeight / 2) * viewNum,rmode->fbWidth,rmode->efbHeight/2);
-		}
-		else
-		{
-			GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1); // TODO - add actual view class
-			GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
-		}
 		
 		float transformFlt[16];
 		tMatrix4 transform;
 		
-		gSkydomeModel->Render(&viewMtx[viewNum - 1], &transform);
+		gSkydomeModel->Render(&vViews[viewNum], &transform);
 		
 		vPoly poly;
 	
@@ -129,7 +114,7 @@ void vDisplayFrame()
 		*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
 		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 		
-		GX_LoadPosMtxImm(*(Mtx44*)&viewMtx[viewNum - 1], GX_PNMTX0);
+		GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
 		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
 	
 		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
@@ -167,8 +152,8 @@ void vDisplayFrame()
 					camTarget[veh].y = transformFlt[13];
 					camTarget[veh].z = transformFlt[14];
 				}
-	
-				vehicle->Render(&viewMtx[viewNum - 1]);
+				
+				vehicle->Render(&vViews[viewNum]);
 			}
 		}
 	}
@@ -178,7 +163,7 @@ void vDisplayFrame()
 	GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
 	
 	GX_LoadProjectionMtx(*(Mtx44*)&vViews[VVIEW_FE].ProjectionMatrix, GX_ORTHOGRAPHIC);
-	GX_LoadPosMtxImm(identityMtx, GX_PNMTX0);
+	GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
 	
 	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 	

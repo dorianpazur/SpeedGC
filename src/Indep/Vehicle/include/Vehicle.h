@@ -4,6 +4,7 @@
 #include <tWare/Align.h>
 #include <btBulletDynamicsCommon.h>
 #include <BulletDynamics/Vehicle/btRaycastVehicle.h>
+#include <Vulpes/View.h>
 
 #include "ISimable.h"
 
@@ -17,7 +18,7 @@ public:
 	virtual void OnCollide(ISimable* other);
 
 	
-	virtual void Render(tMatrix4 * viewMtx) override;
+	virtual void Render(vView* view) override;
 
 private:
 	btRaycastVehicle::btVehicleTuning mTuning;

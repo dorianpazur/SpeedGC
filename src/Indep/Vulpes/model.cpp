@@ -252,7 +252,7 @@ void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, cons
 
 //---------------------------------------------------------------------------------
 
-void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
+void vModel::Render(vView* view, tMatrix4 *transform)
 {
 	const float LARGE_NUMBER = 9999999999.0f;
 	tMatrix4 mv; // modelview matrix.	
@@ -261,13 +261,13 @@ void vModel::Render(tMatrix4 *view, tMatrix4 *transform)
 	tMatrix4 VtoW; // view to world matrix.	
 	
 	// bad naming: this means multiply a by b and put the result into c (ab)
-	tMulMatrix(&mv, view, transform);
+	tMulMatrix(&mv, &view->ViewMatrix, transform);
 	
 	// load the modelview matrix into matrix memory
 	GX_LoadPosMtxImm(*(Mtx44*)&mv, GX_PNMTX0);
 	
 	tInvertMatrix(&WtoL, transform);
-	tInvertMatrix(&VtoWtmp, view);
+	tInvertMatrix(&VtoWtmp, &view->ViewMatrix);
     tTransposeMatrix(&VtoW, &VtoWtmp);
 	
 	GX_SetCullMode(GX_CULL_BACK);

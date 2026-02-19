@@ -62,3 +62,9 @@ void MaybeChangeViewMode()
 		break;
 	}
 }
+
+void vSetCurrentRenderTarget(vRenderTarget* renderTarget)
+{
+	GX_SetViewport(renderTarget->Left,renderTarget->Top,renderTarget->Width,renderTarget->Height,0,1);
+	GX_SetScissor(renderTarget->Left,renderTarget->Top,renderTarget->Width,renderTarget->Height);
+}

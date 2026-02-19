@@ -10,6 +10,7 @@
 #include <Vulpes/TextureCache.h>
 #include <Vulpes/Vectors.h>
 #include <Vulpes/Effect.h>
+#include <Vulpes/View.h>
 #include <malloc.h>
 
 struct ALIGN(32) vVertex {
@@ -93,7 +94,7 @@ struct ALIGN(32) vModel
 	void BuildFromGLTFModel(tinygltf::Model* model, const char* basePath = "");
 	vModel(tinygltf::Model *model, const char* basePath = "");
 	vModel(const char *path);
-	void Render(tMatrix4 *view, tMatrix4 *transform);
+	void Render(vView* view, tMatrix4 *transform);
 	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, const char* basePath = "");
 };
 

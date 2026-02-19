@@ -33,6 +33,6 @@ void vpInitViews()
 	{
 		vView* view = &vViews[VVIEW_PLAYER2];
 		view->Active = false;
-		view->RenderTarget = &vRenderTargets[TARGET_DISPLAYBUFFER_P1];
+		view->RenderTarget = &vRenderTargets[TARGET_DISPLAYBUFFER_P2];
 	}
 }

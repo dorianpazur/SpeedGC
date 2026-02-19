@@ -41,16 +41,15 @@ struct vView
 	
 	tMatrix4 ViewMatrix;
 	tMatrix4 ProjectionMatrix;
-	tMatrix4 ViewProjMatrix;
 	
 	vRenderTarget* RenderTarget = NULL;
 	
 	void CalculateViewMatricies();
 };
 
-
 extern vView vViews[NUM_VVIEWS];
 extern void vpInitViews();
+extern void vSetCurrentRenderTarget(vRenderTarget* renderTarget); 
 extern void MaybeChangeViewMode();
 extern VIEW_MODE gCurViewMode;
 
