@@ -216,11 +216,11 @@ void InitializePlatform(int argc, char** argv) {
 		rmode = VIDEO_GetPreferredMode(NULL);
 	
 		void *gp_fifo = NULL;
-		gp_fifo = memalign(32,GX_FIFO_MINSIZE);
+		gp_fifo = tWareMalloc(GX_FIFO_MINSIZE, "Vulpes GP FIFO", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 		memset(gp_fifo,0,GX_FIFO_MINSIZE);
 		
-		xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-		xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+		xfb[0] = MEM_K0_TO_K1(tWareMalloc(VIDEO_GetFrameBufferSize(rmode), "Vulpes Display Buffer 1", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32)));
+		xfb[1] = MEM_K0_TO_K1(tWareMalloc(VIDEO_GetFrameBufferSize(rmode), "Vulpes Display Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32)));
 		//console_init(xfb[currentBuffer],20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
 		
 		FILE* checkFile = NULL;
