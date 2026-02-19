@@ -162,7 +162,7 @@ void vDisplayFrame()
 		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 		
 		GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
-		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_STANDARD];
 	
 		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
 		vEffectStaticState::pCurrentEffect->Start();
