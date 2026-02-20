@@ -129,6 +129,8 @@ void World::Simulate(float timestep)
 {
 	if (!ShouldPauseWorld())
 	{
+		mTimeElapsed += timestep;
+		
 		// auto default inputs per vehicle this frame
 		float engineForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		float brakeForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };

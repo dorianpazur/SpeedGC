@@ -34,6 +34,8 @@ public:
 	static void Uninit();
 	static World* GetInstance();
 	
+	float mTimeElapsed = 0.0f;
+	
 	void Simulate(float timestep);
 	bool ShouldPauseWorld();
 	
