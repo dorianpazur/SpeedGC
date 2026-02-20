@@ -32,6 +32,8 @@ bool twkDeflicker = false;
 
 const tMatrix4 gIdentityMatrix;
 
+extern double gFrameTime;
+
 //---------------------------------------------------------------------------------
 
 void vDisplayFrame()
@@ -39,6 +41,7 @@ void vDisplayFrame()
 	static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 0.0f, 0.0f) };
 	static tVector3 camPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 	static tVector3 camUp[2] { tVector3(0.0f, 1.0f, 0.0f), tVector3(0.0f, 1.0f, 0.0f) };
+	static float tilt[2] { 0.0f, 0.0f };
 	
 	tMatrix4 guiMtx;
 		
@@ -95,9 +98,11 @@ void vDisplayFrame()
 			tVector3 globalVehPos;
 			tMulVector(&globalVehPos, &transform, &localVehPos);
 			
-			tVector3 camPosLocal = tVector3(body->getAngularVelocity().getY(), 3.0, -10.0);
+			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY(), gFrameTime * 0.004f);
+			
+			tVector3 camPosLocal = tVector3(tilt[veh], 3.0, -10.0);
 			tVector3 camTargetLocal = tVector3(0, 2.0, 10.0);
-			tVector3 camUpOffset = tVector3(-body->getAngularVelocity().getY() * 0.05f, 0.0, 0.0);
+			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.05f, 0.0, 0.0);
 			
 			tMulVector(&camPos[veh], &transform, &camPosLocal);
 			tMulVector(&camTarget[veh], &transform, &camTargetLocal);

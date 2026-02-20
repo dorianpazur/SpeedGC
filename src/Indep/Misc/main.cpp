@@ -44,6 +44,7 @@ vModel* gSkydomeModel = NULL;
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
 float gAvgFps = 0.0f;
+double gFrameTime = 0.0f;
 
 extern bool bSplitScreen;
 
@@ -137,13 +138,13 @@ void MainLoop()
 	unsigned int CPUTimeStart = tGetTicker();
 	unsigned int now = tGetTicker();
 	
-	double frameTime = tGetTickerDifference(prevFrameTime, now);
+	gFrameTime = tGetTickerDifference(prevFrameTime, now);
 	prevFrameTime = now;
 	
-	if (frameTime > 1000.0/12.0) // limit frame time
-		frameTime = 1000.0/12.0;
+	fps = 1.0 / (gFrameTime * 0.001);
 	
-	fps = 1.0 / (frameTime * 0.001);
+	if (gFrameTime > 1000.0/12.0) // limit frame time
+		gFrameTime = 1000.0/12.0;
 	
 	if (avgfpsaccumcount++ < 10)
 		avgfpsaccum += fps;
@@ -162,7 +163,7 @@ void MainLoop()
 	if (gDebugMenuIOHandler)
 		gDebugMenuIOHandler->PollInput();
 	
-	World::GetInstance()->Simulate(frameTime * 0.001f);
+	World::GetInstance()->Simulate(gFrameTime * 0.001f);
 	
 	CPUTime = (float)tGetTickerDifference(CPUTimeStart);
 	
