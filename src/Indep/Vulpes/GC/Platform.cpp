@@ -42,6 +42,7 @@ void vDisplayFrame()
 	static tVector3 camPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 	static tVector3 camUp[2] { tVector3(0.0f, 1.0f, 0.0f), tVector3(0.0f, 1.0f, 0.0f) };
 	static float tilt[2] { 0.0f, 0.0f };
+	static float distance[2] { 10.0f, 10.0f };
 	
 	tMatrix4 guiMtx;
 		
@@ -100,9 +101,20 @@ void vDisplayFrame()
 			
 			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY(), gFrameTime * 0.004f);
 			
-			tVector3 camPosLocal = tVector3(tilt[veh], 3.0, -10.0);
-			tVector3 camTargetLocal = tVector3(0, 2.0, 10.0);
-			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.05f, 0.0, 0.0);
+			float speed = std::fmax(0.0f, body->getLinearVelocity().length() - 0.01f);
+			
+			float kBaseDistance = 7.0f;
+			float targetDistance = kBaseDistance;
+			float speedFOVThing = std::min(1.0f, std::powf(speed * 0.015f, 1.5f) * 0.65f);
+			vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees = 60.0f * (1 + speedFOVThing * 0.45f); 
+			targetDistance -= (speedFOVThing * 4.0f); // bring in closer when getting faster
+			targetDistance += std::min(3.0f, std::powf(speed * 0.02f, 2.0f) * 1.5f); // move it away when initially gaining speed
+			
+			distance[veh] = std::lerp(distance[veh], targetDistance, gFrameTime * 0.002f);
+			
+			tVector3 camPosLocal = tVector3(tilt[veh], 3.0f, -distance[veh]);
+			tVector3 camTargetLocal = tVector3(0.0f, 2.0f, 15.0f + (kBaseDistance - distance[veh]));
+			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.05f, 0.0f, 0.0f);
 			
 			tMulVector(&camPos[veh], &transform, &camPosLocal);
 			tMulVector(&camTarget[veh], &transform, &camTargetLocal);
@@ -159,16 +171,16 @@ void vDisplayFrame()
 		poly.Vertices[1].y = 0;
 		poly.Vertices[1].z = 100.0f;
 		poly.UVs[1][0] = 0.0f;
-		poly.UVs[1][1] = 100.0f;
+		poly.UVs[1][1] = 400.0f;
 		poly.Vertices[2].x = 50.0f;
 		poly.Vertices[2].y = 0;
 		poly.Vertices[2].z = 100.0f;
-		poly.UVs[2][0] = 2.0f;
-		poly.UVs[2][1] = 100.0f;
+		poly.UVs[2][0] = 4.0f;
+		poly.UVs[2][1] = 400.0f;
 		poly.Vertices[3].x = 50.0f;
 		poly.Vertices[3].y = 0;
 		poly.Vertices[3].z = -10000.0f;
-		poly.UVs[3][0] = 2.0f;
+		poly.UVs[3][0] = 4.0f;
 		poly.UVs[3][1] = 0.0f;
 		
 		poly.Colours[0][0] = 0xFF;

@@ -7,7 +7,7 @@ extern vModel* gCarModel;
 
 const float speedPowerDecline = 0.035f;
 const float enginePower = 17000.0f;
-const float brakePower = 70.0f;
+const float brakePower = 50.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.5f;
 const float wheelWidth = 0.4f;
@@ -197,7 +197,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	mBody->applyCentralForce(mBody->getWorldTransform().getBasis() * downforce);
 	
 	float powerMod = 1.0f / (1.0f + ((speed * speedPowerDecline) * (speed * speedPowerDecline) * (speed * speedPowerDecline)));
-	powerMod *= std::min(1.0f, 0.02f + (speed * 0.015f));
+	powerMod *= std::min(1.0f, 0.05f + (speed * 0.012f));
 	// TODO: modulate parameters based on speed and such
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
 	{
@@ -205,7 +205,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		wheel.m_frictionSlip = (wheelFriction * speedFrictionScale) / (1.0f + angVelFrictionLoss);
 		
 		mRaycastVehicle->applyEngineForce(mThrottleInput * enginePower * powerMod, i);
-		mRaycastVehicle->setBrake(mBrakeInput * brakePower * std::lerp(1.0f, powerMod, 0.15f), i);
+		mRaycastVehicle->setBrake(mBrakeInput * brakePower * std::lerp(1.0f, powerMod, 0.1f), i);
 		if (wheel.m_bIsFrontWheel)
 		{
 			mRaycastVehicle->setSteeringValue(mSteeringInput, i);

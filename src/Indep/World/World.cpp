@@ -162,62 +162,71 @@ void World::Simulate(float timestep)
 	if (!ShouldPauseWorld())
 	{
 		mTimeElapsed += timestep;
+		static float timeElapsedFix = 0.0f;
+		const float kStepTime = 1.0f / 60.0f;
 		
-		// auto default inputs per vehicle this frame
-		float engineForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		float brakeForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		float steering[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-		const auto& cmds = InputManager::GetCommands();
-
-		for (const InputCommand& cmd : cmds)
+		timeElapsedFix += timestep;
+		
+		while (timeElapsedFix >= kStepTime)
 		{
-			int idx = cmd.playerIndex;
-			if (idx < 0 || idx > 3)
+			// auto default inputs per vehicle this frame
+			float engineForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+			float brakeForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+			float steering[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	
+			const auto& cmds = InputManager::GetCommands();
+	
+			for (const InputCommand& cmd : cmds)
 			{
-				continue;
-			}
-
-			switch (cmd.type)
-			{
-			case InputCommandType::Accelerate:
-				engineForce[idx] = cmd.value;
-				break;
-			case InputCommandType::Brake:
-				brakeForce[idx] = cmd.value;
-				break;
-			case InputCommandType::Steer:
-				steering[idx] = cmd.value;
-				break;
-			case InputCommandType::StartPressed:
-				if (idx == 1 && mVehicles.size() < 2)
+				int idx = cmd.playerIndex;
+				if (idx < 0 || idx > 3)
 				{
-					printf("StartPressed received for player %d, current vehicles: %zu\n", idx, mVehicles.size());
-					printf("Adding second vehicle!\n");
-					bSplitScreen = true;
-					mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
+					continue;
 				}
-				break;
-			case InputCommandType::ResetRequested:
-				break; 				// handled in main through InputManager::ShouldReset()
-			case InputCommandType::ControllerDisconnected:
-				// game pause and show InputManager::IsControllerConnected
-				break;
-			default:
-				break;
+	
+				switch (cmd.type)
+				{
+				case InputCommandType::Accelerate:
+					engineForce[idx] = cmd.value;
+					break;
+				case InputCommandType::Brake:
+					brakeForce[idx] = cmd.value;
+					break;
+				case InputCommandType::Steer:
+					steering[idx] = cmd.value;
+					break;
+				case InputCommandType::StartPressed:
+					if (idx == 1 && mVehicles.size() < 2)
+					{
+						printf("StartPressed received for player %d, current vehicles: %zu\n", idx, mVehicles.size());
+						printf("Adding second vehicle!\n");
+						bSplitScreen = true;
+						mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
+					}
+					break;
+				case InputCommandType::ResetRequested:
+					break; 				// handled in main through InputManager::ShouldReset()
+				case InputCommandType::ControllerDisconnected:
+					// game pause and show InputManager::IsControllerConnected
+					break;
+				default:
+					break;
+				}
 			}
+			
+			for (size_t i = 0; i < mVehicles.size(); i++)
+			{
+				int idx = (int)i;
+				if (idx < 0 || idx > 3)
+					continue;
+				//else if in range
+				mVehicles[i]->Update(engineForce[idx], brakeForce[idx], steering[idx], kStepTime); 
+			}
+			
+			dynamicsWorld->stepSimulation(kStepTime, 2);
+			
+			timeElapsedFix -= kStepTime;
 		}
-		
-		for (size_t i = 0; i < mVehicles.size(); i++)
-		{
-			int idx = (int)i;
-			if (idx < 0 || idx > 3)
-				continue;
-			//else if in range
-			mVehicles[i]->Update(engineForce[idx], brakeForce[idx], steering[idx], timestep); 
-		}
-		
-		dynamicsWorld->stepSimulation(timestep, 2);
 	}
 }
 
@@ -253,7 +262,7 @@ World::~World()
 	///-----cleanup_start-----
 	
 	// remove vehicles
-	for (int i = 0; i < mVehicles.size(); i++)
+	for (size_t i = 0; i < mVehicles.size(); i++)
 	{
 		delete mVehicles[i];
 	}
