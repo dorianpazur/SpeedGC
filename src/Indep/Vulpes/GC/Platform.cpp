@@ -38,6 +38,7 @@ void vDisplayFrame()
 {
 	static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 0.0f, 0.0f) };
 	static tVector3 camPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
+	static tVector3 camUp[2] { tVector3(0.0f, 1.0f, 0.0f), tVector3(0.0f, 1.0f, 0.0f) };
 	
 	tMatrix4 guiMtx;
 		
@@ -90,22 +91,35 @@ void vDisplayFrame()
 			transform[1][3] = transformFlt[13];
 			transform[2][3] = transformFlt[14];
 			
-			tVector3 camPosLocal = tVector3(0, 3.0, -10.0);
-			tVector3 camTargetLocal = tVector3(0, 2.0, 5.0);
+			tVector3 localVehPos = tVector3(0, 0, 0);
+			tVector3 globalVehPos;
+			tMulVector(&globalVehPos, &transform, &localVehPos);
+			
+			tVector3 camPosLocal = tVector3(body->getAngularVelocity().getY(), 3.0, -10.0);
+			tVector3 camTargetLocal = tVector3(0, 2.0, 10.0);
+			tVector3 camUpOffset = tVector3(-body->getAngularVelocity().getY() * 0.05f, 0.0, 0.0);
+			
 			tMulVector(&camPos[veh], &transform, &camPosLocal);
 			tMulVector(&camTarget[veh], &transform, &camTargetLocal);
+			tMulVector(&camUp[veh], &transform, &camUpOffset);
+			
+			// fix them up
+			camTarget[veh].y = transformFlt[13] + 2.0f;
+			camPos[veh].y = transformFlt[13] + 3.0f;
+			camUp[veh] -= globalVehPos; // make it still local to the vehicle but rotated
+			camUp[veh].y = 1.0f;
 		}
 	}
 	
 	// setup our camera at the origin
 	// looking down the -z axis with y up
 	guVector cam = {camPos[0].x, camPos[0].y, camPos[0].z},
-			up = {0.0F, 1.0F, 0.0F},
+			up = {camUp[0].x, camUp[0].y, camUp[0].z},
 		look = {camTarget[0].x, camTarget[0].y, camTarget[0].z};
 	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER1].ViewMatrix, &cam, &up, &look);
 	
 	cam = {camPos[1].x, camPos[1].y, camPos[1].z},
-			up = {0.0F, 1.0F, 0.0F},
+			up = {camUp[1].x, camUp[1].y, camUp[1].z},
 		look = {camTarget[1].x, camTarget[1].y, camTarget[1].z};
 	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER2].ViewMatrix, &cam, &up, &look);
 	
@@ -131,25 +145,25 @@ void vDisplayFrame()
 		// render test ground - TODO: replace this with actual track
 		vPoly poly;
 	
-		poly.Vertices[0].x = -100.0f;
+		poly.Vertices[0].x = -50.0f;
 		poly.Vertices[0].y = 0;
-		poly.Vertices[0].z = -100.0f;
+		poly.Vertices[0].z = -10000.0f;
 		poly.UVs[0][0] = 0.0f;
 		poly.UVs[0][1] = 0.0f;
-		poly.Vertices[1].x = -100.0f;
+		poly.Vertices[1].x = -50.0f;
 		poly.Vertices[1].y = 0;
 		poly.Vertices[1].z = 100.0f;
 		poly.UVs[1][0] = 0.0f;
-		poly.UVs[1][1] = 1.0f;
-		poly.Vertices[2].x = 100.0f;
+		poly.UVs[1][1] = 100.0f;
+		poly.Vertices[2].x = 50.0f;
 		poly.Vertices[2].y = 0;
 		poly.Vertices[2].z = 100.0f;
-		poly.UVs[2][0] = 1.0f;
-		poly.UVs[2][1] = 1.0f;
-		poly.Vertices[3].x = 100.0f;
+		poly.UVs[2][0] = 2.0f;
+		poly.UVs[2][1] = 100.0f;
+		poly.Vertices[3].x = 50.0f;
 		poly.Vertices[3].y = 0;
-		poly.Vertices[3].z = -100.0f;
-		poly.UVs[3][0] = 1.0f;
+		poly.Vertices[3].z = -10000.0f;
+		poly.UVs[3][0] = 2.0f;
 		poly.UVs[3][1] = 0.0f;
 		
 		poly.Colours[0][0] = 0xFF;

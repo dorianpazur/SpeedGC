@@ -77,49 +77,81 @@ World::World()
 	// Vehicle constructor creates the body internally
 	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(0, 10, 0)));
 	
-	btCollisionShape* groundShape = new btBoxShape(btVector3(400, 1, 400)); //the gound
-	
-	collisionShapes.push_back(groundShape);
-	
-	btTransform groundTransform;
-	groundTransform.setIdentity();
-	groundTransform.setOrigin(btVector3(0, -1, 0)); //the ground position
-
-	btDefaultMotionState* groundMotion =
-		new btDefaultMotionState(groundTransform);
-
-	//the fixed ground 
-	btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
-
-	btRigidBody* groundBody = new btRigidBody(groundInfo);
-	//add body to the world
-	dynamicsWorld->addRigidBody(groundBody);
-	
+	for (int i = 0; i < 100; i++)
 	{
-		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(100.), btScalar(10.)));
-	
-		collisionShapes.push_back(groundShape);
-	
-		btTransform groundTransform;
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -6, -100));
-	
-		btScalar mass(0.);
-	
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-	
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-	
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-		btRigidBody* body = new btRigidBody(rbInfo);
-	
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
+		{
+			btCollisionShape* groundShape = new btBoxShape(btVector3(50, 1, 50)); //the ground
+			
+			collisionShapes.push_back(groundShape);
+			
+			btTransform groundTransform;
+			groundTransform.setIdentity();
+			groundTransform.setOrigin(btVector3(0, -1, -100 * i)); //the ground position
+		
+			btDefaultMotionState* groundMotion =
+				new btDefaultMotionState(groundTransform);
+		
+			//the fixed ground 
+			btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
+		
+			btRigidBody* groundBody = new btRigidBody(groundInfo);
+			//add body to the world
+			dynamicsWorld->addRigidBody(groundBody);
+		}
+		
+		{
+			btCollisionShape* wallShape = new btBoxShape(btVector3(btScalar(1.), btScalar(100.), btScalar(50.)));
+		
+			collisionShapes.push_back(wallShape);
+		
+			btTransform groundTransform;
+			groundTransform.setIdentity();
+			groundTransform.setOrigin(btVector3(51, -6, -100 * i));
+		
+			btScalar mass(0.);
+		
+			//rigidbody is dynamic if and only if mass is non zero, otherwise static
+			bool isDynamic = (mass != 0.f);
+		
+			btVector3 localInertia(0, 0, 0);
+			if (isDynamic)
+				wallShape->calculateLocalInertia(mass, localInertia);
+		
+			//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+			btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+			btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, wallShape, localInertia);
+			btRigidBody* body = new btRigidBody(rbInfo);
+		
+			//add the body to the dynamics world
+			dynamicsWorld->addRigidBody(body);
+		}
+		
+		{
+			btCollisionShape* wallShape = new btBoxShape(btVector3(btScalar(1.), btScalar(100.), btScalar(50.)));
+		
+			collisionShapes.push_back(wallShape);
+		
+			btTransform groundTransform;
+			groundTransform.setIdentity();
+			groundTransform.setOrigin(btVector3(-51, -6, -100 * i));
+		
+			btScalar mass(0.);
+		
+			//rigidbody is dynamic if and only if mass is non zero, otherwise static
+			bool isDynamic = (mass != 0.f);
+		
+			btVector3 localInertia(0, 0, 0);
+			if (isDynamic)
+				wallShape->calculateLocalInertia(mass, localInertia);
+		
+			//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+			btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+			btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, wallShape, localInertia);
+			btRigidBody* body = new btRigidBody(rbInfo);
+		
+			//add the body to the dynamics world
+			dynamicsWorld->addRigidBody(body);
+		}
 	}
 }
 

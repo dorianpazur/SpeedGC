@@ -49,6 +49,9 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 	
     transform.setIdentity();
     transform.setOrigin(startPos);
+	btQuaternion baseRotation;
+	baseRotation.setEuler(3.14159265359f, 0.0f, 0.0f);
+	transform.setRotation(baseRotation);
 	
     btScalar mass = 800.0f; // car mass
     btVector3 inertia(0, 0, 0);
