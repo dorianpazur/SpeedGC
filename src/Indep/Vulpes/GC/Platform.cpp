@@ -107,10 +107,14 @@ void vDisplayFrame()
 			
 			float speed = std::fmax(0.0f, body->getLinearVelocity().length() - 0.01f);
 			
-			float kBaseDistance = 7.0f;
+			const float kBaseDistance = gCurViewMode == VIEW_MODE_ONE ? 7.0f : 9.0f;
 			float targetDistance = kBaseDistance;
 			float speedFOVThing = std::min(1.0f, std::powf(speed * 0.015f, 0.95f) * 0.65f);
 			vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees = 60.0f * (1 + speedFOVThing * 0.45f); 
+			
+			if (gCurViewMode != VIEW_MODE_ONE)
+				vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees *= 0.75f;
+			
 			targetDistance -= (speedFOVThing * 3.0f); // bring in closer when getting faster
 			targetDistance += std::min(3.0f, std::powf(speed * 0.04f, 2.0f) * 1.5f); // move it away when initially gaining speed
 			
@@ -139,8 +143,6 @@ void vDisplayFrame()
 			
 			tMulVector(&vViews[VVIEW_FIRST_PLAYER + veh].Velocity, &vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &prevCamPos[veh]); // get inverse of velocity
 			vViews[VVIEW_FIRST_PLAYER + veh].Velocity *= 1.0f / (gFrameTime * 0.001f); // make it the correct orientation and scaled with dT
-			
-			ScreenPrintf(16, -160, "Velocity vector: %.2f, %.2f, %.2f", vViews[VVIEW_FIRST_PLAYER + veh].Velocity.x, vViews[VVIEW_FIRST_PLAYER + veh].Velocity.y, vViews[VVIEW_FIRST_PLAYER + veh].Velocity.z);
 		}
 	}
 	
@@ -207,38 +209,45 @@ void vDisplayFrame()
 		}
 		
 		// motion blur
-		GX_SetTexCopySrc(0, 0, gMotionBlurTexture->width, gMotionBlurTexture->height);	//This sets the location on the efb you want to copy from
-		GX_SetTexCopyDst(gMotionBlurTexture->width, gMotionBlurTexture->height, GX_TF_RGBA8, 0);	//This is what kind of texture you want to copy from 
+		GX_SetTexCopySrc(	vViews[viewNum].RenderTarget->Left,
+							vViews[viewNum].RenderTarget->Top,
+							vViews[viewNum].RenderTarget->Width,
+							vViews[viewNum].RenderTarget->Height);	//This sets the location on the efb you want to copy from
+		GX_SetTexCopyDst(vViews[viewNum].RenderTarget->Width, vViews[viewNum].RenderTarget->Height, GX_TF_RGBA8, 0);	//This is what kind of texture you want to copy from 
 		
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
-		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
+		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);	
 		
-		for (int pass = 0; pass < 2; pass++)
+		// single passed, double pass looks a bit nicer but is very performance heavy because of the dual copy
+		for (int pass = 0; pass < 1; pass++)
 		{
+			float bluroffsets[4];
+			
+			tVector3 velocityVector = vViews[viewNum].Velocity;
+			float velocityLength = sqrtf((velocityVector.x * velocityVector.x) + (velocityVector.y * velocityVector.y) + (velocityVector.z * velocityVector.z));
+			
+			if (velocityLength < 10.0f)
+				break;
+			
+			velocityVector *= 1.0f / velocityLength;
+			
+			velocityLength -= 10.0f;
+			velocityLength = std::fmin(1.0f, velocityLength * 0.01f) / 130.0f;
+			
+			velocityVector *= velocityLength;
+			
+			bluroffsets[0] = -(velocityVector.x + velocityVector.z);
+			bluroffsets[1] = -(velocityVector.y + velocityVector.z);
+			bluroffsets[2] = -(velocityVector.x - velocityVector.z);
+			bluroffsets[3] = -(velocityVector.y - velocityVector.z);
+				
 			GX_CopyTex(GX_GetTexObjData(&gMotionBlurTexture->GXTextureObj), GX_FALSE); // copy screen to texture
 			
+			float width = (float)vViews[viewNum].RenderTarget->Width / (float)gMotionBlurTexture->width;
+			float height = (float)vViews[viewNum].RenderTarget->Height / (float)gMotionBlurTexture->height;
+			
 			for (int i = 8; i > 0; i--)
-			{	
-				float bluroffsets[4];
-				
-				tVector3 velocityVector = vViews[viewNum].Velocity;
-				float velocityLength = sqrtf((velocityVector.x * velocityVector.x) + (velocityVector.y * velocityVector.y) + (velocityVector.z * velocityVector.z));
-				
-				if (velocityLength < 10.0f)
-					break;
-				
-				velocityVector *= 1.0f / velocityLength;
-				
-				velocityLength -= 10.0f;
-				velocityLength = std::fmin(1.0f, velocityLength * 0.01f) / 130.0f;
-				
-				velocityVector *= velocityLength;
-				
-				bluroffsets[0] = -(velocityVector.x + velocityVector.z);
-				bluroffsets[1] = -(velocityVector.y + velocityVector.z);
-				bluroffsets[2] = -(velocityVector.x - velocityVector.z);
-				bluroffsets[3] = -(velocityVector.y - velocityVector.z);
-				
+			{
 				vPoly poly;
 			
 				poly.Vertices[0].x = -1.0f;
@@ -258,12 +267,12 @@ void vDisplayFrame()
 				poly.UVs[0][1] = -(i * bluroffsets[1]);
 				
 				poly.UVs[1][0] = -(i * bluroffsets[0]);
-				poly.UVs[1][1] = -(i * bluroffsets[3]) + 1.0f;
+				poly.UVs[1][1] = -(i * bluroffsets[3]) + height;
 				
-				poly.UVs[2][0] = -(i * bluroffsets[2]) + 1.0f;
-				poly.UVs[2][1] = -(i * bluroffsets[3]) + 1.0f;
+				poly.UVs[2][0] = -(i * bluroffsets[2]) + width;
+				poly.UVs[2][1] = -(i * bluroffsets[3]) + height;
 				
-				poly.UVs[3][0] = -(i * bluroffsets[2]) + 1.0f;
+				poly.UVs[3][0] = -(i * bluroffsets[2]) + width;
 				poly.UVs[3][1] = -(i * bluroffsets[1]);
 				
 				poly.Colours[0][0] = 0xFF;
