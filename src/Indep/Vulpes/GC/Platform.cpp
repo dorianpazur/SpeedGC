@@ -178,16 +178,16 @@ void vDisplayFrame()
 			poly.Vertices[1].y = 0;
 			poly.Vertices[1].z = 100.0f;
 			poly.UVs[1][0] = 0.0f;
-			poly.UVs[1][1] = 400.0f;
+			poly.UVs[1][1] = 1200.0f;
 			poly.Vertices[2].x = 50.0f;
 			poly.Vertices[2].y = 0;
 			poly.Vertices[2].z = 100.0f;
-			poly.UVs[2][0] = 4.0f;
-			poly.UVs[2][1] = 400.0f;
+			poly.UVs[2][0] = 8.0f;
+			poly.UVs[2][1] = 1200.0f;
 			poly.Vertices[3].x = 50.0f;
 			poly.Vertices[3].y = 0;
 			poly.Vertices[3].z = -10000.0f;
-			poly.UVs[3][0] = 4.0f;
+			poly.UVs[3][0] = 8.0f;
 			poly.UVs[3][1] = 0.0f;
 			
 			poly.Colours[0][0] = 0xFF;
@@ -218,8 +218,8 @@ void vDisplayFrame()
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);	
 		
-		// single passed, double pass looks a bit nicer but is very performance heavy because of the dual copy
-		for (int pass = 0; pass < 1; pass++)
+		// double passed, gets effectively 16 blur samples out of just 8
+		for (int pass = 0; pass < 2; pass++)
 		{
 			float bluroffsets[4];
 			
@@ -232,9 +232,10 @@ void vDisplayFrame()
 			velocityVector *= 1.0f / velocityLength;
 			
 			velocityLength -= 10.0f;
-			velocityLength = std::fmin(1.0f, velocityLength * 0.01f) / 130.0f;
+			velocityLength = std::fmin(1.0f, velocityLength * 0.003f) / 40.0f;
 			
 			velocityVector *= velocityLength;
+			velocityVector.x *= 0.65f;
 			
 			bluroffsets[0] = -(velocityVector.x + velocityVector.z);
 			bluroffsets[1] = -(velocityVector.y + velocityVector.z);
@@ -246,7 +247,7 @@ void vDisplayFrame()
 			float width = (float)vViews[viewNum].RenderTarget->Width / (float)gMotionBlurTexture->width;
 			float height = (float)vViews[viewNum].RenderTarget->Height / (float)gMotionBlurTexture->height;
 			
-			for (int i = 8; i > 0; i--)
+			for (int i = 4; i > 0; i--)
 			{
 				vPoly poly;
 			
