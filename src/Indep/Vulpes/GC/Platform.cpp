@@ -40,111 +40,8 @@ vTextureCache::CachedTexture* gMotionBlurTexture;
 //---------------------------------------------------------------------------------
 
 void vDisplayFrame()
-{
-	static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 0.0f, 0.0f) };
-	static tVector3 camPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
-	static tVector3 camUp[2] { tVector3(0.0f, 1.0f, 0.0f), tVector3(0.0f, 1.0f, 0.0f) };
-	static tVector3 prevCamPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
-	static float tilt[2] { 0.0f, 0.0f };
-	static float distance[2] { 10.0f, 10.0f };
-	
-	tMatrix4 guiMtx;
-		
+{	
 	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_FALSE,rmode->vfilter);
-	
-	// TODO - replace this with camera movers
-	World* world = World::GetInstance();
-	if (world) 
-	{
-		for (size_t veh = 0; veh < world->mVehicles.size(); veh++)
-		{
-			Vehicle* vehicle = world->mVehicles[veh];
-			
-			if (!vehicle || !vehicle->mBody)
-				continue;
-			
-			if (veh >= 2)
-				break;
-			
-			btTransform trans;
-			btRigidBody* body = vehicle->mBody;
-	
-			if (body->getMotionState())
-			{
-				body->getMotionState()->getWorldTransform(trans);
-			}
-			else
-			{
-				trans = body->getWorldTransform();
-			}
-			
-			tMatrix4 transform;
-			float transformFlt[16];
-			trans.getOpenGLMatrix(transformFlt);
-			
-			// Bullet (OpenGL) using GX matrix
-			transform[0][0] = transformFlt[0];
-			transform[1][0] = transformFlt[1];
-			transform[2][0] = transformFlt[2];
-			
-			transform[0][1] = transformFlt[4];
-			transform[1][1] = transformFlt[5];
-			transform[2][1] = transformFlt[6];
-			
-			transform[0][2] = transformFlt[8];
-			transform[1][2] = transformFlt[9];
-			transform[2][2] = transformFlt[10];
-			
-			transform[0][3] = transformFlt[12];
-			transform[1][3] = transformFlt[13];
-			transform[2][3] = transformFlt[14];
-			
-			tVector3 localVehPos = tVector3(0, 0, 0);
-			tVector3 globalVehPos;
-			tMulVector(&globalVehPos, &transform, &localVehPos);
-			
-			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY(), gFrameTime * 0.004f);
-			
-			float speed = std::fmax(0.0f, body->getLinearVelocity().length() - 0.01f);
-			
-			const float kBaseDistance = gCurViewMode == VIEW_MODE_ONE ? 7.0f : 9.0f;
-			float targetDistance = kBaseDistance;
-			float speedFOVThing = std::min(1.0f, std::powf(speed * 0.015f, 0.95f) * 0.65f);
-			vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees = 60.0f * (1 + speedFOVThing * 0.45f); 
-			
-			if (gCurViewMode != VIEW_MODE_ONE)
-				vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees *= 0.75f;
-			
-			targetDistance -= (speedFOVThing * 3.0f); // bring in closer when getting faster
-			targetDistance += std::min(3.0f, std::powf(speed * 0.04f, 2.0f) * 1.5f); // move it away when initially gaining speed
-			
-			distance[veh] = std::lerp(distance[veh], targetDistance, gFrameTime * 0.002f);
-			
-			tVector3 camPosLocal = tVector3(tilt[veh], 3.0f, -distance[veh]);
-			tVector3 camTargetLocal = tVector3(0.0f, 2.0f, 15.0f + (kBaseDistance - distance[veh]));
-			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.05f, 0.0f, 0.0f);
-			
-			prevCamPos[veh] = camPos[veh]; // store previous pos
-			
-			tMulVector(&camPos[veh], &transform, &camPosLocal);
-			tMulVector(&camTarget[veh], &transform, &camTargetLocal);
-			tMulVector(&camUp[veh], &transform, &camUpOffset);
-			
-			// fix them up
-			camTarget[veh].y = transformFlt[13] + 2.0f;
-			camPos[veh].y = transformFlt[13] + 3.0f;
-			camUp[veh] -= globalVehPos; // make it still local to the vehicle but rotated
-			camUp[veh].y = 1.0f;
-			
-			guVector cam = {camPos[veh].x, camPos[veh].y, camPos[veh].z},
-				up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
-				look = {camTarget[veh].x, camTarget[veh].y, camTarget[veh].z};
-			guLookAt(*(Mtx44*)&vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &cam, &up, &look);
-			
-			tMulVector(&vViews[VVIEW_FIRST_PLAYER + veh].Velocity, &vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &prevCamPos[veh]); // get inverse of velocity
-			vViews[VVIEW_FIRST_PLAYER + veh].Velocity *= 1.0f / (gFrameTime * 0.001f); // make it the correct orientation and scaled with dT
-		}
-	}
 	
 	// handle view stuff
 	gCurViewMode = bSplitScreen ? VIEW_MODE_TWOH : VIEW_MODE_ONE;
@@ -322,6 +219,7 @@ void vDisplayFrame()
 	// push frame
 	if (twkDeflicker)
 		GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_TRUE,rmode->vfilter); // enable deflicker filter if it's on
+	
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 	GX_CopyDisp(xfb[currentBuffer],GX_FALSE);
