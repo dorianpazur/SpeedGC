@@ -46,3 +46,10 @@ void tTransposeMatrix(tMatrix4 *dest, tMatrix4 *src)
 	guMtxTranspose(*(Mtx44*)src, *(Mtx44*)dest);
 #endif
 }
+
+void tCreateLookAtMatrix(tMatrix4 *dest, tVector3 &eye, tVector3 &center, tVector3 &up)
+{
+#ifdef EA_PLATFORM_GAMECUBE
+	guLookAt(*(Mtx44*)dest, (guVector*)&eye, (guVector*)&up, (guVector*)&center);
+#endif
+}

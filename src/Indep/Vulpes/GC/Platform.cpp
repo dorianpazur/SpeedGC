@@ -51,6 +51,8 @@ void vDisplayFrame()
 		vViews[viewNum].CalculateViewMatricies();
 	}
 	
+	GXFogAdjTbl fogAdjTable;
+	
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
 	{
 		if (!vViews[viewNum].Active)
@@ -59,8 +61,23 @@ void vDisplayFrame()
 		vSetCurrentRenderTarget(vViews[viewNum].RenderTarget);
 		GX_LoadProjectionMtx(*(Mtx44*)&vViews[viewNum].ProjectionMatrix, GX_PERSPECTIVE);
 		
+		// disable fog for sky
+		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
+		
 		// render the sky
 		StuffSky(&vViews[viewNum]);
+		
+		// enable fog for world
+		GX_SetFog(GX_FOG_EXP2,
+			0.0f,
+			3000.0f,
+			vViews[viewNum].NearZ,
+			vViews[viewNum].FarZ,
+		{0x9C, 0xBA, 0xDC} );
+		
+		// fix up fog so it's more realistic
+		GX_InitFogAdjTable(&fogAdjTable, vViews[viewNum].RenderTarget->Width, *(Mtx44*)&vViews[viewNum].ProjectionMatrix);
+		GX_SetFogRangeAdj(GX_ENABLE, vViews[viewNum].RenderTarget->Left + (vViews[viewNum].RenderTarget->Width / 2), &fogAdjTable);
 		
 		// render test ground - TODO: replace this with actual track
 		{
@@ -104,6 +121,9 @@ void vDisplayFrame()
 			vPolyRender(&poly);
 			vEffectStaticState::pCurrentEffect->End();
 		}
+		
+		// disable fog for rest of rendering
+		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
 		
 		// motion blur
 		GX_SetTexCopySrc(	vViews[viewNum].RenderTarget->Left,

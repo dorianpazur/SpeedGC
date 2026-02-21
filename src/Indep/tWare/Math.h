@@ -333,5 +333,6 @@ extern void tMulVector(tVector4 *dest, tMatrix4 *m, tVector4 *v);
 extern void tMulVector(tVector3 *dest, tMatrix4 *m, tVector3 *v);
 extern void tInvertMatrix(tMatrix4 *dest, tMatrix4 *src);
 extern void tTransposeMatrix(tMatrix4 *dest, tMatrix4 *src);
+extern void tCreateLookAtMatrix(tMatrix4 *dest, tVector3 &eye, tVector3 &center, tVector3 &up);
 
 #endif

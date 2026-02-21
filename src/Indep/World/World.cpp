@@ -318,10 +318,10 @@ void World::Simulate(float timestep)
 			camUp[veh] -= globalVehPos; // make it still local to the vehicle but rotated
 			camUp[veh].y = 1.0f;
 			
-			guVector cam = {camPos[veh].x, camPos[veh].y, camPos[veh].z},
+			tVector3 cam = {camPos[veh].x, camPos[veh].y, camPos[veh].z},
 				up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
 				look = {camTarget[veh].x, camTarget[veh].y, camTarget[veh].z};
-			guLookAt(*(Mtx44*)&vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &cam, &up, &look);
+			tCreateLookAtMatrix(&vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, cam, look, up);
 			
 			tMulVector(&vViews[VVIEW_FIRST_PLAYER + veh].Velocity, &vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &prevCamPos[veh]); // get inverse of velocity
 			vViews[VVIEW_FIRST_PLAYER + veh].Velocity *= 1.0f / (gFrameTime * 0.001f); // make it the correct orientation and scaled with dT
