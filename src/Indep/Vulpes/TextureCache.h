@@ -30,6 +30,13 @@ namespace vTextureCache
 			
 			char debugName[80];
 			
+			CachedTexturePlat(uint16_t width, uint16_t height, uint8_t format)
+			{
+				RawData = tWareMalloc(GX_GetTexBufferSize(width, height, format, GX_FALSE, 0), "Render Target", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+				GX_InitTexObj(&GXTextureObj, RawData, width, height, format, GX_FALSE, GX_FALSE, GX_FALSE);
+				GX_InvalidateTexAll();
+			}
+			
 			CachedTexturePlat(tFile* file)
 			{
 				snprintf(debugName, 79, "Texture %s", file->filename);
@@ -37,8 +44,10 @@ namespace vTextureCache
 				
 				memcpy(RawData, file->data, file->filesize);
 				
+				TPLFile tpl;
 				TPL_OpenTPLFromMemory(&tpl, RawData, file->filesize);
 				TPL_GetTexture(&tpl, 0, &GXTextureObj);
+				
 				GX_InvalidateTexAll();
 			}
 			
@@ -51,17 +60,11 @@ namespace vTextureCache
 			
 			void GetTexturePlatInfo(uint32_t &width, uint32_t &height)
 			{
-				u16 tplWidth;
-				u16 tplHeight;
-				
-				TPL_GetTextureInfo(&tpl, 0, &format, &tplWidth, &tplHeight);
-				
-				width = tplWidth;
-				height = tplHeight;
+				width = (uint32_t)GX_GetTexObjWidth(&GXTextureObj);
+				height = (uint32_t)GX_GetTexObjHeight(&GXTextureObj);
 			}
 			
 		private:
-			TPLFile tpl;
 			void* RawData = NULL;
 		};
 	#endif
@@ -74,6 +77,14 @@ namespace vTextureCache
 		uint32_t height = 0;
 		
 		DEF_TWARE_NEW_OVERRIDE(CachedTexture, MAIN_POOL)
+		
+		CachedTexture(const char* debugName, uint16_t width, uint16_t height, uint16_t format) : CachedTexturePlat(width, height, format)
+		{
+			nameHash = tStringHash(debugName);
+			memset(this->debugName, 0, sizeof(debugName));
+			memcpy(this->debugName, debugName, std::min(sizeof(this->debugName), strlen(debugName)));
+			GetTexturePlatInfo(this->width, this->height);
+		}
 		
 		CachedTexture(tFile* file, tHash hash, const char* debugName) : CachedTexturePlat(file)
 		{

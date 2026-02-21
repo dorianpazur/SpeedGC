@@ -31,8 +31,11 @@ int twkVblankCount = 1;
 bool twkDeflicker = false;
 
 const tMatrix4 gIdentityMatrix;
+const tMatrix4 gVfxMatrix;
 
 extern double gFrameTime;
+
+vTextureCache::CachedTexture* gMotionBlurTexture;
 
 //---------------------------------------------------------------------------------
 
@@ -41,6 +44,7 @@ void vDisplayFrame()
 	static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 0.0f, 0.0f) };
 	static tVector3 camPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 	static tVector3 camUp[2] { tVector3(0.0f, 1.0f, 0.0f), tVector3(0.0f, 1.0f, 0.0f) };
+	static tVector3 prevCamPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 	static float tilt[2] { 0.0f, 0.0f };
 	static float distance[2] { 10.0f, 10.0f };
 	
@@ -105,16 +109,18 @@ void vDisplayFrame()
 			
 			float kBaseDistance = 7.0f;
 			float targetDistance = kBaseDistance;
-			float speedFOVThing = std::min(1.0f, std::powf(speed * 0.015f, 1.5f) * 0.65f);
+			float speedFOVThing = std::min(1.0f, std::powf(speed * 0.015f, 0.95f) * 0.65f);
 			vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees = 60.0f * (1 + speedFOVThing * 0.45f); 
-			targetDistance -= (speedFOVThing * 4.0f); // bring in closer when getting faster
-			targetDistance += std::min(3.0f, std::powf(speed * 0.02f, 2.0f) * 1.5f); // move it away when initially gaining speed
+			targetDistance -= (speedFOVThing * 3.0f); // bring in closer when getting faster
+			targetDistance += std::min(3.0f, std::powf(speed * 0.04f, 2.0f) * 1.5f); // move it away when initially gaining speed
 			
 			distance[veh] = std::lerp(distance[veh], targetDistance, gFrameTime * 0.002f);
 			
 			tVector3 camPosLocal = tVector3(tilt[veh], 3.0f, -distance[veh]);
 			tVector3 camTargetLocal = tVector3(0.0f, 2.0f, 15.0f + (kBaseDistance - distance[veh]));
 			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.05f, 0.0f, 0.0f);
+			
+			prevCamPos[veh] = camPos[veh]; // store previous pos
 			
 			tMulVector(&camPos[veh], &transform, &camPosLocal);
 			tMulVector(&camTarget[veh], &transform, &camTargetLocal);
@@ -125,20 +131,18 @@ void vDisplayFrame()
 			camPos[veh].y = transformFlt[13] + 3.0f;
 			camUp[veh] -= globalVehPos; // make it still local to the vehicle but rotated
 			camUp[veh].y = 1.0f;
+			
+			guVector cam = {camPos[veh].x, camPos[veh].y, camPos[veh].z},
+				up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
+				look = {camTarget[veh].x, camTarget[veh].y, camTarget[veh].z};
+			guLookAt(*(Mtx44*)&vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &cam, &up, &look);
+			
+			tMulVector(&vViews[VVIEW_FIRST_PLAYER + veh].Velocity, &vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &prevCamPos[veh]); // get inverse of velocity
+			vViews[VVIEW_FIRST_PLAYER + veh].Velocity *= 1.0f / (gFrameTime * 0.001f); // make it the correct orientation and scaled with dT
+			
+			ScreenPrintf(16, -160, "Velocity vector: %.2f, %.2f, %.2f", vViews[VVIEW_FIRST_PLAYER + veh].Velocity.x, vViews[VVIEW_FIRST_PLAYER + veh].Velocity.y, vViews[VVIEW_FIRST_PLAYER + veh].Velocity.z);
 		}
 	}
-	
-	// setup our camera at the origin
-	// looking down the -z axis with y up
-	guVector cam = {camPos[0].x, camPos[0].y, camPos[0].z},
-			up = {camUp[0].x, camUp[0].y, camUp[0].z},
-		look = {camTarget[0].x, camTarget[0].y, camTarget[0].z};
-	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER1].ViewMatrix, &cam, &up, &look);
-	
-	cam = {camPos[1].x, camPos[1].y, camPos[1].z},
-			up = {camUp[1].x, camUp[1].y, camUp[1].z},
-		look = {camTarget[1].x, camTarget[1].y, camTarget[1].z};
-	guLookAt(*(Mtx44*)&vViews[VVIEW_PLAYER2].ViewMatrix, &cam, &up, &look);
 	
 	// handle view stuff
 	gCurViewMode = bSplitScreen ? VIEW_MODE_TWOH : VIEW_MODE_ONE;
@@ -160,48 +164,135 @@ void vDisplayFrame()
 		StuffSky(&vViews[viewNum]);
 		
 		// render test ground - TODO: replace this with actual track
-		vPoly poly;
-	
-		poly.Vertices[0].x = -50.0f;
-		poly.Vertices[0].y = 0;
-		poly.Vertices[0].z = -10000.0f;
-		poly.UVs[0][0] = 0.0f;
-		poly.UVs[0][1] = 0.0f;
-		poly.Vertices[1].x = -50.0f;
-		poly.Vertices[1].y = 0;
-		poly.Vertices[1].z = 100.0f;
-		poly.UVs[1][0] = 0.0f;
-		poly.UVs[1][1] = 400.0f;
-		poly.Vertices[2].x = 50.0f;
-		poly.Vertices[2].y = 0;
-		poly.Vertices[2].z = 100.0f;
-		poly.UVs[2][0] = 4.0f;
-		poly.UVs[2][1] = 400.0f;
-		poly.Vertices[3].x = 50.0f;
-		poly.Vertices[3].y = 0;
-		poly.Vertices[3].z = -10000.0f;
-		poly.UVs[3][0] = 4.0f;
-		poly.UVs[3][1] = 0.0f;
+		{
+			vPoly poly;
 		
-		poly.Colours[0][0] = 0xFF;
-		poly.Colours[0][1] = 0xFF;
-		poly.Colours[0][2] = 0xFF;
-		poly.Colours[0][3] = 0xFF;
+			poly.Vertices[0].x = -50.0f;
+			poly.Vertices[0].y = 0;
+			poly.Vertices[0].z = -10000.0f;
+			poly.UVs[0][0] = 0.0f;
+			poly.UVs[0][1] = 0.0f;
+			poly.Vertices[1].x = -50.0f;
+			poly.Vertices[1].y = 0;
+			poly.Vertices[1].z = 100.0f;
+			poly.UVs[1][0] = 0.0f;
+			poly.UVs[1][1] = 400.0f;
+			poly.Vertices[2].x = 50.0f;
+			poly.Vertices[2].y = 0;
+			poly.Vertices[2].z = 100.0f;
+			poly.UVs[2][0] = 4.0f;
+			poly.UVs[2][1] = 400.0f;
+			poly.Vertices[3].x = 50.0f;
+			poly.Vertices[3].y = 0;
+			poly.Vertices[3].z = -10000.0f;
+			poly.UVs[3][0] = 4.0f;
+			poly.UVs[3][1] = 0.0f;
+			
+			poly.Colours[0][0] = 0xFF;
+			poly.Colours[0][1] = 0xFF;
+			poly.Colours[0][2] = 0xFF;
+			poly.Colours[0][3] = 0xFF;
+			
+			*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+			*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+			*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+			
+			GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
+			vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_STANDARD];
 		
-		*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
-		*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
-		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
+			vEffectStaticState::pCurrentEffect->Start();
+			vPolyRender(&poly);
+			vEffectStaticState::pCurrentEffect->End();
+		}
 		
-		GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
-		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_STANDARD];
-	
-		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
-		vEffectStaticState::pCurrentEffect->Start();
-		vPolyRender(&poly);
-		vEffectStaticState::pCurrentEffect->End();
+		// motion blur
+		GX_SetTexCopySrc(0, 0, gMotionBlurTexture->width, gMotionBlurTexture->height);	//This sets the location on the efb you want to copy from
+		GX_SetTexCopyDst(gMotionBlurTexture->width, gMotionBlurTexture->height, GX_TF_RGBA8, 0);	//This is what kind of texture you want to copy from 
+		
+		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
+		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
+		
+		for (int pass = 0; pass < 2; pass++)
+		{
+			GX_CopyTex(GX_GetTexObjData(&gMotionBlurTexture->GXTextureObj), GX_FALSE); // copy screen to texture
+			
+			for (int i = 8; i > 0; i--)
+			{	
+				float bluroffsets[4];
+				
+				tVector3 velocityVector = vViews[viewNum].Velocity;
+				float velocityLength = sqrtf((velocityVector.x * velocityVector.x) + (velocityVector.y * velocityVector.y) + (velocityVector.z * velocityVector.z));
+				
+				if (velocityLength < 10.0f)
+					break;
+				
+				velocityVector *= 1.0f / velocityLength;
+				
+				velocityLength -= 10.0f;
+				velocityLength = std::fmin(1.0f, velocityLength * 0.01f) / 130.0f;
+				
+				velocityVector *= velocityLength;
+				
+				bluroffsets[0] = -(velocityVector.x + velocityVector.z);
+				bluroffsets[1] = -(velocityVector.y + velocityVector.z);
+				bluroffsets[2] = -(velocityVector.x - velocityVector.z);
+				bluroffsets[3] = -(velocityVector.y - velocityVector.z);
+				
+				vPoly poly;
+			
+				poly.Vertices[0].x = -1.0f;
+				poly.Vertices[0].y = -1.0f;
+				poly.Vertices[0].z = 1;
+				poly.Vertices[1].x = -1.0f;
+				poly.Vertices[1].y = 1.0f;
+				poly.Vertices[1].z = 1;
+				poly.Vertices[2].x = 1.0f;
+				poly.Vertices[2].y = 1.0f;
+				poly.Vertices[2].z = 1;
+				poly.Vertices[3].x = 1.0f;
+				poly.Vertices[3].y = -1.0f;
+				poly.Vertices[3].z = 1;
+				
+				poly.UVs[0][0] = -(i * bluroffsets[0]);
+				poly.UVs[0][1] = -(i * bluroffsets[1]);
+				
+				poly.UVs[1][0] = -(i * bluroffsets[0]);
+				poly.UVs[1][1] = -(i * bluroffsets[3]) + 1.0f;
+				
+				poly.UVs[2][0] = -(i * bluroffsets[2]) + 1.0f;
+				poly.UVs[2][1] = -(i * bluroffsets[3]) + 1.0f;
+				
+				poly.UVs[3][0] = -(i * bluroffsets[2]) + 1.0f;
+				poly.UVs[3][1] = -(i * bluroffsets[1]);
+				
+				poly.Colours[0][0] = 0xFF;
+				poly.Colours[0][1] = 0xFF;
+				poly.Colours[0][2] = 0xFF;
+				poly.Colours[0][3] = 0xFF / 3;
+				
+				*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+				*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+				*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+				
+				vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+				
+				vEffectStaticState::pCurrentEffect->SetTexture(gMotionBlurTexture);
+				vEffectStaticState::pCurrentEffect->Start();
+				vPolyRender(&poly);
+				vEffectStaticState::pCurrentEffect->End();
+			}
+		}
+		
+		// continue 3D rendering
+		GX_LoadProjectionMtx(*(Mtx44*)&vViews[viewNum].ProjectionMatrix, GX_PERSPECTIVE);
 		
 		// render vehicles
 		DrawVehicles(&vViews[viewNum]);
+		
+		// postfx
+		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
+		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
 	}
 	
 	// gui
@@ -280,6 +371,8 @@ void InitializePlatform(int argc, char** argv) {
 		
 		// initialize GX
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
+		
+		gMotionBlurTexture = new vTextureCache::CachedTexture("Motion Blur", rmode->fbWidth, rmode->efbHeight, GX_TF_RGBA8);
 	}
 	
 	// clear texture cache
@@ -307,9 +400,8 @@ void InitializePlatform(int argc, char** argv) {
 	GX_SetDispCopyGamma(GX_GM_1_0);
 	
 	// init some sort of matrix to prevent noise on boot
-	Mtx44 matrix;
-	guOrtho(matrix, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
-	GX_LoadProjectionMtx(matrix, GX_ORTHOGRAPHIC);
+	guOrtho(*(Mtx44*)&gVfxMatrix, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+	GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 	
 	//if (!initialized)
 	//{
