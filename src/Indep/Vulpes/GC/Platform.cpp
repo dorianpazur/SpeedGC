@@ -50,7 +50,7 @@ void vDisplayFrame()
 	
 	tMatrix4 guiMtx;
 		
-	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,twkDeflicker,rmode->vfilter);
+	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_FALSE,rmode->vfilter);
 	
 	// TODO - replace this with camera movers
 	World* world = World::GetInstance();
@@ -320,6 +320,8 @@ void vDisplayFrame()
 	DrawScreenPrintfs();
 	
 	// push frame
+	if (twkDeflicker)
+		GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_TRUE,rmode->vfilter); // enable deflicker filter if it's on
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 	GX_CopyDisp(xfb[currentBuffer],GX_FALSE);
