@@ -11,5 +11,6 @@
 #include <Vulpes/Poly.h>
 #include <Vulpes/View.h>
 #include <Vulpes/Render.h>
+#include <Vulpes/Particles.h>
 
 #endif

@@ -4,6 +4,7 @@
 #include "ISimable.h"
 #include <BulletCollision/NarrowPhaseCollision/btPersistentManifold.h>
 #include <Vulpes/Platform.h>
+#include <Vulpes/Particles.h>
 #include <tWare/Time.h>
 #include "InputManager.h"
 #include "InputCommand.h"
@@ -77,7 +78,7 @@ World::World()
 	// CREATE CUBE VEHICLE
 
 	// Vehicle constructor creates the body internally
-	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(0, 10, 0)));
+	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(0, 1, 0)));
 	
 	for (int i = 0; i < 100; i++)
 	{
@@ -162,7 +163,7 @@ World::World()
 void World::Simulate(float timestep)
 {
 	if (!ShouldPauseWorld())
-	{
+	{	
 		mTimeElapsed += timestep;
 		static float timeElapsedFix = 0.0f;
 		const float kStepTime = 1.0f / 60.0f;
@@ -226,6 +227,17 @@ void World::Simulate(float timestep)
 			}
 			
 			dynamicsWorld->stepSimulation(kStepTime, 2);
+	
+			tVector3 testVel{-7.0f, 0, -7.0f};
+			tMatrix4 testTransform;
+			
+			testTransform[0][3] = 25.0f;
+			testTransform[1][3] = 4.0f;
+			testTransform[2][3] = -30.0f;
+			
+			AddXenonEffect(false, &fxsprk_line, &testTransform, &testVel);
+			
+			UpdateXenonEmitters(kStepTime);
 			
 			timeElapsedFix -= kStepTime;
 		}

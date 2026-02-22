@@ -1,6 +1,7 @@
 #include "Vehicle.h"
 #include "ScreenPrintf.h"
 #include <Vulpes/model.h>
+#include <Vulpes/Particles.h>
 
 // car model used for rendering all vehicles
 extern vModel* gCarModel;
@@ -162,6 +163,11 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	mBody->getMotionState()->getWorldTransform(trans);
 	
 	btVector3 velocity = mBody->getLinearVelocity();
+	
+	mVelocity.x = velocity.getX();
+	mVelocity.y = velocity.getY();
+	mVelocity.z = velocity.getZ();
+	
     float speed = velocity.length();
 	if (speed < 0.2f)
 		speed = 0.0f;
@@ -182,16 +188,16 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	mThrottleInput /= 1.0f + (mBrakeInput * 2.0f);
 	float speedFrictionScale = std::min(1.0f, 0.002f + (speed * 0.045f));
 	
-	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
-	ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
-	ScreenShadowPrintf(70, 180, "mThrottleInput: %.2f", mThrottleInput);
-	ScreenShadowPrintf(70, 165, "mBrakeInput: %.2f", mBrakeInput);
-	ScreenShadowPrintf(70, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
-	ScreenShadowPrintf(70, 135, "speedFrictionScale: %.2f", speedFrictionScale);
-	ScreenShadowPrintf(-300, 220, "Vehicle pos: (%.2f, %.2f, %.2f)",
-				trans.getOrigin().getX(),
-				trans.getOrigin().getY(),
-				trans.getOrigin().getZ());
+	//ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
+	//ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
+	//ScreenShadowPrintf(70, 180, "mThrottleInput: %.2f", mThrottleInput);
+	//ScreenShadowPrintf(70, 165, "mBrakeInput: %.2f", mBrakeInput);
+	//ScreenShadowPrintf(70, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
+	//ScreenShadowPrintf(70, 135, "speedFrictionScale: %.2f", speedFrictionScale);
+	//ScreenShadowPrintf(-300, 220, "Vehicle pos: (%.2f, %.2f, %.2f)",
+	//			trans.getOrigin().getX(),
+	//			trans.getOrigin().getY(),
+	//			trans.getOrigin().getZ());
 	
 	btVector3 downforce = btVector3(0, -10000.0f * std::min(50.0f, speed) * timestep, 0);
 	mBody->applyCentralForce(mBody->getWorldTransform().getBasis() * downforce);
@@ -213,14 +219,32 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		
 		mRaycastVehicle->updateWheelTransform(i, true);
 	}
+	
+	mOtherFrame = !mOtherFrame;
 }
 
 void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
 {
-	if (other)
-		ScreenPrintf(-80, -180, 2.0f, 0xFFFF0000, "simable collided! coords are %.2f %.2f %.2f", contactPoint.x, contactPoint.y, contactPoint.z);
-	else
-		ScreenPrintf(-80, -180, 2.0f, 0xFFFF0000, "static collided! coords are %.2f %.2f %.2f", contactPoint.x, contactPoint.y, contactPoint.z);
+	//if (other)
+	//	ScreenPrintf(-80, -180, 2.0f, 0xFFFF0000, "simable collided! coords are %.2f %.2f %.2f", contactPoint.x, contactPoint.y, contactPoint.z);
+	//else
+	//	ScreenPrintf(-80, -180, 2.0f, 0xFFFF0000, "static collided! coords are %.2f %.2f %.2f", contactPoint.x, contactPoint.y, contactPoint.z);
+	
+	float speed = sqrtf((mVelocity.x * mVelocity.x) + (mVelocity.y * mVelocity.y) + (mVelocity.z * mVelocity.z));
+	
+	if (speed > 5.0f)
+	{
+		if (mOtherFrame)
+		{
+			tMatrix4 sparkTransform;
+			
+			sparkTransform[0][3] = contactPoint.x;
+			sparkTransform[1][3] = contactPoint.y;
+			sparkTransform[2][3] = contactPoint.z;
+			
+			AddXenonEffect(false, &fxsprk_line, &sparkTransform, &mVelocity);
+		}
+	}
 }
 
 void Vehicle::Render(vView* view)

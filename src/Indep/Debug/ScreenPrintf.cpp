@@ -160,7 +160,7 @@ void DrawScreenPrintfs()
     {
         if (ScreenPrintItemTable[i].Lifetime >= 0.0f)
         {
-            ScreenPrintItemTable[i].Lifetime -= frameTime;
+            ScreenPrintItemTable[i].Lifetime -= frameTime * 0.001f;
 			
 			vScreenPrint(ScreenPrintItemTable[i].PosX, ScreenPrintItemTable[i].PosY, ScreenPrintItemTable[i].Text, ScreenPrintItemTable[i].Color);
         }

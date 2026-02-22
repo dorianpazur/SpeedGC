@@ -56,16 +56,6 @@ void vDisplayFrame()
 	
 	GXFogAdjTbl fogAdjTable;
 	
-	tVector3 testVel{-7.0f, 0, -7.0f};
-	tMatrix4 testTransform;
-	
-	testTransform[0][3] = 25.0f;
-	testTransform[1][3] = 4.0f;
-	testTransform[2][3] = -30.0f;
-	
-	AddXenonEffect(false, &fxsprk_line, &testTransform, &testVel);
-	UpdateXenonEmitters(gFrameTime * 0.001f);
-	
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
 	{
 		if (!vViews[viewNum].Active)
@@ -267,8 +257,18 @@ void vDisplayFrame()
 	
 	VIDEO_Flush();
 	
-	for (uint8_t i = 0; i < twkVblankCount; i++)
-		VIDEO_WaitVSync();
+	if (twkVblankCount > 0)
+	{
+		static unsigned int lastVbla = tGetTicker();
+		double maxTime = (1.0/60.0) * twkVblankCount;
+		double frameTime = tGetTickerDifference(lastVbla);
+		if (frameTime * 0.001 <= maxTime)
+		{
+			for (uint8_t i = 0; i < twkVblankCount; i++)
+				VIDEO_WaitVSync();
+		}
+		lastVbla = tGetTicker();
+	}
 	
 	currentBuffer ^= 1;
 }

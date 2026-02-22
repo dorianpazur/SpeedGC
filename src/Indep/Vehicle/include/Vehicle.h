@@ -24,10 +24,13 @@ private:
 	btVehicleRaycaster* mRaycastVehicleRaycaster;
 	btRaycastVehicle* mRaycastVehicle;
 	btDefaultMotionState mMotionState;
+	tVector3 mVelocity;
 	
 	float mThrottleInput = 0.0f;
 	float mSteeringInput = 0.0f;
 	float mBrakeInput = 0.0f;
+	
+	bool mOtherFrame = false;
 };
 
 #endif
