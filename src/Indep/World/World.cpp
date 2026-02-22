@@ -343,11 +343,17 @@ bool World::ContactProcessedCallback(btManifoldPoint& cp, void* body0, void* bod
 	ISimable* simable1 = (ISimable*)(((btCollisionObject*)body0)->getUserPointer());
 	ISimable* simable2 = (ISimable*)(((btCollisionObject*)body1)->getUserPointer());
 	
+	const btVector3& pointOnBody0bt = cp.getPositionWorldOnB();
+	const btVector3& pointOnBody1bt = cp.getPositionWorldOnA();
+	
+	tVector3 pointOnBody0{pointOnBody0bt.getX(), pointOnBody0bt.getY(), pointOnBody0bt.getZ()};
+	tVector3 pointOnBody1{pointOnBody1bt.getX(), pointOnBody1bt.getY(), pointOnBody1bt.getZ()};
+	
 	if (simable1)
-		simable1->OnCollide(simable2);
+		simable1->OnCollide(simable2, pointOnBody0);
 	
 	if (simable2)
-		simable2->OnCollide(simable1);
+		simable2->OnCollide(simable1, pointOnBody1);
 	
 	return true;
 }

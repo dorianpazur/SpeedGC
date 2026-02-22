@@ -159,6 +159,8 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 		}
 	}
 	
+	DCFlushRange(mVertices, mVertexBufferSize);
+	
 	//printf("Done with mesh\n");
 }
 
@@ -365,7 +367,7 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			GX_SetArray(GX_VA_CLR0, &mSolids[solid].mMeshes[mesh].mVertices[0].color, sizeof(vVertex));
 			GX_SetArray(GX_VA_TEX0, &mSolids[solid].mMeshes[mesh].mVertices[0].texcoord, sizeof(vVertex));
 			GX_SetArray(GX_VA_NRM, &mSolids[solid].mMeshes[mesh].mVertices[0].normal, sizeof(vVertex));
-			DCFlushRange(mSolids[solid].mMeshes[mesh].mVertices, mSolids[solid].mMeshes[mesh].mVertexBufferSize);
+			//DCFlushRange(mSolids[solid].mMeshes[mesh].mVertices, mSolids[solid].mMeshes[mesh].mVertexBufferSize);
 			
 			// setup the vertex descriptor
 			// tells the flipper to expect 16bit indexes for position

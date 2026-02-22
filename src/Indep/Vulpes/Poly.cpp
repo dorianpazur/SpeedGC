@@ -49,7 +49,6 @@ void vPolyRender(vPoly* poly)
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 	
 	GX_SetNumChans(1);
-	GX_SetNumTevStages(1);
 	
 	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
 	              GX_DF_NONE, GX_AF_NONE);

@@ -4,7 +4,7 @@
 #include "ISimable.h"
 #include <cstdio>
 
-void ISimable::OnCollide(ISimable* other)
+void ISimable::OnCollide(ISimable* other, const tVector3 &contactPoint)
 {
 }
 

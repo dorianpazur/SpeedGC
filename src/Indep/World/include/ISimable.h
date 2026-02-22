@@ -15,7 +15,7 @@ public:
 	
 	DEF_TWARE_NEW_OVERRIDE(ISimable, MAIN_POOL)
 	
-	virtual void OnCollide(ISimable* other);
+	virtual void OnCollide(ISimable* other, const tVector3 &contactPoint);
 	
 	// per object rendering by each ISimable subclass
 	virtual void Render(vView* view);

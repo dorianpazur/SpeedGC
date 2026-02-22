@@ -15,8 +15,7 @@ public:
     Vehicle(btDynamicsWorld* world, const btVector3& startPos);
 	~Vehicle();
     void Update(float throttle, float brake, float steering, float timestep);
-	virtual void OnCollide(ISimable* other);
-
+	virtual void OnCollide(ISimable* other, const tVector3 &contactPoint);
 	
 	virtual void Render(vView* view) override;
 

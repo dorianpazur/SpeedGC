@@ -14,6 +14,9 @@
 
 #include "World.h"
 #include "Vehicle.h"
+#include "xSpark/xSpark.hpp"
+#include "xSpark/Render/xSprites.hpp"
+#include "xSpark/EffectDefs.h"
 
 //---------------------------------------------------------------------------------
 
@@ -52,6 +55,16 @@ void vDisplayFrame()
 	}
 	
 	GXFogAdjTbl fogAdjTable;
+	
+	tVector3 testVel{-7.0f, 0, -7.0f};
+	tMatrix4 testTransform;
+	
+	testTransform[0][3] = 25.0f;
+	testTransform[1][3] = 4.0f;
+	testTransform[2][3] = -30.0f;
+	
+	AddXenonEffect(false, &fxsprk_line, &testTransform, &testVel);
+	UpdateXenonEmitters(gFrameTime * 0.001f);
 	
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
 	{
@@ -217,6 +230,10 @@ void vDisplayFrame()
 		// render vehicles
 		DrawVehicles(&vViews[viewNum]);
 		
+		// particles
+		GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
+		NGSpriteManager.RenderAll(&vViews[viewNum]);
+		
 		// postfx
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
@@ -303,6 +320,8 @@ void InitializePlatform(int argc, char** argv) {
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 		
 		gMotionBlurTexture = new vTextureCache::CachedTexture("Motion Blur", rmode->fbWidth, rmode->efbHeight, GX_TF_RGBA8);
+		
+		NGSpriteManager.Init();
 	}
 	
 	// clear texture cache

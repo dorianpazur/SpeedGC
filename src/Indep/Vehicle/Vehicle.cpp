@@ -215,9 +215,12 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	}
 }
 
-void Vehicle::OnCollide(ISimable* other)
+void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
 {
-	ScreenPrintf(-80, -180, 0.5f, 0xFFFF0000, "collided!");
+	if (other)
+		ScreenPrintf(-80, -180, 2.0f, 0xFFFF0000, "simable collided! coords are %.2f %.2f %.2f", contactPoint.x, contactPoint.y, contactPoint.z);
+	else
+		ScreenPrintf(-80, -180, 2.0f, 0xFFFF0000, "static collided! coords are %.2f %.2f %.2f", contactPoint.x, contactPoint.y, contactPoint.z);
 }
 
 void Vehicle::Render(vView* view)

@@ -33,14 +33,25 @@ void vEffect_STANDARD::Start()
 	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
 				GX_DF_NONE, GX_AF_NONE);
 	
-	GX_SetNumTexGens(1);
-	
-	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	if (texture)
+	{
+		GX_SetNumTexGens(1);
 		
-	GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
-	
-	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+		
+		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	}
+	else
+	{
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+		GX_SetNumTexGens(0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+	}
 }
 
 class vEffect_FE : public vEffect
