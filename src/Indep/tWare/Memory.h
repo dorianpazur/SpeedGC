@@ -100,17 +100,17 @@ public:
 	const char* name;
     tEASTLAllocator(const char* pName) { name = pName; };
 
-    inline void* allocate(size_t n)
+    inline void* allocate(size_t n, int = 0)
     {
         return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(0, 0));
     }
 
-    inline void* allocate(size_t n, size_t alignment, size_t)
+    inline void* allocate(size_t n, size_t alignment, size_t, int = 0)
     {
         return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(0, alignment));
     }
 
-    inline void deallocate(void* p, size_t n)
+    inline void deallocate(void* p, size_t)
     {
         tFree(p);
     }

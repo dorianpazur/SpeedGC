@@ -213,7 +213,7 @@ void InitializeMemory()
 		btAlignedAllocSetCustom(btAllocOverride, tFree);
 		btAlignedAllocSetCustomAligned(btAlignedAllocOverride, tFree);
 		
-		const size_t kTinyGLTFMemoryPoolSize = 0x20; // 32 bytes
+		const size_t kTinyGLTFMemoryPoolSize = 0x20000; // 128k, increase this if memory runs out in the pool when loading a model
 		tInitMemoryPool(TINYGLTF_POOL, tWareMalloc(kTinyGLTFMemoryPoolSize, "TinyGLTF Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kTinyGLTFMemoryPoolSize, "TinyGLTF Pool");
 		
 		initializedMemory = true;

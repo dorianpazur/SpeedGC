@@ -5,7 +5,7 @@
 
 #include <Vulpes/TextureCache.h>
 #include <tWare/Align.h>
-#include <unordered_map>
+#include <EASTL/unordered_map.h>
 
 namespace vTextureCache
 {
@@ -34,7 +34,7 @@ namespace vTextureCache
 	};
 	
 	CachedTexture* gDefaultTexture = NULL;
-	std::unordered_map<tHash, CacheEntry> gTextureCache;
+	eastl::unordered_map<tHash, CacheEntry, eastl::hash<tHash>, eastl::equal_to<tHash>, tEASTLAllocator> gTextureCache;
 	
 	//---------------------------------------------------------------------------------
 

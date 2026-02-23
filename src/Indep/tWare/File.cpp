@@ -3,7 +3,7 @@
 /// 
 
 #include <tWare/File.h>
-#include <vector>
+#include <EASTL/vector.h>
 #include <map>
 #include <unordered_map>
 #include <cstdio>
@@ -11,7 +11,7 @@
 #include <malloc.h>
 
 // TODO: make this std::unordered_map (Ross' suggestion)
-std::vector<tFile*, tStdAllocator<tFile*>> gOpenFiles;
+eastl::vector<tFile*, tEASTLAllocator> gOpenFiles;
 
 char gBaseDir[TFILE_MAX_PATH + 1] { '\0' };
 

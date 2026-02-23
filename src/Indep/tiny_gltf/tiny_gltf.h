@@ -47,10 +47,10 @@
 #include <cstring>
 #include <functional>
 #include <limits>
-#include <map>
+#include <EASTL/map.h>
 #include <string>
 #include <utility>
-#include <vector>
+#include <EASTL/vector.h>
 
 #ifdef __ANDROID__
 #ifdef TINYGLTF_ANDROID_LOAD_FROM_ASSETS
@@ -76,6 +76,29 @@
   x &operator=(x &&) TINYGLTF_NOEXCEPT = default;
 
 namespace tinygltf {
+
+
+class Allocator
+{
+public:
+	const char* name;
+    Allocator(const char* pName) { name = pName; };
+
+    inline void* allocate(size_t n)
+    {
+        return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(TINYGLTF_POOL, 0));
+    }
+
+    inline void* allocate(size_t n, size_t alignment, size_t)
+    {
+        return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(TINYGLTF_POOL, alignment));
+    }
+
+    inline void deallocate(void* p, size_t n)
+    {
+        tFree(p);
+    }
+};
 
 #define TINYGLTF_MODE_POINTS (0)
 #define TINYGLTF_MODE_LINE (1)
@@ -244,7 +267,7 @@ static inline int32_t GetNumComponentsInType(uint32_t ty) {
 
 // TODO(syoyo): Move these functions to TinyGLTF class
 bool IsDataURI(const std::string &in);
-bool DecodeDataURI(std::vector<unsigned char> *out, std::string &mime_type,
+bool DecodeDataURI(eastl::vector<unsigned char, Allocator> *out, std::string &mime_type,
                    const std::string &in, size_t reqBytes, bool checkSize);
 
 #ifdef __clang__
@@ -258,8 +281,8 @@ bool DecodeDataURI(std::vector<unsigned char> *out, std::string &mime_type,
 class Value {
  public:
   DEF_TWARE_NEW_OVERRIDE(Value, TINYGLTF_POOL)
-  typedef std::vector<Value> Array;
-  typedef std::map<std::string, Value> Object;
+  typedef eastl::vector<Value, Allocator> Array;
+  typedef eastl::map<std::string, Value, eastl::less<std::string>, Allocator> Object;
 
   Value() = default;
 
@@ -279,7 +302,7 @@ class Value {
     binary_value_.resize(n);
     memcpy(binary_value_.data(), p, n);
   }
-  explicit Value(std::vector<unsigned char> &&v) noexcept
+  explicit Value(eastl::vector<unsigned char, Allocator> &&v) noexcept
       : type_(BINARY_TYPE),
         binary_value_(std::move(v)) {}
   explicit Value(const Array &a) : type_(ARRAY_TYPE) { array_value_ = a; }
@@ -365,8 +388,8 @@ class Value {
   }
 
   // List keys
-  std::vector<std::string> Keys() const {
-    std::vector<std::string> keys;
+  eastl::vector<std::string, Allocator> Keys() const {
+    eastl::vector<std::string, Allocator> keys;
     if (!IsObject()) return keys;  // empty
 
     for (Object::const_iterator it = object_value_.begin();
@@ -387,7 +410,7 @@ class Value {
   int int_value_ = 0;
   double real_value_ = 0.0;
   std::string string_value_;
-  std::vector<unsigned char> binary_value_;
+  eastl::vector<unsigned char, Allocator> binary_value_;
   Array array_value_;
   Object object_value_;
   bool boolean_value_ = false;
@@ -410,7 +433,8 @@ TINYGLTF_VALUE_GET(bool, boolean_value_)
 TINYGLTF_VALUE_GET(double, real_value_)
 TINYGLTF_VALUE_GET(int, int_value_)
 TINYGLTF_VALUE_GET(std::string, string_value_)
-TINYGLTF_VALUE_GET(std::vector<unsigned char>, binary_value_)
+#define COMMA , // need this because the preprocessor doesn't know what a template is
+TINYGLTF_VALUE_GET(eastl::vector<unsigned char COMMA Allocator>, binary_value_)
 TINYGLTF_VALUE_GET(Value::Array, array_value_)
 TINYGLTF_VALUE_GET(Value::Object, object_value_)
 #undef TINYGLTF_VALUE_GET
@@ -431,8 +455,8 @@ struct Parameter {
   bool bool_value = false;
   bool has_number_value = false;
   std::string string_value;
-  std::vector<double> number_array;
-  std::map<std::string, double> json_double_value;
+  eastl::vector<double, Allocator> number_array;
+  eastl::map<std::string, double, eastl::less<std::string>, Allocator> json_double_value;
   double number_value = 0.0;
 
   // context sensitive methods. depending the type of the Parameter you are
@@ -516,8 +540,8 @@ struct Parameter {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-typedef std::map<std::string, Parameter> ParameterMap;
-typedef std::map<std::string, Value> ExtensionMap;
+typedef eastl::map<std::string, Parameter, eastl::less<std::string>, Allocator> ParameterMap;
+typedef eastl::map<std::string, Value, eastl::less<std::string>, Allocator> ExtensionMap;
 
 struct AnimationChannel {
   DEF_TWARE_NEW_OVERRIDE(AnimationChannel, TINYGLTF_POOL)
@@ -563,8 +587,8 @@ struct AnimationSampler {
 struct Animation {
   DEF_TWARE_NEW_OVERRIDE(Animation, TINYGLTF_POOL)
   std::string name;
-  std::vector<AnimationChannel> channels;
-  std::vector<AnimationSampler> samplers;
+  eastl::vector<AnimationChannel, Allocator> channels;
+  eastl::vector<AnimationSampler, Allocator> samplers;
   Value extras;
   ExtensionMap extensions;
 
@@ -582,7 +606,7 @@ struct Skin {
   std::string name;
   int inverseBindMatrices{-1};  // required here but not in the spec
   int skeleton{-1};             // The index of the node used as a skeleton root
-  std::vector<int> joints;      // Indices of skeleton nodes
+  eastl::vector<int, Allocator> joints;      // Indices of skeleton nodes
 
   Value extras;
   ExtensionMap extensions;
@@ -637,7 +661,7 @@ struct Image {
   int bits{-1};        // bit depth per channel. 8(byte), 16 or 32.
   int pixel_type{-1};  // pixel type(TINYGLTF_COMPONENT_TYPE_***). usually
                        // UBYTE(bits = 8) or USHORT(bits = 16)
-  std::vector<unsigned char> image;
+  eastl::vector<unsigned char, Allocator> image;
   int bufferView{-1};    // (required if no uri)
   std::string mimeType;  // (required if no uri) ["image/jpeg", "image/png",
                          // "image/bmp", "image/gif"]
@@ -743,7 +767,7 @@ struct OcclusionTextureInfo {
 // pbrMetallicRoughness class defined in glTF 2.0 spec.
 struct PbrMetallicRoughness {
   DEF_TWARE_NEW_OVERRIDE(PbrMetallicRoughness, TINYGLTF_POOL)
-  std::vector<double> baseColorFactor{1.0, 1.0, 1.0, 1.0};  // len = 4. default [1,1,1,1]
+  eastl::vector<double, Allocator> baseColorFactor{1.0, 1.0, 1.0, 1.0};  // len = 4. default [1,1,1,1]
   TextureInfo baseColorTexture;
   double metallicFactor{1.0};   // default 1
   double roughnessFactor{1.0};  // default 1
@@ -769,11 +793,11 @@ struct Material {
   DEF_TWARE_NEW_OVERRIDE(Material, TINYGLTF_POOL)
   std::string name;
 
-  std::vector<double> emissiveFactor{0.0, 0.0, 0.0};  // length 3. default [0, 0, 0]
+  eastl::vector<double, Allocator> emissiveFactor{0.0, 0.0, 0.0};  // length 3. default [0, 0, 0]
   std::string alphaMode{"OPAQUE"}; // default "OPAQUE"
   double alphaCutoff{0.5};        // default 0.5
   bool doubleSided{false};        // default false
-  std::vector<int> lods;          // level of detail materials (MSFT_lod)
+  eastl::vector<int, Allocator> lods;          // level of detail materials (MSFT_lod)
 
   PbrMetallicRoughness pbrMetallicRoughness;
 
@@ -840,9 +864,9 @@ struct Accessor {
   std::string extras_json_string;
   std::string extensions_json_string;
 
-  std::vector<double>
+  eastl::vector<double, Allocator>
       minValues;  // optional. integer value is promoted to double
-  std::vector<double>
+  eastl::vector<double, Allocator>
       maxValues;  // optional. integer value is promoted to double
 
   struct Sparse {
@@ -976,7 +1000,7 @@ struct Camera {
 
 struct Primitive {
   DEF_TWARE_NEW_OVERRIDE(Primitive, TINYGLTF_POOL)
-  std::map<std::string, int> attributes;  // (required) A dictionary object of
+  eastl::map<std::string, int, eastl::less<std::string>, Allocator> attributes;  // (required) A dictionary object of
                                           // integer, where each integer
                                           // is the index of the accessor
                                           // containing an attribute.
@@ -984,7 +1008,7 @@ struct Primitive {
                      // when rendering.
   int indices{-1};   // The index of the accessor that contains the indices.
   int mode{-1};      // one of TINYGLTF_MODE_***
-  std::vector<std::map<std::string, int> > targets;  // array of morph targets,
+  eastl::vector<eastl::map<std::string, int, eastl::less<std::string>, Allocator>, Allocator> targets;  // array of morph targets,
   // where each target is a dict with attributes in ["POSITION, "NORMAL",
   // "TANGENT"] pointing
   // to their corresponding accessors
@@ -1003,8 +1027,8 @@ struct Primitive {
 struct Mesh {
   DEF_TWARE_NEW_OVERRIDE(Mesh, TINYGLTF_POOL)
   std::string name;
-  std::vector<Primitive> primitives;
-  std::vector<double> weights;  // weights to be applied to the Morph Targets
+  eastl::vector<Primitive, Allocator> primitives;
+  eastl::vector<double, Allocator> weights;  // weights to be applied to the Morph Targets
   ExtensionMap extensions;
   Value extras;
 
@@ -1033,13 +1057,13 @@ class Node {
   int mesh{-1};
   int light{-1};    // light source index (KHR_lights_punctual)
   int emitter{-1};  // audio emitter index (KHR_audio)
-  std::vector<int> lods; // level of detail nodes (MSFT_lod)
-  std::vector<int> children;
-  std::vector<double> rotation;     // length must be 0 or 4
-  std::vector<double> scale;        // length must be 0 or 3
-  std::vector<double> translation;  // length must be 0 or 3
-  std::vector<double> matrix;       // length must be 0 or 16
-  std::vector<double> weights;  // The weights of the instantiated Morph Target
+  eastl::vector<int, Allocator> lods; // level of detail nodes (MSFT_lod)
+  eastl::vector<int, Allocator> children;
+  eastl::vector<double, Allocator> rotation;     // length must be 0 or 4
+  eastl::vector<double, Allocator> scale;        // length must be 0 or 3
+  eastl::vector<double, Allocator> translation;  // length must be 0 or 3
+  eastl::vector<double, Allocator> matrix;       // length must be 0 or 16
+  eastl::vector<double, Allocator> weights;  // The weights of the instantiated Morph Target
 
   ExtensionMap extensions;
   Value extras;
@@ -1052,7 +1076,7 @@ class Node {
 struct Buffer {
   DEF_TWARE_NEW_OVERRIDE(Buffer, TINYGLTF_POOL)
   std::string name;
-  std::vector<unsigned char> data;
+  eastl::vector<unsigned char, Allocator> data;
   std::string
       uri;  // considered as required here but not in the spec (need to clarify)
             // uri is not decoded(e.g. whitespace may be represented as %20)
@@ -1089,8 +1113,8 @@ struct Asset {
 struct Scene {
   DEF_TWARE_NEW_OVERRIDE(Scene, TINYGLTF_POOL)
   std::string name;
-  std::vector<int> nodes;
-  std::vector<int> audioEmitters;  // KHR_audio global emitters
+  eastl::vector<int, Allocator> nodes;
+  eastl::vector<int, Allocator> audioEmitters;  // KHR_audio global emitters
 
   ExtensionMap extensions;
   Value extras;
@@ -1124,7 +1148,7 @@ struct SpotLight {
 struct Light {
   DEF_TWARE_NEW_OVERRIDE(Light, TINYGLTF_POOL)
   std::string name;
-  std::vector<double> color;
+  eastl::vector<double, Allocator> color;
   double intensity{1.0};
   std::string type;
   double range{0.0};  // 0.0 = infinite
@@ -1237,26 +1261,26 @@ class Model {
 
   bool operator==(const Model &) const;
 
-  std::vector<Accessor> accessors;
-  std::vector<Animation> animations;
-  std::vector<Buffer> buffers;
-  std::vector<BufferView> bufferViews;
-  std::vector<Material> materials;
-  std::vector<Mesh> meshes;
-  std::vector<Node> nodes;
-  std::vector<Texture> textures;
-  std::vector<Image> images;
-  std::vector<Skin> skins;
-  std::vector<Sampler> samplers;
-  std::vector<Camera> cameras;
-  std::vector<Scene> scenes;
-  std::vector<Light> lights;
-  std::vector<AudioEmitter> audioEmitters;
-  std::vector<AudioSource> audioSources;
+  eastl::vector<Accessor, Allocator> accessors;
+  eastl::vector<Animation, Allocator> animations;
+  eastl::vector<Buffer, Allocator> buffers;
+  eastl::vector<BufferView, Allocator> bufferViews;
+  eastl::vector<Material, Allocator> materials;
+  eastl::vector<Mesh, Allocator> meshes;
+  eastl::vector<Node, Allocator> nodes;
+  eastl::vector<Texture, Allocator> textures;
+  eastl::vector<Image, Allocator> images;
+  eastl::vector<Skin, Allocator> skins;
+  eastl::vector<Sampler, Allocator> samplers;
+  eastl::vector<Camera, Allocator> cameras;
+  eastl::vector<Scene, Allocator> scenes;
+  eastl::vector<Light, Allocator> lights;
+  eastl::vector<AudioEmitter, Allocator> audioEmitters;
+  eastl::vector<AudioSource, Allocator> audioSources;
 
   int defaultScene{-1};
-  std::vector<std::string> extensionsUsed;
-  std::vector<std::string> extensionsRequired;
+  eastl::vector<std::string, Allocator> extensionsUsed;
+  eastl::vector<std::string, Allocator> extensionsRequired;
 
   Asset asset;
 
@@ -1331,14 +1355,14 @@ using ExpandFilePathFunction =
 /// ReadWholeFileFunction type. Signature for custom filesystem callbacks.
 ///
 using ReadWholeFileFunction = std::function<bool(
-    std::vector<unsigned char> *, std::string *, const std::string &, void *)>;
+    eastl::vector<unsigned char, Allocator> *, std::string *, const std::string &, void *)>;
 
 ///
 /// WriteWholeFileFunction type. Signature for custom filesystem callbacks.
 ///
 using WriteWholeFileFunction =
     std::function<bool(std::string *, const std::string &,
-                       const std::vector<unsigned char> &, void *)>;
+                       const eastl::vector<unsigned char, Allocator> &, void *)>;
 
 ///
 /// GetFileSizeFunction type. Signature for custom filesystem callbacks.
@@ -1377,11 +1401,11 @@ bool FileExists(const std::string &abs_filename, void *);
 ///
 std::string ExpandFilePath(const std::string &filepath, void *userdata);
 
-bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
+bool ReadWholeFile(eastl::vector<unsigned char, Allocator> *out, std::string *err,
                    const std::string &filepath, void *);
 
 bool WriteWholeFile(std::string *err, const std::string &filepath,
-                    const std::vector<unsigned char> &contents, void *);
+                    const eastl::vector<unsigned char, Allocator> &contents, void *);
 
 bool GetFileSizeInBytes(size_t *filesize_out, std::string *err,
                         const std::string &filepath, void *);
@@ -1985,8 +2009,8 @@ static bool Equals(const tinygltf::Value &one, const tinygltf::Value &other) {
     case STRING_TYPE:
       return one.Get<std::string>() == other.Get<std::string>();
     case BINARY_TYPE:
-      return one.Get<std::vector<unsigned char> >() ==
-             other.Get<std::vector<unsigned char> >();
+      return one.Get<eastl::vector<unsigned char, Allocator>>() ==
+             other.Get<eastl::vector<unsigned char, Allocator>>();
     default: {
       // unhandled type
       return false;
@@ -1994,9 +2018,9 @@ static bool Equals(const tinygltf::Value &one, const tinygltf::Value &other) {
   }
 }
 
-// Equals function for std::vector<double> using TINYGLTF_DOUBLE_EPSILON
-static bool Equals(const std::vector<double> &one,
-                   const std::vector<double> &other) {
+// Equals function for eastl::vector<double, Allocator> using TINYGLTF_DOUBLE_EPSILON
+static bool Equals(const eastl::vector<double, Allocator> &one,
+                   const eastl::vector<double, Allocator> &other) {
   if (one.size() != other.size()) return false;
   for (int i = 0; i < int(one.size()); ++i) {
     if (!TINYGLTF_DOUBLE_EQUAL(one[size_t(i)], other[size_t(i)])) return false;
@@ -2259,7 +2283,7 @@ static std::string JoinPath(const std::string &path0,
   }
 }
 
-static std::string FindFile(const std::vector<std::string> &paths,
+static std::string FindFile(const eastl::vector<std::string, Allocator> &paths,
                             const std::string &filepath, FsCallbacks *fs) {
   if (fs == nullptr || fs->ExpandFilePath == nullptr ||
       fs->FileExists == nullptr) {
@@ -2523,7 +2547,7 @@ bool URIDecode(const std::string &in_uri, std::string *out_uri,
   return true;
 }
 
-static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
+static bool LoadExternalFile(eastl::vector<unsigned char, Allocator> *out, std::string *err,
                              std::string *warn, const std::string &filename,
                              const std::string &basedir, bool required,
                              size_t reqBytes, bool checkSize,
@@ -2541,7 +2565,7 @@ static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
 
   out->clear();
 
-  std::vector<std::string> paths;
+  eastl::vector<std::string, Allocator> paths;
   paths.push_back(basedir);
   paths.push_back(".");
 
@@ -2579,7 +2603,7 @@ static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
     }
   }
 
-  std::vector<unsigned char> buf;
+  eastl::vector<unsigned char, Allocator> buf;
   std::string fileReadErr;
   bool fileRead =
       fs->ReadWholeFile(&buf, &fileReadErr, filepath, fs->user_data);
@@ -2786,8 +2810,8 @@ void TinyGLTF::SetImageWriter(WriteImageDataFunction func, void *user_data) {
 
 #ifndef TINYGLTF_NO_STB_IMAGE_WRITE
 static void WriteToMemory_stbi(void *context, void *data, int size) {
-  std::vector<unsigned char> *buffer =
-      reinterpret_cast<std::vector<unsigned char> *>(context);
+  eastl::vector<unsigned char, Allocator> *buffer =
+      reinterpret_cast<eastl::vector<unsigned char> *, Allocator>(context);
 
   unsigned char *pData = reinterpret_cast<unsigned char *>(data);
 
@@ -2808,7 +2832,7 @@ bool WriteImageData(const std::string *basepath, const std::string *filename,
 
   // Write image to temporary buffer
   std::string header;
-  std::vector<unsigned char> data;
+  eastl::vector<unsigned char, Allocator> data;
 
   // If the image data is already encoded, take it as is
   if (image->as_is) {
@@ -3166,7 +3190,7 @@ bool GetFileSizeInBytes(size_t *filesize_out, std::string *err,
 #endif
 }
 
-bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
+bool ReadWholeFile(eastl::vector<unsigned char, Allocator> *out, std::string *err,
                    const std::string &filepath, void *) {
 #ifdef TINYGLTF_ANDROID_LOAD_FROM_ASSETS
   if (asset_manager) {
@@ -3265,7 +3289,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
 }
 
 bool WriteWholeFile(std::string *err, const std::string &filepath,
-                    const std::vector<unsigned char> &contents, void *) {
+                    const eastl::vector<unsigned char, Allocator> &contents, void *) {
 #ifdef _WIN32
 #if defined(__GLIBCXX__)  // mingw
   int file_descriptor = _wopen(UTF8ToWchar(filepath).c_str(),
@@ -3406,7 +3430,7 @@ bool IsDataURI(const std::string &in) {
   return false;
 }
 
-bool DecodeDataURI(std::vector<unsigned char> *out, std::string &mime_type,
+bool DecodeDataURI(eastl::vector<unsigned char, Allocator> *out, std::string &mime_type,
                    const std::string &in, size_t reqBytes, bool checkSize) {
   std::string header = "data:application/octet-stream;base64,";
   std::string data;
@@ -3989,7 +4013,7 @@ static bool ParseNumberProperty(double *ret, std::string *err,
   return true;
 }
 
-static bool ParseNumberArrayProperty(std::vector<double> *ret, std::string *err,
+static bool ParseNumberArrayProperty(eastl::vector<double, Allocator> *ret, std::string *err,
                                      const detail::json &o,
                                      const std::string &property, bool required,
                                      const std::string &parent_node = "") {
@@ -4043,7 +4067,7 @@ static bool ParseNumberArrayProperty(std::vector<double> *ret, std::string *err,
   return true;
 }
 
-static bool ParseIntegerArrayProperty(std::vector<int> *ret, std::string *err,
+static bool ParseIntegerArrayProperty(eastl::vector<int, Allocator> *ret, std::string *err,
                                       const detail::json &o,
                                       const std::string &property,
                                       bool required,
@@ -4134,7 +4158,7 @@ static bool ParseStringProperty(
   return true;
 }
 
-static bool ParseStringIntegerProperty(std::map<std::string, int> *ret,
+static bool ParseStringIntegerProperty(eastl::map<std::string, int, eastl::less<std::string>, Allocator> *ret,
                                        std::string *err, const detail::json &o,
                                        const std::string &property,
                                        bool required,
@@ -4188,7 +4212,7 @@ static bool ParseStringIntegerProperty(std::map<std::string, int> *ret,
   return true;
 }
 
-static bool ParseJSONProperty(std::map<std::string, double> *ret,
+static bool ParseJSONProperty(eastl::map<std::string, double, eastl::less<std::string>, Allocator> *ret,
                               std::string *err, const detail::json &o,
                               const std::string &property, bool required) {
   detail::json_const_iterator it;
@@ -4412,7 +4436,7 @@ static bool ParseImage(Image *image, const int image_idx, std::string *err,
     return false;
   }
 
-  std::vector<unsigned char> img;
+  eastl::vector<unsigned char, Allocator> img;
 
   if (IsDataURI(uri)) {
     if (!DecodeDataURI(&img, image->mimeType, uri, 0, false)) {
@@ -4907,7 +4931,7 @@ static bool ParseAccessor(Accessor *accessor, std::string *err,
 #ifdef TINYGLTF_ENABLE_DRACO
 
 static void DecodeIndexBuffer(draco::Mesh *mesh, size_t componentSize,
-                              std::vector<uint8_t> &outBuffer) {
+                              eastl::vector<uint8_t, Allocator> &outBuffer) {
   if (componentSize == 4) {
     assert(sizeof(mesh->face(draco::FaceIndex(0))[0]) == componentSize);
     memcpy(outBuffer.data(), &mesh->face(draco::FaceIndex(0))[0],
@@ -4936,7 +4960,7 @@ static void DecodeIndexBuffer(draco::Mesh *mesh, size_t componentSize,
 template <typename T>
 static bool GetAttributeForAllPoints(draco::Mesh *mesh,
                                      const draco::PointAttribute *pAttribute,
-                                     std::vector<uint8_t> &outBuffer) {
+                                     eastl::vector<uint8_t, Allocator> &outBuffer) {
   size_t byteOffset = 0;
   T values[4] = {0, 0, 0, 0};
   for (draco::PointIndex i(0); i < mesh->num_points(); ++i) {
@@ -4955,7 +4979,7 @@ static bool GetAttributeForAllPoints(draco::Mesh *mesh,
 
 static bool GetAttributeForAllPoints(uint32_t componentType, draco::Mesh *mesh,
                                      const draco::PointAttribute *pAttribute,
-                                     std::vector<uint8_t> &outBuffer) {
+                                     eastl::vector<uint8_t, Allocator> &outBuffer) {
   bool decodeResult = false;
   switch (componentType) {
     case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
@@ -5153,7 +5177,7 @@ static bool ParsePrimitive(Primitive *primitive, Model *model,
     for (detail::json_const_array_iterator i =
              detail::ArrayBegin(detail::GetValue(targetsObject));
          i != targetsObjectEnd; ++i) {
-      std::map<std::string, int> targetAttribues;
+      eastl::map<std::string, int, eastl::less<std::string>, Allocator> targetAttribues;
 
       const detail::json &dict = *i;
       if (detail::IsObject(dict)) {
@@ -5345,7 +5369,7 @@ static bool ParsePbrMetallicRoughness(
     return false;
   }
 
-  std::vector<double> baseColorFactor;
+  eastl::vector<double, Allocator> baseColorFactor;
   if (ParseNumberArrayProperty(&baseColorFactor, err, o, "baseColorFactor",
                                /* required */ false)) {
     if (baseColorFactor.size() != 4) {
@@ -5688,7 +5712,7 @@ static bool ParseSkin(Skin *skin, std::string *err, const detail::json &o,
                       bool store_original_json_for_extras_and_extensions) {
   ParseStringProperty(&skin->name, err, o, "name", false, "Skin");
 
-  std::vector<int> joints;
+  eastl::vector<int, Allocator> joints;
   if (!ParseIntegerArrayProperty(&joints, err, o, "joints", false, "Skin")) {
     return false;
   }
@@ -6755,7 +6779,7 @@ bool TinyGLTF::LoadASCIIFromFile(Model *model, std::string *err,
     return false;
   }
 
-  std::vector<unsigned char> data;
+  eastl::vector<unsigned char, Allocator> data;
   std::string fileerr;
   bool fileread = fs.ReadWholeFile(&data, &fileerr, filename, fs.user_data);
   if (!fileread) {
@@ -6981,7 +7005,7 @@ bool TinyGLTF::LoadBinaryFromFile(Model *model, std::string *err,
     return false;
   }
 
-  std::vector<unsigned char> data;
+  eastl::vector<unsigned char, Allocator> data;
   std::string fileerr;
   bool fileread = fs.ReadWholeFile(&data, &fileerr, filename, fs.user_data);
   if (!fileread) {
@@ -7099,7 +7123,7 @@ void SerializeNumberProperty(const std::string &key, size_t number,
 
 template <typename T>
 static void SerializeNumberArrayProperty(const std::string &key,
-                                         const std::vector<T> &value,
+                                         const eastl::vector<T, Allocator> &value,
                                          detail::json &obj) {
   if (value.empty()) return;
 
@@ -7119,7 +7143,7 @@ static void SerializeStringProperty(const std::string &key,
 }
 
 static void SerializeStringArrayProperty(const std::string &key,
-                                         const std::vector<std::string> &value,
+                                         const eastl::vector<std::string, Allocator> &value,
                                          detail::json &obj) {
   detail::json ary;
   detail::JsonReserveArray(ary, value.size());
@@ -7159,7 +7183,7 @@ static bool ValueToJson(const Value &value, detail::json *ret) {
     }
     case BINARY_TYPE:
       // TODO
-      // obj = detail::json(value.Get<std::vector<unsigned char>>());
+      // obj = detail::json(value.Get<eastl::vector<unsigned char>, Allocator>());
       return false;
       break;
     case OBJECT_TYPE: {
@@ -7203,7 +7227,7 @@ static bool ValueToJson(const Value &value, detail::json *ret) {
     }
     case BINARY_TYPE:
       // TODO
-      // obj = json(value.Get<std::vector<unsigned char>>());
+      // obj = json(value.Get<eastl::vector<unsigned char>, Allocator>());
       return false;
       break;
     case OBJECT_TYPE: {
@@ -7231,7 +7255,7 @@ static void SerializeValue(const std::string &key, const Value &value,
   }
 }
 
-static void SerializeGltfBufferData(const std::vector<unsigned char> &data,
+static void SerializeGltfBufferData(const eastl::vector<unsigned char, Allocator> &data,
                                     detail::json &o) {
   std::string header = "data:application/octet-stream;base64,";
   if (data.size() > 0) {
@@ -7245,7 +7269,7 @@ static void SerializeGltfBufferData(const std::vector<unsigned char> &data,
   }
 }
 
-static bool SerializeGltfBufferData(const std::vector<unsigned char> &data,
+static bool SerializeGltfBufferData(const eastl::vector<unsigned char, Allocator> &data,
                                     const std::string &binFilename) {
 #ifndef TINYGLTF_NO_FS
 #ifdef _WIN32
@@ -7290,7 +7314,7 @@ static void SerializeParameterMap(ParameterMap &param, detail::json &o) {
                                            paramIt->second.number_array, o);
     } else if (paramIt->second.json_double_value.size()) {
       detail::json json_double_value;
-      for (std::map<std::string, double>::iterator it =
+      for (eastl::map<std::string, double, eastl::less<std::string>, Allocator>::iterator it =
                paramIt->second.json_double_value.begin();
            it != paramIt->second.json_double_value.end(); ++it) {
         if (it->first == "index") {
@@ -7367,7 +7391,7 @@ static void SerializeGltfAccessor(const Accessor &accessor, detail::json &o) {
     // Issue #301. Serialize as integer.
     // Assume int value is within [-2**31-1, 2**31-1]
     {
-      std::vector<int> values;
+      eastl::vector<int, Allocator> values;
       std::transform(accessor.minValues.begin(), accessor.minValues.end(),
                      std::back_inserter(values),
                      [](double v) { return static_cast<int>(v); });
@@ -7376,7 +7400,7 @@ static void SerializeGltfAccessor(const Accessor &accessor, detail::json &o) {
     }
 
     {
-      std::vector<int> values;
+      eastl::vector<int, Allocator> values;
       std::transform(accessor.maxValues.begin(), accessor.maxValues.end(),
                      std::back_inserter(values),
                      [](double v) { return static_cast<int>(v); });
@@ -7532,7 +7556,7 @@ static void SerializeGltfAsset(const Asset &asset, detail::json &o) {
 }
 
 static void SerializeGltfBufferBin(const Buffer &buffer, detail::json &o,
-                                   std::vector<unsigned char> &binBuffer) {
+                                   eastl::vector<unsigned char, Allocator> &binBuffer) {
   SerializeNumberProperty("byteLength", buffer.data.size(), o);
   binBuffer = buffer.data;
 
@@ -7649,7 +7673,7 @@ static void SerializeGltfOcclusionTextureInfo(
 
 static void SerializeGltfPbrMetallicRoughness(const PbrMetallicRoughness &pbr,
                                               detail::json &o) {
-  std::vector<double> default_baseColorFactor = {1.0, 1.0, 1.0, 1.0};
+  eastl::vector<double, Allocator> default_baseColorFactor = {1.0, 1.0, 1.0, 1.0};
   if (!Equals(pbr.baseColorFactor, default_baseColorFactor)) {
     SerializeNumberArrayProperty<double>("baseColorFactor", pbr.baseColorFactor,
                                          o);
@@ -7714,7 +7738,7 @@ static void SerializeGltfMaterial(const Material &material, detail::json &o) {
     detail::JsonAddMember(o, "emissiveTexture", std::move(texinfo));
   }
 
-  std::vector<double> default_emissiveFactor = {0.0, 0.0, 0.0};
+  eastl::vector<double, Allocator> default_emissiveFactor = {0.0, 0.0, 0.0};
   if (!Equals(material.emissiveFactor, default_emissiveFactor)) {
     SerializeNumberArrayProperty<double>("emissiveFactor",
                                          material.emissiveFactor, o);
@@ -7813,8 +7837,8 @@ static void SerializeGltfMesh(const Mesh &mesh, detail::json &o) {
       detail::JsonReserveArray(targets, gltfPrimitive.targets.size());
       for (unsigned int k = 0; k < gltfPrimitive.targets.size(); ++k) {
         detail::json targetAttributes;
-        std::map<std::string, int> targetData = gltfPrimitive.targets[k];
-        for (std::map<std::string, int>::iterator attrIt = targetData.begin();
+        eastl::map<std::string, int, eastl::less<std::string>, Allocator> targetData = gltfPrimitive.targets[k];
+        for (eastl::map<std::string, int, eastl::less<std::string>, Allocator>::iterator attrIt = targetData.begin();
              attrIt != targetData.end(); ++attrIt) {
           SerializeNumberProperty<int>(attrIt->first, attrIt->second,
                                        targetAttributes);
@@ -8527,7 +8551,7 @@ static bool WriteGltfFile(const std::string &output,
 
 static bool WriteBinaryGltfStream(std::ostream &stream,
                                   const std::string &content,
-                                  const std::vector<unsigned char> &binBuffer) {
+                                  const eastl::vector<unsigned char, Allocator> &binBuffer) {
   const std::string header = "glTF";
   const int version = 2;
 
@@ -8575,8 +8599,8 @@ static bool WriteBinaryGltfStream(std::ostream &stream,
                  std::streamsize(binBuffer.size()));
     // Chunksize must be multiplies of 4, so pad with zeroes
     if (bin_padding_size > 0) {
-      const std::vector<unsigned char> padding =
-          std::vector<unsigned char>(size_t(bin_padding_size), 0);
+      const eastl::vector<unsigned char, Allocator> padding =
+          eastl::vector<unsigned char, Allocator>(size_t(bin_padding_size), 0);
       stream.write(reinterpret_cast<const char *>(padding.data()),
                    std::streamsize(padding.size()));
     }
@@ -8588,7 +8612,7 @@ static bool WriteBinaryGltfStream(std::ostream &stream,
 
 static bool WriteBinaryGltfFile(const std::string &output,
                                 const std::string &content,
-                                const std::vector<unsigned char> &binBuffer) {
+                                const eastl::vector<unsigned char, Allocator> &binBuffer) {
 #ifndef TINYGLTF_NO_FS
 #ifdef _WIN32
 #if defined(_MSC_VER)
@@ -8620,7 +8644,7 @@ bool TinyGLTF::WriteGltfSceneToStream(const Model *model, std::ostream &stream,
   SerializeGltfModel(model, output);
 
   // BUFFERS
-  std::vector<unsigned char> binBuffer;
+  eastl::vector<unsigned char, Allocator> binBuffer;
   if (model->buffers.size()) {
     detail::json buffers;
     detail::JsonReserveArray(buffers, model->buffers.size());
@@ -8691,8 +8715,8 @@ bool TinyGLTF::WriteGltfSceneToFile(const Model *model,
   SerializeGltfModel(model, output);
 
   // BUFFERS
-  std::vector<std::string> usedFilenames;
-  std::vector<unsigned char> binBuffer;
+  eastl::vector<std::string, Allocator> usedFilenames;
+  eastl::vector<unsigned char, Allocator> binBuffer;
   if (model->buffers.size()) {
     detail::json buffers;
     detail::JsonReserveArray(buffers, model->buffers.size());
