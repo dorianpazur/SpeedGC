@@ -88,17 +88,17 @@ void CGEmitter::SpawnParticles(float dt, float intensity, bool isContrail)
 	local_orientation[0][3] = 0.0f;
 	local_orientation[1][3] = 0.0f;
 	local_orientation[2][3] = 0.0f;
+	
+    NGParticle* particle;
+    float sparkLength;
+    struct tVector3 pvel;
+    struct tVector3 rand;
+    struct tVector3 rotatedVel;
+    float gravity;
+    struct tVector3 ppos;
 
     while (num_particles > 0.0f)
     {
-        NGParticle* particle;
-        float sparkLength;
-        struct tVector3 pvel;
-        struct tVector3 rand;
-        struct tVector3 rotatedVel;
-        float gravity;
-        struct tVector3 ppos;
-
         num_particles--;
 
         if (!(particle = gParticleList.GetNextParticle())) // get next particle in list

@@ -103,12 +103,12 @@ void vDisplayFrame()
 			poly.Vertices[1].y = 0;
 			poly.Vertices[1].z = -(slice * 100.0f) + 100.0f;
 			poly.UVs[1][0] = 0.0f;
-			poly.UVs[1][1] = 2.0f;
+			poly.UVs[1][1] = 4.0f;
 			poly.Vertices[2].x = 50.0f;
 			poly.Vertices[2].y = 0;
 			poly.Vertices[2].z = -(slice * 100.0f) + 100.0f;
 			poly.UVs[2][0] = 8.0f;
-			poly.UVs[2][1] = 2.0f;
+			poly.UVs[2][1] = 4.0f;
 			poly.Vertices[3].x = 50.0f;
 			poly.Vertices[3].y = 0;
 			poly.Vertices[3].z = -(slice * 100.0f) - 100.0f;
@@ -173,23 +173,37 @@ void vDisplayFrame()
 			float width = (float)vViews[viewNum].RenderTarget->Width / (float)gMotionBlurTexture->width;
 			float height = (float)vViews[viewNum].RenderTarget->Height / (float)gMotionBlurTexture->height;
 			
+			vPoly poly;
+			
+			poly.Vertices[0].x = -1.0f;
+			poly.Vertices[0].y = -1.0f;
+			poly.Vertices[0].z = 1;
+			poly.Vertices[1].x = -1.0f;
+			poly.Vertices[1].y = 1.0f;
+			poly.Vertices[1].z = 1;
+			poly.Vertices[2].x = 1.0f;
+			poly.Vertices[2].y = 1.0f;
+			poly.Vertices[2].z = 1;
+			poly.Vertices[3].x = 1.0f;
+			poly.Vertices[3].y = -1.0f;
+			poly.Vertices[3].z = 1;
+			
+			poly.Colours[0][0] = 0xFF;
+			poly.Colours[0][1] = 0xFF;
+			poly.Colours[0][2] = 0xFF;
+			poly.Colours[0][3] = 0xFF / 3;
+			
+			*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+			*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+			*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+			
+			vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+			
+			vEffectStaticState::pCurrentEffect->SetTexture(gMotionBlurTexture);
+			vEffectStaticState::pCurrentEffect->Start();
+			
 			for (int i = kBlurSamples; i > 0; i--)
 			{
-				vPoly poly;
-			
-				poly.Vertices[0].x = -1.0f;
-				poly.Vertices[0].y = -1.0f;
-				poly.Vertices[0].z = 1;
-				poly.Vertices[1].x = -1.0f;
-				poly.Vertices[1].y = 1.0f;
-				poly.Vertices[1].z = 1;
-				poly.Vertices[2].x = 1.0f;
-				poly.Vertices[2].y = 1.0f;
-				poly.Vertices[2].z = 1;
-				poly.Vertices[3].x = 1.0f;
-				poly.Vertices[3].y = -1.0f;
-				poly.Vertices[3].z = 1;
-				
 				poly.UVs[0][0] = -(i * bluroffsets[0]);
 				poly.UVs[0][1] = -(i * bluroffsets[1]);
 				
@@ -202,22 +216,10 @@ void vDisplayFrame()
 				poly.UVs[3][0] = -(i * bluroffsets[2]) + width;
 				poly.UVs[3][1] = -(i * bluroffsets[1]);
 				
-				poly.Colours[0][0] = 0xFF;
-				poly.Colours[0][1] = 0xFF;
-				poly.Colours[0][2] = 0xFF;
-				poly.Colours[0][3] = 0xFF / 3;
-				
-				*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
-				*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
-				*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
-				
-				vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
-				
-				vEffectStaticState::pCurrentEffect->SetTexture(gMotionBlurTexture);
-				vEffectStaticState::pCurrentEffect->Start();
 				vPolyRender(&poly);
-				vEffectStaticState::pCurrentEffect->End();
 			}
+			
+			vEffectStaticState::pCurrentEffect->End();
 		}
 		
 		// continue 3D rendering
