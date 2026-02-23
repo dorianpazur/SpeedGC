@@ -83,27 +83,35 @@ void vDisplayFrame()
 		GX_SetFogRangeAdj(GX_ENABLE, vViews[viewNum].RenderTarget->Left + (vViews[viewNum].RenderTarget->Width / 2), &fogAdjTable);
 		
 		// render test ground - TODO: replace this with actual track
+		
+		
+		GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
+		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
+		
+		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("tarmac_diffuse")));
+		vEffectStaticState::pCurrentEffect->Start();
+		for (int slice = 0; slice < 100; slice++)
 		{
 			vPoly poly;
 		
 			poly.Vertices[0].x = -50.0f;
 			poly.Vertices[0].y = 0;
-			poly.Vertices[0].z = -10000.0f;
+			poly.Vertices[0].z = -(slice * 100.0f) - 100.0f;
 			poly.UVs[0][0] = 0.0f;
 			poly.UVs[0][1] = 0.0f;
 			poly.Vertices[1].x = -50.0f;
 			poly.Vertices[1].y = 0;
-			poly.Vertices[1].z = 100.0f;
+			poly.Vertices[1].z = -(slice * 100.0f) + 100.0f;
 			poly.UVs[1][0] = 0.0f;
-			poly.UVs[1][1] = 200.0f;
+			poly.UVs[1][1] = 2.0f;
 			poly.Vertices[2].x = 50.0f;
 			poly.Vertices[2].y = 0;
-			poly.Vertices[2].z = 100.0f;
+			poly.Vertices[2].z = -(slice * 100.0f) + 100.0f;
 			poly.UVs[2][0] = 8.0f;
-			poly.UVs[2][1] = 200.0f;
+			poly.UVs[2][1] = 2.0f;
 			poly.Vertices[3].x = 50.0f;
 			poly.Vertices[3].y = 0;
-			poly.Vertices[3].z = -10000.0f;
+			poly.Vertices[3].z = -(slice * 100.0f) - 100.0f;
 			poly.UVs[3][0] = 8.0f;
 			poly.UVs[3][1] = 0.0f;
 			
@@ -115,12 +123,6 @@ void vDisplayFrame()
 			*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
 			*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
 			*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
-			
-			GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
-			vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
-		
-			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("tarmac_diffuse")));
-			vEffectStaticState::pCurrentEffect->Start();
 			vPolyRender(&poly);
 			vEffectStaticState::pCurrentEffect->End();
 		}
@@ -141,9 +143,10 @@ void vDisplayFrame()
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);	
 		
-		// double passed, gets effectively 16 blur samples out of just 8
-		for (int pass = 0; pass < 2; pass++)
+		// was double passed, got effectively 16 blur samples out of just 8, but that was too performance heavy
+		for (int pass = 0; pass < 1; pass++)
 		{
+			const int kBlurSamples = 6;
 			float bluroffsets[4];
 			
 			tVector3 velocityVector = vViews[viewNum].Velocity;
@@ -155,7 +158,7 @@ void vDisplayFrame()
 			velocityVector *= 1.0f / velocityLength;
 			
 			velocityLength -= 10.0f;
-			velocityLength = std::fmin(1.0f, velocityLength * 0.003f) / 40.0f;
+			velocityLength = std::fmin(1.0f, velocityLength * 0.003f) / (kBlurSamples * 10.0f);
 			
 			velocityVector *= velocityLength;
 			velocityVector.x *= 0.65f;
@@ -170,7 +173,7 @@ void vDisplayFrame()
 			float width = (float)vViews[viewNum].RenderTarget->Width / (float)gMotionBlurTexture->width;
 			float height = (float)vViews[viewNum].RenderTarget->Height / (float)gMotionBlurTexture->height;
 			
-			for (int i = 4; i > 0; i--)
+			for (int i = kBlurSamples; i > 0; i--)
 			{
 				vPoly poly;
 			
