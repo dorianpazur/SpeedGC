@@ -213,11 +213,13 @@ void World::Simulate(float timestep)
 		mTimeElapsed += timestep;
 		static float timeElapsedFix = 0.0f;
 		const float kStepTime = 1.0f / 60.0f;
+		bool ticked = false;
 		
 		timeElapsedFix += timestep;
 		
 		while (timeElapsedFix >= kStepTime)
 		{
+			ticked = true;
 			// auto default inputs per vehicle this frame
 			float engineForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 			float brakeForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -287,7 +289,6 @@ void World::Simulate(float timestep)
 		}
 		
 		static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 0.0f, 0.0f) };
-		static tVector3 camPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 		static tVector3 camUp[2] { tVector3(0.0f, 1.0f, 0.0f), tVector3(0.0f, 1.0f, 0.0f) };
 		static tVector3 prevCamPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 		static float tilt[2] { 0.0f, 0.0f };
@@ -362,25 +363,26 @@ void World::Simulate(float timestep)
 			tVector3 camTargetLocal = tVector3(0.0f, 2.0f, 15.0f + (kBaseDistance - distance[veh]));
 			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.05f, 0.0f, 0.0f);
 			
-			prevCamPos[veh] = camPos[veh]; // store previous pos
+			if (ticked)
+				prevCamPos[veh] = vViews[VVIEW_FIRST_PLAYER + veh].Position; // store previous pos
 			
-			tMulVector(&camPos[veh], &transform, &camPosLocal);
+			tMulVector(&vViews[VVIEW_FIRST_PLAYER + veh].Position, &transform, &camPosLocal);
 			tMulVector(&camTarget[veh], &transform, &camTargetLocal);
 			tMulVector(&camUp[veh], &transform, &camUpOffset);
 			
 			// fix them up
 			camTarget[veh].y = transformFlt[13] + 2.0f;
-			camPos[veh].y = transformFlt[13] + 3.0f;
+			vViews[VVIEW_FIRST_PLAYER + veh].Position.y = transformFlt[13] + 3.0f;
 			camUp[veh] -= globalVehPos; // make it still local to the vehicle but rotated
 			camUp[veh].y = 1.0f;
 			
-			tVector3 cam = {camPos[veh].x, camPos[veh].y, camPos[veh].z},
+			tVector3 cam = vViews[VVIEW_FIRST_PLAYER + veh].Position,
 				up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
 				look = {camTarget[veh].x, camTarget[veh].y, camTarget[veh].z};
 			tCreateLookAtMatrix(&vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, cam, look, up);
 			
 			tMulVector(&vViews[VVIEW_FIRST_PLAYER + veh].Velocity, &vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &prevCamPos[veh]); // get inverse of velocity
-			vViews[VVIEW_FIRST_PLAYER + veh].Velocity *= 1.0f / (gFrameTime * 0.001f); // make it the correct orientation and scaled with dT
+			vViews[VVIEW_FIRST_PLAYER + veh].Velocity *= 1.0 / std::fmaxf(kStepTime, gFrameTime * 0.001f); // make it the correct orientation and scaledish with dT
 		}
 	}
 }

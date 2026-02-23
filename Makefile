@@ -43,7 +43,7 @@ include $(wildcard ./src/GC/sources.mk)
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS		:= -std=c++23 -g -Og -Wall -mcpu=750 $(MACHDEP) $(INCLUDE) $(CFLAGS) -Wno-tautological-compare -Wno-deprecated-literal-operator -Wno-return-type -Wno-unused-variable
+CFLAGS		:= -std=c++23 -g -O4 -Wall -mcpu=750 $(MACHDEP) $(INCLUDE) $(CFLAGS) -Wno-tautological-compare -Wno-deprecated-literal-operator -Wno-return-type -Wno-unused-variable -Wno-strict-aliasing
 CXXFLAGS	:= $(CFLAGS)
 
 LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map

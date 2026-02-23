@@ -42,6 +42,7 @@ struct vView
 	tMatrix4 ViewMatrix;
 	tMatrix4 ProjectionMatrix;
 	
+	tVector3 Position;
 	tVector3 Velocity;
 	
 	vRenderTarget* RenderTarget = NULL;
