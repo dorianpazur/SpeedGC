@@ -323,8 +323,6 @@ void InitializePlatform(int argc, char** argv) {
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 		
 		gMotionBlurTexture = new vTextureCache::CachedTexture("Motion Blur", rmode->fbWidth, rmode->efbHeight, GX_TF_RGBA8);
-		
-		NGSpriteManager.Init();
 	}
 	
 	// clear texture cache

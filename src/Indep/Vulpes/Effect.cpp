@@ -24,6 +24,8 @@ VEFFECT_ID vEffect::GetEffectIDFromString(const char* str)
 		return VEFFECT_FE;
 	else if (strcmp(str, "SKY") == 0)
 		return VEFFECT_SKY;
+	else if (strcmp(str, "PARTICLES") == 0)
+		return VEFFECT_PARTICLES;
 	
 	return VEFFECT_STANDARD; // fallback to standard
 }
@@ -43,6 +45,9 @@ void vEffectInit()
 			break;
 		case VEFFECT_SKY:
 			vEffects[i] = new vEffect_SKY();
+			break;
+		case VEFFECT_PARTICLES:
+			vEffects[i] = new vEffect_PARTICLES();
 			break;
 		}
 	}

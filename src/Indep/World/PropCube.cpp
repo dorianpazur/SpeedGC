@@ -51,7 +51,7 @@ PropCube::~PropCube()
 }
 
 //empty for now, could be used later to add effects(sound, score...)
-void PropCube::OnCollide(ISimable* other)
+void PropCube::OnCollide(ISimable* other, const tVector3 &contactPoint)
 {
 }
 

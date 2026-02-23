@@ -73,7 +73,7 @@ struct SpriteBuffer
 		
 		vEffectStaticState::pCurrentEffect = &effect;
 		
-		//vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap));
+		vEffectStaticState::pCurrentEffect->SetTexture(pTexture);
 		
 		vEffectStaticState::pCurrentEffect->Start();
 		

@@ -6,7 +6,7 @@ XSpriteManager NGSpriteManager;
 void XSpriteManager::Init()
 {
     sparkList.Init(MAX_NGPARTICLES);
-    //sparkList.mTexture = GetTextureInfo(bStringHash("MAIN"), 0, 0);
+    sparkList.mTexture = vTextureCache::GetTexture(CTStringHash("particles"));
 }
 
 void XSpriteManager::Reset()
@@ -90,5 +90,5 @@ void XSpriteManager::AddSpark(NGParticle* particleList, unsigned int numParticle
 
 void XSpriteManager::RenderAll(vView* view)
 {
-    sparkList.Draw(view->ID, 0, *vEffects[VEFFECT_STANDARD], NULL);
+    sparkList.Draw(view->ID, 0, *vEffects[VEFFECT_PARTICLES], NULL);
 }

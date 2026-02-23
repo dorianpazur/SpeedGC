@@ -15,7 +15,7 @@ public:
         PropCube(btDynamicsWorld * world, const btVector3 & pos, const btVector3 & halfExtents = btVector3(1.0f, 1.0f, 1.0f));
     ~PropCube();
 
-    virtual void OnCollide(ISimable * other) override;
+    virtual void OnCollide(ISimable * other, const tVector3 &contactPoint) override;
     virtual void Render(vView * view) override;
 
 private:

@@ -16,7 +16,6 @@
 #include <Vulpes/vulpes.h> // graphics
 #include "InputManager.h"
 
-
 // debug stuff
 #include "DebugMenu.h"
 #include "DebugAssistant.h"
@@ -126,6 +125,7 @@ int main(int argc, char **argv)
 		}
 
 		World::Uninit();
+		NGSpriteManager.Reset();
 		vTextureCache::Uninit();
 		
 	} while (bWantsReset);
@@ -196,6 +196,7 @@ void InitializeEverything(int argc, char** argv)
 	DebugMenuInit();
 	LoadAssets();
 	World::Initialize();
+	NGSpriteManager.Init();
 	
 	#ifdef EA_PLATFORM_GAMECUBE
 	printf("Free arena memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
@@ -235,6 +236,7 @@ void LoadAssets()
 	printf("draw_init\n");
 	
 	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
+	vTextureCache::LoadTextureFromPath("Global/particles.tpl");
 	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
 	
 	//gTestModel = new vModel("sonic/sonic.glb");

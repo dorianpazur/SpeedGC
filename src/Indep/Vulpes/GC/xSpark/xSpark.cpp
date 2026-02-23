@@ -154,10 +154,10 @@ void CGEmitter::SpawnParticles(float dt, float intensity, bool isContrail)
 
         particle->color = particleColor;
 
-        //particle->uv[0] = (uint8_t)(mTextureUVs->StartU * 255.0f);
-        //particle->uv[1] = (uint8_t)(mTextureUVs->StartV * 255.0f);
-        //particle->uv[2] = (uint8_t)(mTextureUVs->EndU * 255.0f);
-        //particle->uv[3] = (uint8_t)(mTextureUVs->EndV * 255.0f);
+        particle->uv[0] = (uint8_t)(mTextureUVs->StartU * 255.0f);
+        particle->uv[1] = (uint8_t)(mTextureUVs->StartV * 255.0f);
+        particle->uv[2] = (uint8_t)(mTextureUVs->EndU * 255.0f);
+        particle->uv[3] = (uint8_t)(mTextureUVs->EndV * 255.0f);
 
         current_particle_age += particle_age_factor;
     }

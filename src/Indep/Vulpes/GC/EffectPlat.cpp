@@ -203,3 +203,45 @@ void vEffect_SKY::Start()
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
 	}
 }
+
+class vEffect_PARTICLES : public vEffect
+{	
+public:
+	DEF_TWARE_NEW_OVERRIDE(vEffect_PARTICLES, MAIN_POOL)
+	virtual void Start();
+};
+
+void vEffect_PARTICLES::Start()
+{
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+	
+	GX_SetNumChans(1);
+	GX_SetNumTevStages(1);
+	
+	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
+				GX_DF_NONE, GX_AF_NONE);
+	
+	if (texture)
+	{
+		GX_SetNumTexGens(1);
+		
+		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+		
+		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	}
+	else
+	{
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+		GX_SetNumTexGens(0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+	}
+	
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV); // make it 2x brighter
+	GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV);
+}
+

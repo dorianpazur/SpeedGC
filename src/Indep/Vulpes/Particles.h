@@ -5,6 +5,7 @@
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include <Vulpes/GC/xSpark/xSpark.hpp>
+#include <Vulpes/GC/xSpark/Render/xSprites.hpp>
 #include <Vulpes/GC/xSpark/EffectDefs.h>
 #endif
 

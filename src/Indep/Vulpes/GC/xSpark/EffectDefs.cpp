@@ -24,6 +24,30 @@
 //    int8_t zSprite;
 //    int8_t zContrail;
 //};
+//
+//struct EmitterUV
+//{
+//    float StartU;
+//    float EndU;
+//    float StartV;
+//	  float EndV;
+//};
+
+EmitterUV emsprk_uv
+{
+	0.0f, // StartU
+	0.5f, // EndU
+	0.0f, // StartV
+	1.0f  // EndV
+};
+
+EmitterUV trail_uv
+{
+	0.5f, // StartU
+	1.0f, // EndU
+	0.0f, // StartV
+	1.0f  // EndV
+};
 
 EmitterDef emsprk_line1
 {
@@ -63,7 +87,7 @@ EmitterDef emsprk_line1
       0.75f,
       1.0f
 	},
-    /*emitteruv*/ NULL,
+    /*emitteruv*/ &emsprk_uv,
     /*Life*/ 1,
     /*NumParticlesVariance*/ 0,
     /*GravityStart*/ -12,
@@ -116,7 +140,7 @@ EmitterDef emsprk_line2
       0.28f,
       1.0f
 	},
-    /*emitteruv*/ NULL,
+    /*emitteruv*/ &emsprk_uv,
     /*Life*/ 0.4f,
     /*NumParticlesVariance*/ 0,
     /*GravityStart*/ -10,
@@ -178,7 +202,7 @@ EmitterDef trail3
       0.85f,
       0.12f
 	},
-    /*emitteruv*/ NULL,
+    /*emitteruv*/ &trail_uv,
     /*Life*/ 0.25f,
     /*NumParticlesVariance*/ 0,
     /*GravityStart*/ -2,
