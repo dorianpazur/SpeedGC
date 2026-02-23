@@ -1,4 +1,4 @@
-
+﻿
 #include "World.h"
 #include "DebugAssistant.h"
 #include "ISimable.h"
@@ -8,6 +8,7 @@
 #include <tWare/Time.h>
 #include "InputManager.h"
 #include "InputCommand.h"
+#include "PropCube.h"
 
 World* World::gWorld = NULL;
 extern double gFrameTime;
@@ -80,6 +81,51 @@ World::World()
 	// Vehicle constructor creates the body internally
 	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(0, 1, 0)));
 	
+	// 100 rows every 100 units covers full 10km. 3cubes per row
+	{
+		const float kHalf = 4.0f; //for bullet use and rendering 
+		const float kCubeY = kHalf + 0.2f;
+		const float kSpacing = 100.0f; // one row every 100 units // 100 rows = 10,000
+		const float kStartZ = -100.0f;
+		const float kLaneMin = -30.0f; //left edge
+		const float kLaneMax = 30.0f; //right edge
+		const float kGapHalf = 8.0f;  // half-width of each gap
+
+		const int kNumRows = kMaxPropCubes / 3; // 100 rows ,,  3 cubes per row = 300
+
+		for (int row = 0; row < kNumRows && mPropCubeCount + 3 <= kMaxPropCubes; row++)
+		{
+			float z = kStartZ - row * kSpacing;
+
+			// pseudo-random gap centres using different hash seeds 
+			uint32_t h0 = (uint32_t)(row * 2654435761u);
+			uint32_t h1 = (uint32_t)(row * 2246822519u);
+
+			// gap 0  left third of lane
+			float t0 = (float)(h0 & 0xFFFF) / 65535.0f;
+			float gap0 = kLaneMin + (kLaneMax - kLaneMin) * t0 * 0.4f; // keeps gap0 in the left 40% of the lane
+			if (gap0 < kLaneMin + kGapHalf)          gap0 = kLaneMin + kGapHalf;
+			if (gap0 > kLaneMin + (kLaneMax - kLaneMin) * 0.45f) gap0 = kLaneMin + (kLaneMax - kLaneMin) * 0.45f;
+
+			// gap 1  right third of lane
+			float t1 = (float)(h1 & 0xFFFF) / 65535.0f;
+			float gap1 = kLaneMin + (kLaneMax - kLaneMin) * (0.55f + t1 * 0.4f); //starts after 55% of the lane
+			if (gap1 < kLaneMin + (kLaneMax - kLaneMin) * 0.55f) gap1 = kLaneMin + (kLaneMax - kLaneMin) * 0.55f; 
+			if (gap1 > kLaneMax - kGapHalf)          gap1 = kLaneMax - kGapHalf;
+
+			// left cube: lane left edge -- gap0 left edge
+			float x0 = kLaneMin + (gap0 - kGapHalf - kLaneMin) * 0.5f;
+			// middle cube: gap0 right edge -- gap1 left edge
+			float x1 = (gap0 + kGapHalf) + ((gap1 - kGapHalf) - (gap0 + kGapHalf)) * 0.5f;
+			// right cube: gap1 right edge -- lane right edge
+			float x2 = (gap1 + kGapHalf) + (kLaneMax - (gap1 + kGapHalf)) * 0.5f;
+
+			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x0, kCubeY, z), btVector3(kHalf, kHalf, kHalf));
+			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x1, kCubeY, z), btVector3(kHalf, kHalf, kHalf));
+			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x2, kCubeY, z), btVector3(kHalf, kHalf, kHalf));
+		}
+	}
+
 	for (int i = 0; i < 100; i++)
 	{
 		{
@@ -384,10 +430,21 @@ World::~World()
 	
 	mVehicles.clear();
 	
-	//remove the rigidbodies from the dynamics world and delete them
+	// remove prop cubes
+	for (int i = 0; i < mPropCubeCount; i++)
+	{
+		delete mPropCubes[i];
+		mPropCubes[i] = NULL;
+	}
+	mPropCubeCount = 0;
+
+	// remove the remaining rigidbodies
 	for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
 	{
 		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+		// skip bodies that are owned by an ISimable they've already removed above
+		if (obj->getUserPointer() != NULL)
+			continue;
 		btRigidBody* body = btRigidBody::upcast(obj);
 		if (body && body->getMotionState())
 		{

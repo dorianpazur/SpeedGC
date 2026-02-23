@@ -125,6 +125,9 @@ void vDisplayFrame()
 			vEffectStaticState::pCurrentEffect->End();
 		}
 		
+		// draw prop cubes before motion blur so they are blurred with the world
+		DrawPropCubes(&vViews[viewNum]);
+
 		// disable fog for rest of rendering
 		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
 		

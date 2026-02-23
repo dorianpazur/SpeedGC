@@ -12,6 +12,7 @@
 
 #include "btBulletDynamicsCommon.h"
 #include "Vehicle.h"
+#include "PropCube.h"
 #include <tWare/Align.h>
 #include <tWare/Memory.h>
 
@@ -39,8 +40,12 @@ public:
 	void Simulate(float timestep);
 	bool ShouldPauseWorld();
 	
+	static constexpr int kMaxPropCubes = 300;
+
 	std::vector<Vehicle*, tStdAllocator<Vehicle*>> mVehicles;
-	
+	PropCube* mPropCubes[kMaxPropCubes] = {};
+	int mPropCubeCount = 0;
+
 	World();
 	~World();
 };

@@ -450,3 +450,74 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 		vEffectStaticState::pCurrentEffect = NULL;
 	}
 }
+
+vModel* vModel::CreateCube(vColor color)
+{
+	// 24 unique vertices (4 per face x 6 faces) so normals are per face
+	static const float kPositions[24][3] = {
+		// +Z front
+		{-1,-1, 1}, { 1,-1, 1}, { 1, 1, 1}, {-1, 1, 1},
+		// -Z back
+		{ 1,-1,-1}, {-1,-1,-1}, {-1, 1,-1}, { 1, 1,-1},
+		// +X right
+		{ 1,-1, 1}, { 1,-1,-1}, { 1, 1,-1}, { 1, 1, 1},
+		// -X left
+		{-1,-1,-1}, {-1,-1, 1}, {-1, 1, 1}, {-1, 1,-1},
+		// +Y top
+		{-1, 1, 1}, { 1, 1, 1}, { 1, 1,-1}, {-1, 1,-1},
+		// -Y bottom
+		{-1,-1,-1}, { 1,-1,-1}, { 1,-1, 1}, {-1,-1, 1},
+	};
+
+	//6 normals for a cube faces -- for GPU to know which direction to face 
+	static const float kNormals[6][3] = {
+		{ 0, 0, 1}, { 0, 0,-1}, { 1, 0, 0},
+		{-1, 0, 0}, { 0, 1, 0}, { 0,-1, 0},
+	};
+	// 2 triangles per face x 6 faces = 12 triangles = 36 indices
+	static const uint16_t kIndices[36] = {
+		 0, 1, 2,  0, 2, 3,   // +Z
+		 4, 5, 6,  4, 6, 7,   // -Z
+		 8, 9,10,  8,10,11,   // +X
+		12,13,14, 12,14,15,   // -X
+		16,17,18, 16,18,19,   // +Y
+		20,21,22, 20,22,23,   // -Y
+	};
+
+
+	//create the object cube
+	vModel* model = new vModel();
+	model->mSolids.reserve(1);
+	model->mSolids.emplace_back();
+	vSolid& solid = model->mSolids.back();
+	solid.mMeshes.reserve(1);
+	solid.mMeshes.emplace_back();
+	vMesh& mesh = solid.mMeshes.back();
+
+	mesh.mVertexCount = 24;  // 6 faces × 4 vertices each
+	mesh.mIndexCount = 36;  // 6 faces × 2 triangles × 3 indices
+	mesh.mVertexBufferSize = sizeof(vVertex) * 24;
+	mesh.mVertices = (vVertex*)tWareMalloc(mesh.mVertexBufferSize, "CubeVB", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+	mesh.mIndices = (uint16_t*)tWareMalloc(sizeof(uint16_t) * 36, "CubeIB", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+
+	for (int i = 0; i < 24; i++)
+	{
+		int face = i / 4;
+		mesh.mVertices[i].position.x = kPositions[i][0];
+		mesh.mVertices[i].position.y = kPositions[i][1];
+		mesh.mVertices[i].position.z = kPositions[i][2];
+		mesh.mVertices[i].color = color;
+		mesh.mVertices[i].texcoord.x = 0.0f; //no real texture mapping needed all UV's = 0
+		mesh.mVertices[i].texcoord.y = 0.0f;
+		mesh.mVertices[i].normal.x = kNormals[face][0];
+		mesh.mVertices[i].normal.y = kNormals[face][1];
+		mesh.mVertices[i].normal.z = kNormals[face][2];
+	}
+	for (int i = 0; i < 36; i++)
+		mesh.mIndices[i] = kIndices[i];
+
+	mesh.mTextures.DiffuseMap = tStringHash("DefaultTexture");
+	mesh.mEffectID = VEFFECT_STANDARD;
+
+	return model;
+}

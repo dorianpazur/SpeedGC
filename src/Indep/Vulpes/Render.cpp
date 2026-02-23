@@ -2,6 +2,7 @@
 #include <Vulpes/Render.h>
 #include "World.h"
 #include "Vehicle.h"
+#include "PropCube.h"
 
 extern vModel *gSkydomeModel;
 
@@ -32,5 +33,20 @@ void DrawVehicles(vView* view)
 			
 			vehicle->Render(view);
 		}
+	}
+}
+
+void DrawPropCubes(vView* view)
+{
+	World* world = World::GetInstance();
+	if (!world)
+		return;
+
+	for (int i = 0; i < world->mPropCubeCount; i++)
+	{
+		PropCube* cube = world->mPropCubes[i];
+		if (!cube || !cube->mBody)
+			continue;
+		cube->Render(view);
 	}
 }

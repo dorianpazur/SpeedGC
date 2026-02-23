@@ -40,6 +40,8 @@ vModel *gTestModel = NULL;
 
 vModel* gCarModel = NULL;
 vModel* gSkydomeModel = NULL;
+vModel* gCubeModel = NULL;
+
 
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
@@ -116,7 +118,13 @@ int main(int argc, char **argv)
 			delete gCarModel;
 			gCarModel = NULL;
 		}
-		
+	
+		if (gCubeModel)
+		{
+			delete gCubeModel;
+			gCubeModel = NULL;
+		}
+
 		World::Uninit();
 		vTextureCache::Uninit();
 		
@@ -233,4 +241,5 @@ void LoadAssets()
 	
 	gCarModel = new vModel("Vehicles/Test/test_ship.glb");
 	gSkydomeModel = new vModel("Global/skydome.glb");
+	gCubeModel = vModel::CreateCube({ 0x30, 0x30, 0x38, 0xFF }); // dark grey-blue cube
 }
