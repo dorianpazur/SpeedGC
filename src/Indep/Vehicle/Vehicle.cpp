@@ -220,6 +220,17 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		mRaycastVehicle->updateWheelTransform(i, true);
 	}
 	
+	if (speed >= 44.0f) // if going fast enough
+	{
+		tMatrix4 trailTransform;
+		
+		trailTransform[0][3] = trans.getOrigin().getX();
+		trailTransform[1][3] = trans.getOrigin().getY();
+		trailTransform[2][3] = trans.getOrigin().getZ();
+		
+		AddXenonEffect(true, &contrail, &trailTransform, &mVelocity); // spawn contrails
+	}
+	
 	mOtherFrame = !mOtherFrame;
 }
 

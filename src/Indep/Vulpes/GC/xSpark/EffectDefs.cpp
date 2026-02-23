@@ -72,7 +72,7 @@ EmitterDef emsprk_line1
     /*LengthStart*/ 255,
     /*LengthDelta*/ 140,
     /*LifeVariance*/ 0.05f,
-    /*NumParticles*/ 30,
+    /*NumParticles*/ 15,
     /*Spin*/ 0,
     /*zSprite*/ 0,
     /*zContrail*/ 0
@@ -125,7 +125,7 @@ EmitterDef emsprk_line2
     /*LengthStart*/ 37,
     /*LengthDelta*/ 33,
     /*LifeVariance*/ 0.1f,
-    /*NumParticles*/ 10,
+    /*NumParticles*/ 5,
     /*Spin*/ 0,
     /*zSprite*/ 0,
     /*zContrail*/ 0
@@ -137,5 +137,66 @@ EffectDef fxsprk_line
 	{
 		&emsprk_line1,
 		&emsprk_line2,
+	}
+};
+
+EmitterDef trail3
+{
+	/*VolumeCenter*/
+	{
+      0.0f,
+      0.0f,
+      0.0f
+	},
+    /*VelocityDelta*/
+	{
+      0.0f,
+      0.0f,
+      0.0f
+	},
+    /*VolumeExtent*/
+	{
+      1.5f,
+      0.75f,
+      2.0f
+	},
+    /*VelocityInherit*/
+	{
+      -0.3f,
+      -0.1f,
+      -0.3f,
+	},
+    /*VelocityStart*/
+	{
+       0.0f,
+      -1.0f,
+       0.0f
+	},
+    /*Colour1*/ {
+      0.64f,
+      1.0f,
+      0.85f,
+      0.12f
+	},
+    /*emitteruv*/ NULL,
+    /*Life*/ 0.25f,
+    /*NumParticlesVariance*/ 0,
+    /*GravityStart*/ -2,
+    /*HeightStart*/ 255,
+    /*GravityDelta*/ 0,
+    /*LengthStart*/ 200,
+    /*LengthDelta*/ 50,
+    /*LifeVariance*/ 0.25f,
+    /*NumParticles*/ 15,
+    /*Spin*/ 0,
+    /*zSprite*/ 0,
+    /*zContrail*/ 1
+};
+
+EffectDef contrail
+{
+	1, // number of them
+	{
+		&trail3,
 	}
 };

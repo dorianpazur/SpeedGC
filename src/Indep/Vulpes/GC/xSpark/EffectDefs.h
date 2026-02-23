@@ -4,5 +4,6 @@
 #include "xSpark.hpp"
 
 extern EffectDef fxsprk_line;
+extern EffectDef contrail;
 
 #endif

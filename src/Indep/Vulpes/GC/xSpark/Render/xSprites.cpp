@@ -52,13 +52,10 @@ void XSpriteManager::AddSpark(NGParticle* particleList, unsigned int numParticle
 				endPos = (particle->vel * endAge) + particle->initialPos;
 				endPos.y += endAge * endAge * particle->gravity;
 
-                // fade out particles if they have bounced or are contrails
-                //if (bFadeOutParticles && (particle->flags & NGParticle::Flags::SPAWN) == 0)
-                //{
-                //    uint8_t alpha = (color & 0xFF000000) >> 24;
-                //    alpha = (uint8_t)(alpha * 1 - std::powf(particle->age / (particle->life / 8191.0f), 3.0f));
-                //    color = (color & 0x00FFFFFF) + (alpha << 24); // QOL feature
-                //}
+                // fade out particles on death
+                uint8_t alpha = (color & 0xFF);
+                alpha = (uint8_t)(alpha * (1 - std::powf(particle->age / (particle->life / 8191.0f), 3.0f)));
+                color = (color & 0xFFFFFF00) | (alpha);
 
                 spark->v[0].position = startPos;
                 spark->v[0].color = color;

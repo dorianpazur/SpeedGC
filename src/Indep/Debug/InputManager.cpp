@@ -1,6 +1,6 @@
 #include "InputManager.h"
 
-#include <vector>
+#include <EASTL/vector.h>
 #include <cstdio>
 
 #include <EABase/eabase.h>
@@ -11,7 +11,7 @@
 #endif
 
 static bool s_shouldReset = false;
-static std::vector<InputCommand, tStdAllocator<InputCommand>> s_commands;
+static eastl::vector<InputCommand, tEASTLAllocator> s_commands;
 static bool s_controllerConnected[4] = { false, false, false, false };
 
 void InputManager::Initialize()
@@ -39,7 +39,7 @@ bool InputManager::ShouldReset()
 	return s_shouldReset;
 }
 
-const std::vector<InputCommand, tStdAllocator<InputCommand>>& InputManager::GetCommands()
+const eastl::vector<InputCommand, tEASTLAllocator>& InputManager::GetCommands()
 {
 	return s_commands;
 }

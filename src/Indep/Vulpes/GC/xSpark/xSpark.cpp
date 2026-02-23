@@ -10,75 +10,6 @@ float gElapsedContrailTime = 0;
 
 unsigned int randomSeed = 0xDEADBEEF;
 
-// xenon bounce physics
-
-//void CalcCollisiontime(NGParticle* particle)
-//{
-//    UMath::Vector4 ray[2]{};
-//
-//    ray[1].x = -(particle->life * particle->vel.y + particle->initialPos.y);
-//    ray[1].y = particle->life * particle->vel.z + particle->initialPos.z + particle->life * particle->life * particle->gravity;
-//    ray[1].z = (particle->life * particle->vel.x) + particle->initialPos.x;
-//    ray[1].w = 1.0f;
-//
-//    ray[0].x = -particle->initialPos.y;
-//    ray[0].y = particle->initialPos.z;
-//    ray[0].z = particle->initialPos.x;
-//    ray[0].w = 1.0f;
-//
-//    WCollisionMgr::WorldCollisionInfo collisionInfo;
-//    WCollisionMgr collisionMgr(0, 0);
-//
-//    if (collisionMgr.CheckHitWorld(ray, &collisionInfo, 3u))
-//    {
-//        float newLife = 0.0f;
-//        float dist = ((particle->vel.z * particle->vel.z) - (((particle->initialPos.z - collisionInfo.fCollidePt.y) * particle->gravity) * 4.0f));
-//        if (dist > 0.0f)
-//        {
-//            dist = sqrt(dist);
-//            newLife = ((dist - particle->vel.z) / (particle->gravity * 2.0f));
-//            if (newLife < 0.0f)
-//                newLife = ((-particle->vel.z - dist) / (particle->gravity * 2.0f));
-//        }
-//        particle->life = (uint16_t)(newLife * 8191.0f);
-//        particle->flags |= NGParticle::Flags::SPAWN;
-//        particle->impactNormal.x = collisionInfo.fNormal.z;
-//        particle->impactNormal.y = -collisionInfo.fNormal.x;
-//        particle->impactNormal.z = collisionInfo.fNormal.y;
-//    }
-//}
-//
-//void BounceParticle(NGParticle* particle)
-//{
-//    float life;
-//    float gravity;
-//    float gravityOverTime;
-//    float velocityMagnitude;
-//    UMath::Vector3 newVelocity = particle->vel;
-//
-//    life = particle->life / 8191.0f;
-//    gravity = particle->gravity;
-//
-//    gravityOverTime = particle->gravity * life;
-//
-//    particle->initialPos += newVelocity * life;
-//    particle->initialPos.z += gravityOverTime * life;
-//
-//    newVelocity.z += gravityOverTime;
-//
-//    velocityMagnitude = UMath::Length(newVelocity);
-//
-//    newVelocity = UMath::Normalize(newVelocity);
-//    
-//    particle->life = 8191;
-//    particle->age = 0.0f;
-//    particle->flags = NGParticle::Flags::BOUNCED;
-//
-//    float bounceCos = UMath::Dot(newVelocity, particle->impactNormal);
-//
-//    particle->vel = (newVelocity - (particle->impactNormal * bounceCos * 2.0f)) * velocityMagnitude;
-//}
-
 // ParticleList
 
 void ParticleList::AgeParticles(float dt)
@@ -94,11 +25,6 @@ void ParticleList::AgeParticles(float dt)
             mParticles[aliveCount].age += dt;
             aliveCount++;
         }
-        //else if (particle.flags & NGParticle::Flags::SPAWN)
-        //{
-        //    BounceParticle(&particle);
-        //    aliveCount++;
-        //}
     }
     mNumParticles = aliveCount;
 }
@@ -148,9 +74,8 @@ void CGEmitter::SpawnParticles(float dt, float intensity, bool isContrail)
 	}
 	
 	intensity = std::fmaxf(1.0f, intensity);
-    // end next gen code
 
-    unsigned int particleColor = (a << 24) | (r << 16) | (g << 8) | b;
+    unsigned int particleColor = (r << 24) | (g << 16) | (b << 8) | a;
     float num_particles_variance = (intensity * mEmitterDef->NumParticles) * mEmitterDef->NumParticlesVariance * 100.0f;
     float num_particles = (intensity * mEmitterDef->NumParticles) - num_particles_variance;
     float particle_age_factor = dt / num_particles;
@@ -235,15 +160,6 @@ void CGEmitter::SpawnParticles(float dt, float intensity, bool isContrail)
         //particle->uv[3] = (uint8_t)(mTextureUVs->EndV * 255.0f);
 
         current_particle_age += particle_age_factor;
-
-        // begin next gen code
-        //particle->flags = (!mEmitterDef->zSprite ? NGParticle::Flags::DEBRIS : NULL);
-        //particle->spin = mEmitterDef->Spin;
-        //if ((particle->flags & NGParticle::Flags::BOUNCED) == 0 && !isContrail && bBounceParticles)
-        //{
-        //    CalcCollisiontime(particle);
-        //}
-        // end next gen code
     }
 
     randomSeed = random_seed;
@@ -261,7 +177,7 @@ NGEffect::NGEffect(XenonEffectDef* eDef, float dt) :
         if (eDef->isContrail)
         {
 			const float kMaxIntensity = 0.75f;
-			const float kMinIntensity = 0.75f;
+			const float kMinIntensity = 0.1f;
 			float vellength = std::sqrtf((eDef->vel.x * eDef->vel.x) + (eDef->vel.y * eDef->vel.y) + (eDef->vel.z * eDef->vel.z));
             float carspeed = (vellength - 44.0f) / 30.0f;
             intensity = std::lerp(kMinIntensity, kMaxIntensity, carspeed);

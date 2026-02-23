@@ -40,21 +40,10 @@ public:
 class NGParticle
 {
 public:
-
-    enum Flags
-    {
-        SPAWN = 1 << 0,
-        DEBRIS = 1 << 1,
-        BOUNCED = 1 << 2,
-    };
-
     tVector3 initialPos;
     unsigned int color;
     tVector3 vel;
     float gravity;
-    tVector3 impactNormal;
-    ALIGN(16) uint16_t flags;
-    uint16_t spin;
     uint16_t life;
     uint8_t length;
     uint8_t width;

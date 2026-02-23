@@ -2,7 +2,7 @@
 #define MISC_INPUTMANAGER_H
 
 #include <EABase/eabase.h>
-#include <vector>
+#include <EASTL/vector.h>
 #include "InputCommand.h"
 #include <tWare/Memory.h>
 
@@ -30,7 +30,7 @@ public:
 	static bool ShouldReset();
 
 	// Updated every call to Update()
-	static const std::vector<InputCommand, tStdAllocator<InputCommand>>& GetCommands();
+	static const eastl::vector<InputCommand, tEASTLAllocator>& GetCommands();
 
 	// controller connection state (GameCube only as it always true on other platforms)
 	static bool IsControllerConnected(int playerIndex);
