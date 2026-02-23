@@ -35,6 +35,7 @@ void vEffect_STANDARD::Start()
 	
 	if (texture)
 	{
+		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, -2.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_2);
 		GX_SetNumTexGens(1);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
@@ -72,6 +73,7 @@ void vEffect_FE::Start()
 	
 	if (texture)
 	{
+		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 		GX_SetNumTexGens(1);
 		
@@ -107,6 +109,8 @@ void vEffect_SKY::Start()
 	
 	if (texture)
 	{
+		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
+		
 		if (texture->nameHash == CTStringHash("SKY_BACKDROP"))
 		{
 			GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
@@ -223,6 +227,10 @@ void vEffect_PARTICLES::Start()
 	
 	if (texture)
 	{
+		((__gx_texobj*)&texture->GXTextureObj)->tex_filt = (((__gx_texobj*)&texture->GXTextureObj)->tex_filt & ~0xF) | (GX_CLAMP) | ((GX_CLAMP) << 2);
+		
+		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LINEAR, GX_LINEAR, 0, 0, 0.0f, GX_ENABLE, GX_ENABLE, GX_ANISO_1);
+		
 		GX_SetNumTexGens(1);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
@@ -240,7 +248,89 @@ void vEffect_PARTICLES::Start()
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
 	}
 	
-	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_FALSE, GX_TEVPREV); // make it 2x brighter
-	GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_FALSE, GX_TEVPREV);
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV); // make it 2x brighter
+	GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV);
 }
 
+
+class vEffect_WORLD : public vEffect
+{	
+public:
+	DEF_TWARE_NEW_OVERRIDE(vEffect_WORLD, MAIN_POOL)
+	virtual void Start();
+};
+
+void vEffect_WORLD::Start()
+{
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+	
+	GX_SetNumChans(1);
+	GX_SetNumTevStages(1);
+	
+	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
+				GX_DF_NONE, GX_AF_NONE);
+	
+	if (texture)
+	{
+		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
+		GX_SetNumTexGens(1);
+		
+		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+		
+		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	}
+	else
+	{
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+		GX_SetNumTexGens(0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+	}
+}
+
+
+class vEffect_WORLDROAD : public vEffect
+{	
+public:
+	DEF_TWARE_NEW_OVERRIDE(vEffect_WORLDROAD, MAIN_POOL)
+	virtual void Start();
+};
+
+void vEffect_WORLDROAD::Start()
+{
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+	
+	GX_SetNumChans(1);
+	GX_SetNumTevStages(1);
+	
+	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
+				GX_DF_NONE, GX_AF_NONE);
+	
+	if (texture)
+	{
+		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, -4.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_2);
+		
+		((__gx_texobj*)&texture->GXTextureObj)->tex_filt = (((__gx_texobj*)&texture->GXTextureObj)->tex_filt & ~0xF) | (GX_REPEAT) | ((GX_REPEAT) << 2);
+		
+		GX_SetNumTexGens(1);
+		
+		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+		
+		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	}
+	else
+	{
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+		GX_SetNumTexGens(0);
+		
+		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+	}
+}

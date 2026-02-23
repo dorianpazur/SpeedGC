@@ -517,7 +517,7 @@ vModel* vModel::CreateCube(vColor color)
 		mesh.mIndices[i] = kIndices[i];
 
 	mesh.mTextures.DiffuseMap = tStringHash("DefaultTexture");
-	mesh.mEffectID = VEFFECT_STANDARD;
+	mesh.mEffectID = VEFFECT_WORLD;
 
 	return model;
 }

@@ -95,12 +95,12 @@ void vDisplayFrame()
 			poly.Vertices[1].y = 0;
 			poly.Vertices[1].z = 100.0f;
 			poly.UVs[1][0] = 0.0f;
-			poly.UVs[1][1] = 1200.0f;
+			poly.UVs[1][1] = 200.0f;
 			poly.Vertices[2].x = 50.0f;
 			poly.Vertices[2].y = 0;
 			poly.Vertices[2].z = 100.0f;
 			poly.UVs[2][0] = 8.0f;
-			poly.UVs[2][1] = 1200.0f;
+			poly.UVs[2][1] = 200.0f;
 			poly.Vertices[3].x = 50.0f;
 			poly.Vertices[3].y = 0;
 			poly.Vertices[3].z = -10000.0f;
@@ -117,9 +117,9 @@ void vDisplayFrame()
 			*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 			
 			GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
-			vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_STANDARD];
+			vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
 		
-			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("DefaultTexture")));
+			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("tarmac_diffuse")));
 			vEffectStaticState::pCurrentEffect->Start();
 			vPolyRender(&poly);
 			vEffectStaticState::pCurrentEffect->End();

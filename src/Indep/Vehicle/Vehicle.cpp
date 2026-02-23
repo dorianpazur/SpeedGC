@@ -224,9 +224,11 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	{
 		tMatrix4 trailTransform;
 		
-		trailTransform[0][3] = trans.getOrigin().getX();
-		trailTransform[1][3] = trans.getOrigin().getY();
-		trailTransform[2][3] = trans.getOrigin().getZ();
+		btVector3 up = trans.getBasis().getColumn(1);
+		
+		trailTransform[0][3] = trans.getOrigin().getX() + (up.getX() * 0.5f);
+		trailTransform[1][3] = trans.getOrigin().getY() + (up.getY() * 0.5f);
+		trailTransform[2][3] = trans.getOrigin().getZ() + (up.getZ() * 0.5f);
 		
 		AddXenonEffect(true, &contrail, &trailTransform, &mVelocity); // spawn contrails
 	}
