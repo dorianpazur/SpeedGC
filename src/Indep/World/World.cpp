@@ -235,8 +235,6 @@ void World::Simulate(float timestep)
 			testTransform[1][3] = 4.0f;
 			testTransform[2][3] = -30.0f;
 			
-			AddXenonEffect(false, &fxsprk_line, &testTransform, &testVel);
-			
 			UpdateXenonEmitters(kStepTime);
 			
 			timeElapsedFix -= kStepTime;

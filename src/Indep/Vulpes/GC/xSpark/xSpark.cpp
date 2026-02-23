@@ -5,9 +5,6 @@
 XenonEffectList gNGEffectList;
 ParticleList gParticleList;
 
-uint32_t MAX_NGPARTICLES = 2048;
-uint32_t MAX_NGEMITTERS = 100;
-
 float gElapsedSparkTime = 0;
 float gElapsedContrailTime = 0;
 

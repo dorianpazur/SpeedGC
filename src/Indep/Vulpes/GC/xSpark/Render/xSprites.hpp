@@ -77,6 +77,8 @@ struct SpriteBuffer
 		
 		vEffectStaticState::pCurrentEffect->Start();
 		
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
+		
 		// have to step through index buffer manually
 		GX_Begin(GX_QUADS, GX_VTXFMT0, mNumPolys * 4);
 		
@@ -98,7 +100,7 @@ struct SpriteBuffer
         mVertexCount = 4 * spriteCount;
         mMaxSprites = spriteCount;
 		
-		mpVB = (U*)tWareMalloc(sizeof(T) * mVertexCount, "xSprites VB", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+		mpVB = (U*)tWareMalloc(sizeof(U) * (mVertexCount + 4), "xSprites VB", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 		mpIB = (uint16_t*)tWareMalloc(sizeof(uint16_t) * mVertexCount, "xSprites IB", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 		
         if (mpIB)

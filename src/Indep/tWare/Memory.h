@@ -94,6 +94,28 @@ public:
 	}
 };
 
+class tEASTLAllocator
+{
+public:
+	const char* name;
+    tEASTLAllocator(const char* pName) { name = pName; };
+
+    inline void* allocate(size_t n)
+    {
+        return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(0, 0));
+    }
+
+    inline void* allocate(size_t n, size_t alignment, size_t)
+    {
+        return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(0, alignment));
+    }
+
+    inline void deallocate(void* p, size_t n)
+    {
+        tFree(p);
+    }
+};
+
 #ifdef EA_COMPILER_MSVC
 
 extern void* operator new(size_t size, const char* debugName, uint32_t lineNum) throw(std::bad_alloc);

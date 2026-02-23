@@ -252,7 +252,7 @@ void tInitializeMemory()
 	if (!bInitializedMemory)
 	{
 		SYS_STDIO_Report(true);
-		size_t mainPoolSize = (((intptr_t)SYS_GetArenaHi() - (intptr_t)SYS_GetArenaLo()) & 0xFFF00000); // keep some memory on heap
+		size_t mainPoolSize = (((intptr_t)SYS_GetArenaHi() - (intptr_t)SYS_GetArenaLo()) & 0xFFF00000) - 0x10000; // keep some extra memory on heap
 		printf("Main pool size: 0x%08x\n", mainPoolSize);
 		tInitMemoryPool(0, malloc(mainPoolSize), mainPoolSize, "Main Pool");
 		bInitializedMemory = true;
@@ -346,4 +346,15 @@ void operator delete(void* p) _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
 #endif
 {
 	tFree(p);
+}
+
+// for EASTL
+void* operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+{
+	return tWareMalloc(size, name, line, ALLOC_PARAMS(0, 0));
+}
+
+void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+{
+	return tWareMalloc(size, name, line, ALLOC_PARAMS(0, alignment));
 }

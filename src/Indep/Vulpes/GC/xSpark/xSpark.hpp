@@ -8,25 +8,10 @@
 #pragma once
 #endif
 
-// config stuff
-//extern bool bContrails;
-//extern bool bLimitContrailRate;
-//extern bool bLimitSparkRate;
-//extern bool bNISContrails;
-//extern bool bUseCGStyle;
-//extern bool bUseD3DDeviceTexture;
-//extern bool bBounceParticles;
-////extern bool bCarbonBounceBehavior;
-//extern bool bFadeOutParticles;
-//extern bool bCGIntensityBehavior;
-//extern float ContrailTargetFPS;
-//extern float SparkTargetFPS;
-//extern float ContrailSpeed;
-//extern float ContrailMinIntensity;
-//extern float ContrailMaxIntensity;
-//extern float SparkIntensity;
-// end config stuff
+const uint32_t MAX_NGPARTICLES = 2048;
+const uint32_t MAX_NGEMITTERS = 100;
 
+#include <EASTL/vector.h>
 #include <tWare/Math.h>
 #include <tWare/Memory.h>
 #include <cmath>
@@ -42,13 +27,13 @@ struct XenonEffectDef
 	bool isContrail = false;
 };
 
-typedef std::vector<XenonEffectDef, tStdAllocator<XenonEffectDef>> XenonFXVec;
+typedef eastl::vector<XenonEffectDef, tEASTLAllocator> XenonFXVec;
 class XenonEffectList : public XenonFXVec
 {
 public:
 	XenonEffectList()
 	{
-		this->reserve(100);
+		this->reserve(MAX_NGEMITTERS);
 	}
 };
 
@@ -80,7 +65,7 @@ public:
 class ParticleList
 {
 public:
-    NGParticle mParticles[2048];
+    NGParticle mParticles[MAX_NGPARTICLES];
     unsigned int mNumParticles;
     void AgeParticles(float dt);
     void GeneratePolys();
@@ -140,13 +125,6 @@ public:
     NGEffect(XenonEffectDef* eDef, float dt);
     EffectDef* mEffectDef;
 };
-
-extern uint32_t MAX_NGPARTICLES;
-extern uint32_t MAX_NGEMITTERS;
-extern float gElapsedSparkTime;
-extern float gElapsedContrailTime;
-extern XenonEffectList gNGEffectList;
-extern ParticleList gParticleList;
 
 // external interfaces to work with the particle system
 extern void AddXenonEffect(
