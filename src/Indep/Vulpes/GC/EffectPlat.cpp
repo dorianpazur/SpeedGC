@@ -63,7 +63,7 @@ public:
 
 void vEffect_FE::Start()
 {
-	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 	
 	GX_SetNumChans(1);
 	GX_SetNumTevStages(1);
@@ -234,14 +234,13 @@ void vEffect_PARTICLES::Start()
 	}
 	else
 	{
-		GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
 		GX_SetNumTexGens(0);
 		
 		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
 	}
 	
-	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV); // make it 2x brighter
-	GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV);
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_FALSE, GX_TEVPREV); // make it 2x brighter
+	GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_FALSE, GX_TEVPREV);
 }
 
