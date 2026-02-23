@@ -70,7 +70,7 @@ struct ALIGN(32) vSolid
 	std::vector<vMesh> mMeshes;
 		
 	DEF_TWARE_NEW_OVERRIDE(vSolid, MAIN_POOL)
-	
+	vSolid() {}  //to allow creating an empty vSolid when building a cube
 	vSolid(tinygltf::Model *model, tinygltf::Node &node, const char* basePath = "")
 	{	
 		if (node.mesh >= 0)
@@ -92,10 +92,14 @@ struct ALIGN(32) vModel
 	DEF_TWARE_NEW_OVERRIDE(vModel, MAIN_POOL)
 	
 	void BuildFromGLTFModel(tinygltf::Model* model, const char* basePath = "");
+	vModel() {}
 	vModel(tinygltf::Model *model, const char* basePath = "");
 	vModel(const char *path);
 	void Render(vView* view, tMatrix4 *transform);
 	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, const char* basePath = "");
+
+	// Build a unit cube (half-extent = 1) with a flat vertex color
+	static vModel* CreateCube(vColor color);
 };
 
 #endif
