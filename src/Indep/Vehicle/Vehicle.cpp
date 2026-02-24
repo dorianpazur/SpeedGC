@@ -159,6 +159,8 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	// TODO - move this and other input logic to input manager
 	if (std::abs(steering) < 0.15f)
 		steering = 0.0f;
+
+	float rawBrake = brake;
 	
 	if (brake < 0.1f)
 		brake = 0.0f;
@@ -185,6 +187,9 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		brake = 1.0f;
 	}
 	
+	bool wantsReverse = (rawBrake > 0.1f) && (throttle == 0.0f) && (speed < 1.0f || mIsReversing);
+	mIsReversing = wantsReverse;
+
 	mBrakeInput = std::lerp(mBrakeInput, brake, 60.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, throttle, 30.0f * timestep);
 	float steeringTarget = -steering / (1.0 + std::min(3.0f, speed * 0.007f * mThrottleInput));
@@ -201,6 +206,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	ScreenShadowPrintf(70, 165, "mBrakeInput: %.2f", mBrakeInput);
 	ScreenShadowPrintf(70, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
 	ScreenShadowPrintf(70, 135, "speedFrictionScale: %.2f", speedFrictionScale);
+	ScreenShadowPrintf(70, 120, "reverse: %s", mIsReversing ? "ON" : "off");
 	ScreenShadowPrintf(-300, 220, "Vehicle pos: (%.2f, %.2f, %.2f)",
 				trans.getOrigin().getX(),
 				trans.getOrigin().getY(),
@@ -217,8 +223,17 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		btWheelInfo& wheel = mRaycastVehicle->getWheelInfo(i);
 		wheel.m_frictionSlip = (wheelFriction * speedFrictionScale) / (1.0f + angVelFrictionLoss);
 		
-		mRaycastVehicle->applyEngineForce(mThrottleInput * enginePower * powerMod, i);
-		mRaycastVehicle->setBrake(mBrakeInput * brakePower * std::lerp(1.0f, powerMod, 0.025f), i);
+		if (mIsReversing)
+		{
+			const float kReversePowerScale = 0.012f;
+			mRaycastVehicle->applyEngineForce(-mBrakeInput * enginePower * kReversePowerScale, i);
+			mRaycastVehicle->setBrake(0.0f, i);
+		}
+		else
+		{
+			mRaycastVehicle->applyEngineForce(mThrottleInput * enginePower * powerMod, i);
+			mRaycastVehicle->setBrake(mBrakeInput * brakePower * std::lerp(1.0f, powerMod, 0.025f), i);
+		}
 		if (wheel.m_bIsFrontWheel)
 		{
 			mRaycastVehicle->setSteeringValue(mSteeringInput, i);

@@ -31,6 +31,7 @@ private:
 	float mBrakeInput = 0.0f;
 	
 	bool mCollidedThisFrame = false;
+	bool mIsReversing = false;
 };
 
 #endif
