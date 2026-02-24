@@ -96,7 +96,7 @@ EmitterDef emsprk_line1
     /*LengthStart*/ 255,
     /*LengthDelta*/ 140,
     /*LifeVariance*/ 0.05f,
-    /*NumParticles*/ 15,
+    /*NumParticles*/ 5,
     /*Spin*/ 0,
     /*zSprite*/ 0,
     /*zContrail*/ 0
@@ -149,7 +149,7 @@ EmitterDef emsprk_line2
     /*LengthStart*/ 37,
     /*LengthDelta*/ 33,
     /*LifeVariance*/ 0.1f,
-    /*NumParticles*/ 5,
+    /*NumParticles*/ 3,
     /*Spin*/ 0,
     /*zSprite*/ 0,
     /*zContrail*/ 0

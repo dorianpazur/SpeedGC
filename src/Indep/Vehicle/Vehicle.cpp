@@ -6,8 +6,8 @@
 // car model used for rendering all vehicles
 extern vModel* gCarModel;
 
-const float speedPowerDecline = 0.065f;
-const float enginePower = 14000.0f;
+const float speedPowerDecline = 0.085f;
+const float enginePower = 24000.0f;
 const float brakePower = 50.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.15f;
@@ -38,7 +38,7 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 	
     transform.setIdentity();
 	transform.setOrigin(btVector3(0, 0, 0));
-	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(kWidth / 2, kHeight / 4, kLength / 2))); // car-sized cube
+	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(kWidth / 2, kHeight / 4.5f, kLength / 2))); // car-sized cube
 	
 	// front
 	//transform.setIdentity();
@@ -50,8 +50,8 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 	
 	// roof
 	transform.setIdentity();
-    transform.setOrigin(btVector3(0, kHeight / 2, 0.25));
-	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(kWidth / 2, kHeight / 4, kLength / 3))); // car-sized cube
+    transform.setOrigin(btVector3(0, kHeight / 2.5f, 0.25));
+	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(kWidth / 2.25f, kHeight / 4, kLength / 3))); // car-sized cube
 	
     transform.setIdentity();
     transform.setOrigin(startPos);
@@ -195,16 +195,16 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	mThrottleInput /= 1.0f + (mBrakeInput * 2.0f);
 	float speedFrictionScale = std::min(1.0f, 0.002f + (speed * 0.045f));
 	
-	//ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
-	//ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
-	//ScreenShadowPrintf(70, 180, "mThrottleInput: %.2f", mThrottleInput);
-	//ScreenShadowPrintf(70, 165, "mBrakeInput: %.2f", mBrakeInput);
-	//ScreenShadowPrintf(70, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
-	//ScreenShadowPrintf(70, 135, "speedFrictionScale: %.2f", speedFrictionScale);
-	//ScreenShadowPrintf(-300, 220, "Vehicle pos: (%.2f, %.2f, %.2f)",
-	//			trans.getOrigin().getX(),
-	//			trans.getOrigin().getY(),
-	//			trans.getOrigin().getZ());
+	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
+	ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
+	ScreenShadowPrintf(70, 180, "mThrottleInput: %.2f", mThrottleInput);
+	ScreenShadowPrintf(70, 165, "mBrakeInput: %.2f", mBrakeInput);
+	ScreenShadowPrintf(70, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
+	ScreenShadowPrintf(70, 135, "speedFrictionScale: %.2f", speedFrictionScale);
+	ScreenShadowPrintf(-300, 220, "Vehicle pos: (%.2f, %.2f, %.2f)",
+				trans.getOrigin().getX(),
+				trans.getOrigin().getY(),
+				trans.getOrigin().getZ());
 	
 	btVector3 downforce = btVector3(0, -5000.0f * std::min(50.0f, speed) * timestep, 0);
 	mBody->applyCentralForce(mBody->getWorldTransform().getBasis() * downforce);
@@ -254,16 +254,13 @@ void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
 	
 	if (speed > 2.0f)
 	{
-		if (mOtherFrame)
-		{
-			tMatrix4 sparkTransform;
-			
-			sparkTransform[0][3] = contactPoint.x;
-			sparkTransform[1][3] = contactPoint.y;
-			sparkTransform[2][3] = contactPoint.z;
-			
-			AddXenonEffect(false, &fxsprk_line, &sparkTransform, &mVelocity);
-		}
+		tMatrix4 sparkTransform;
+		
+		sparkTransform[0][3] = contactPoint.x;
+		sparkTransform[1][3] = contactPoint.y;
+		sparkTransform[2][3] = contactPoint.z;
+		
+		AddXenonEffect(false, &fxsprk_line, &sparkTransform, &mVelocity);
 	}
 }
 
