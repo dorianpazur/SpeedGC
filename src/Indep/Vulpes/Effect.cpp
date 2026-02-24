@@ -59,6 +59,9 @@ void vEffectInit()
 		case VEFFECT_WORLDROAD:
 			vEffects[i] = new vEffect_WORLDROAD();
 			break;
+		case VEFFECT_MOTIONBLUR:
+			vEffects[i] = new vEffect_MOTIONBLUR();
+			break;
 		}
 	}
 }

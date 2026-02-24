@@ -84,7 +84,6 @@ void vDisplayFrame()
 		
 		// render test ground - TODO: replace this with actual track
 		
-		
 		GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
 		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
 		
@@ -94,22 +93,22 @@ void vDisplayFrame()
 		{
 			vPoly poly;
 		
-			poly.Vertices[0].x = -50.0f;
+			poly.Vertices[0].x = -25.0f;
 			poly.Vertices[0].y = 0;
 			poly.Vertices[0].z = -(slice * 100.0f) - 100.0f;
 			poly.UVs[0][0] = 0.0f;
 			poly.UVs[0][1] = 0.0f;
-			poly.Vertices[1].x = -50.0f;
+			poly.Vertices[1].x = -25.0f;
 			poly.Vertices[1].y = 0;
 			poly.Vertices[1].z = -(slice * 100.0f) + 100.0f;
 			poly.UVs[1][0] = 0.0f;
-			poly.UVs[1][1] = 4.0f;
-			poly.Vertices[2].x = 50.0f;
+			poly.UVs[1][1] = 8.0f;
+			poly.Vertices[2].x = 25.0f;
 			poly.Vertices[2].y = 0;
 			poly.Vertices[2].z = -(slice * 100.0f) + 100.0f;
 			poly.UVs[2][0] = 8.0f;
-			poly.UVs[2][1] = 4.0f;
-			poly.Vertices[3].x = 50.0f;
+			poly.UVs[2][1] = 8.0f;
+			poly.Vertices[3].x = 25.0f;
 			poly.Vertices[3].y = 0;
 			poly.Vertices[3].z = -(slice * 100.0f) - 100.0f;
 			poly.UVs[3][0] = 8.0f;
@@ -134,11 +133,14 @@ void vDisplayFrame()
 		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
 		
 		// motion blur
-		GX_SetTexCopySrc(	vViews[viewNum].RenderTarget->Left,
-							vViews[viewNum].RenderTarget->Top,
-							vViews[viewNum].RenderTarget->Width,
-							vViews[viewNum].RenderTarget->Height);	//This sets the location on the efb you want to copy from
-		GX_SetTexCopyDst(vViews[viewNum].RenderTarget->Width, vViews[viewNum].RenderTarget->Height, GX_TF_RGBA8, 0);	//This is what kind of texture you want to copy from 
+		GX_SetTexCopySrc(
+						vViews[viewNum].RenderTarget->Left,
+						vViews[viewNum].RenderTarget->Top,
+						vViews[viewNum].RenderTarget->Width,
+						vViews[viewNum].RenderTarget->Height
+						);	// This sets the location on the efb you want to copy from
+		
+		GX_SetTexCopyDst(vViews[viewNum].RenderTarget->Width, vViews[viewNum].RenderTarget->Height, GX_TF_RGBA8, 0);	// This is what kind of texture you want to copy to 
 		
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);	
@@ -146,7 +148,7 @@ void vDisplayFrame()
 		// was double passed, got effectively 16 blur samples out of just 8, but that was too performance heavy
 		for (int pass = 0; pass < 1; pass++)
 		{
-			const int kBlurSamples = 6;
+			const int kBlurSamples = 4;
 			float bluroffsets[4];
 			
 			tVector3 velocityVector = vViews[viewNum].Velocity;
@@ -158,7 +160,7 @@ void vDisplayFrame()
 			velocityVector *= 1.0f / velocityLength;
 			
 			velocityLength -= 10.0f;
-			velocityLength = std::fmin(1.0f, velocityLength * 0.003f) / (kBlurSamples * 10.0f);
+			velocityLength = std::fmin(1.0f, velocityLength * 0.003f) / (kBlurSamples * 20.0f);
 			
 			velocityVector *= velocityLength;
 			velocityVector.x *= 0.65f;
@@ -191,32 +193,73 @@ void vDisplayFrame()
 			poly.Colours[0][0] = 0xFF;
 			poly.Colours[0][1] = 0xFF;
 			poly.Colours[0][2] = 0xFF;
-			poly.Colours[0][3] = 0xFF / 3;
+			poly.Colours[0][3] = 0xFF / 2;
 			
 			*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
 			*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
 			*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 			
-			vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+			vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_MOTIONBLUR];
 			
 			vEffectStaticState::pCurrentEffect->SetTexture(gMotionBlurTexture);
 			vEffectStaticState::pCurrentEffect->Start();
 			
-			for (int i = kBlurSamples; i > 0; i--)
+			for (int i = kBlurSamples / 2; i > 0; i--)
 			{
-				poly.UVs[0][0] = -(i * bluroffsets[0]);
-				poly.UVs[0][1] = -(i * bluroffsets[1]);
+				int sample = i * 2;
+				poly.UVs[0][0] = -(sample * bluroffsets[0]);
+				poly.UVs[0][1] = -(sample * bluroffsets[1]);
 				
-				poly.UVs[1][0] = -(i * bluroffsets[0]);
-				poly.UVs[1][1] = -(i * bluroffsets[3]) + height;
+				poly.UVs[1][0] = -(sample * bluroffsets[0]);
+				poly.UVs[1][1] = -(sample * bluroffsets[3]) + height;
 				
-				poly.UVs[2][0] = -(i * bluroffsets[2]) + width;
-				poly.UVs[2][1] = -(i * bluroffsets[3]) + height;
+				poly.UVs[2][0] = -(sample * bluroffsets[2]) + width;
+				poly.UVs[2][1] = -(sample * bluroffsets[3]) + height;
 				
-				poly.UVs[3][0] = -(i * bluroffsets[2]) + width;
-				poly.UVs[3][1] = -(i * bluroffsets[1]);
+				poly.UVs[3][0] = -(sample * bluroffsets[2]) + width;
+				poly.UVs[3][1] = -(sample * bluroffsets[1]);
 				
-				vPolyRender(&poly);
+				poly.UVsMask[0][0] = -((sample + 1) * bluroffsets[0]);
+				poly.UVsMask[0][1] = -((sample + 1) * bluroffsets[1]);
+				
+				poly.UVsMask[1][0] = -((sample + 1) * bluroffsets[0]);
+				poly.UVsMask[1][1] = -((sample + 1) * bluroffsets[3]) + height;
+				
+				poly.UVsMask[2][0] = -((sample + 1) * bluroffsets[2]) + width;
+				poly.UVsMask[2][1] = -((sample + 1) * bluroffsets[3]) + height;
+				
+				poly.UVsMask[3][0] = -((sample + 1) * bluroffsets[2]) + width;
+				poly.UVsMask[3][1] = -((sample + 1) * bluroffsets[1]);
+				
+				GX_SetCullMode(GX_CULL_NONE);
+	
+				GX_ClearVtxDesc();
+				GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+				GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+				GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+				GX_SetVtxDesc(GX_VA_TEX1, GX_DIRECT);
+				
+				GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+				GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+				GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+				GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
+				
+				GX_SetNumChans(1);
+				
+				GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
+							GX_DF_NONE, GX_AF_NONE);
+				
+				GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+				
+				for (int i = 0; i < 4; i++)
+				{
+					GX_Position3f32(poly.Vertices[i].x, poly.Vertices[i].y, poly.Vertices[i].z);
+					GX_Color4u8(poly.Colours[i][0], poly.Colours[i][1], poly.Colours[i][2], poly.Colours[i][3]);
+					GX_TexCoord2f32(poly.UVs[i][0], poly.UVs[i][1]);
+					GX_TexCoord2f32(poly.UVsMask[i][0], poly.UVsMask[i][1]);
+				}
+				
+				GX_End();
 			}
 			
 			vEffectStaticState::pCurrentEffect->End();

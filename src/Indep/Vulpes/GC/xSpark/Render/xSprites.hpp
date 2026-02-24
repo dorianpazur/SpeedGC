@@ -105,14 +105,11 @@ struct SpriteBuffer
 		
         if (mpIB)
         {
-			printf("SpriteBuffer Init!\n");
             for (uint32_t i = 0; i < mVertexCount; i++) // vertices will be in the correct order, will be drawing quads
 			{
 				mpIB[i] = i;
 			}
         }
-		else
-			printf("SpriteBuffer Init failed!\n");
     }
 
     void Reset()

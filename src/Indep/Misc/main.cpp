@@ -202,9 +202,9 @@ void InitializeEverything(int argc, char** argv)
 	printf("Free arena memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
 	#endif
 	
-	tMemoryPrintAllocationsByAddress(MAIN_POOL);
-	tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
-	tMemoryPrintAllocationsByAddress(TINYGLTF_POOL);
+	//tMemoryPrintAllocationsByAddress(MAIN_POOL);
+	//tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
+	//tMemoryPrintAllocationsByAddress(TINYGLTF_POOL);
 }
 
 //---------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ void InitializeMemory()
 		btAlignedAllocSetCustom(btAllocOverride, tFree);
 		btAlignedAllocSetCustomAligned(btAlignedAllocOverride, tFree);
 		
-		const size_t kTinyGLTFMemoryPoolSize = 0x20000; // 128k, increase this if memory runs out in the pool when loading a model
+		const size_t kTinyGLTFMemoryPoolSize = 0x100000; // increase this if memory runs out in the pool when loading a model
 		tInitMemoryPool(TINYGLTF_POOL, tWareMalloc(kTinyGLTFMemoryPoolSize, "TinyGLTF Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kTinyGLTFMemoryPoolSize, "TinyGLTF Pool");
 		
 		initializedMemory = true;
@@ -241,9 +241,12 @@ void LoadAssets()
 	vTextureCache::LoadTextureFromPath("World/tarmac_diffuse.tpl");
 	vTextureCache::LoadTextureFromPath("World/tarmac_spec.tpl");
 	
-	//gTestModel = new vModel("sonic/sonic.glb");
+	gCarModel = new vModel("Vehicles/126p/126p.glb");
 	
-	gCarModel = new vModel("Vehicles/Test/test_ship.glb");
-	gSkydomeModel = new vModel("Global/skydome.glb");
+	tMemoryPrintAllocationsByAddress(TINYGLTF_POOL);
+	tMemoryPrintAllocationsByAddress(MAIN_POOL);
+	
 	gCubeModel = vModel::CreateCube({ 0x30, 0x30, 0x38, 0xFF }); // dark grey-blue cube
+	
+	gSkydomeModel = new vModel("Global/skydome.glb");
 }

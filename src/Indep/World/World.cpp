@@ -87,8 +87,8 @@ World::World()
 		const float kCubeY = kHalf + 0.2f;
 		const float kSpacing = 100.0f; // one row every 100 units // 100 rows = 10,000
 		const float kStartZ = -100.0f;
-		const float kLaneMin = -30.0f; //left edge
-		const float kLaneMax = 30.0f; //right edge
+		const float kLaneMin = -15.0f; //left edge
+		const float kLaneMax = 15.0f; //right edge
 		const float kGapHalf = 8.0f;  // half-width of each gap
 
 		const int kNumRows = kMaxPropCubes / 3; // 100 rows ,,  3 cubes per row = 300
@@ -129,7 +129,7 @@ World::World()
 	for (int i = 0; i < 100; i++)
 	{
 		{
-			btCollisionShape* groundShape = new btBoxShape(btVector3(50, 1, 50)); //the ground
+			btCollisionShape* groundShape = new btBoxShape(btVector3(25, 1, 50)); //the ground
 			
 			collisionShapes.push_back(groundShape);
 			
@@ -155,7 +155,7 @@ World::World()
 		
 			btTransform groundTransform;
 			groundTransform.setIdentity();
-			groundTransform.setOrigin(btVector3(51, -6, -100 * i));
+			groundTransform.setOrigin(btVector3(26, -6, -100 * i));
 		
 			btScalar mass(0.);
 		
@@ -182,7 +182,7 @@ World::World()
 		
 			btTransform groundTransform;
 			groundTransform.setIdentity();
-			groundTransform.setOrigin(btVector3(-51, -6, -100 * i));
+			groundTransform.setOrigin(btVector3(-26, -6, -100 * i));
 		
 			btScalar mass(0.);
 		
@@ -274,7 +274,7 @@ void World::Simulate(float timestep)
 				mVehicles[i]->Update(engineForce[idx], brakeForce[idx], steering[idx], kStepTime); 
 			}
 			
-			dynamicsWorld->stepSimulation(kStepTime, 2);
+			dynamicsWorld->stepSimulation(kStepTime, 8);
 	
 			tVector3 testVel{-7.0f, 0, -7.0f};
 			tMatrix4 testTransform;
@@ -342,26 +342,28 @@ void World::Simulate(float timestep)
 			tVector3 globalVehPos;
 			tMulVector(&globalVehPos, &transform, &localVehPos);
 			
-			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY(), gFrameTime * 0.004f);
+			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY() / 2.0f, gFrameTime * 0.006f);
 			
 			float speed = std::fmax(0.0f, body->getLinearVelocity().length() - 0.01f);
 			
-			const float kBaseDistance = gCurViewMode == VIEW_MODE_ONE ? 7.0f : 9.0f;
+			const float kBaseDistance = gCurViewMode == VIEW_MODE_ONE ? 4.0f : 4.5f;
+			const float kBaseHeight = 1.15f;
+			
 			float targetDistance = kBaseDistance;
-			float speedFOVThing = std::min(1.0f, std::powf(speed * 0.015f, 0.95f) * 0.65f);
+			float speedFOVThing = std::min(1.0f, std::powf(speed * 0.015f, 0.95f) * 0.35f);
 			vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees = 60.0f * (1 + speedFOVThing * 0.45f); 
 			
 			if (gCurViewMode != VIEW_MODE_ONE)
 				vViews[VVIEW_FIRST_PLAYER + veh].FovDegrees *= 0.75f;
 			
-			targetDistance -= (speedFOVThing * 3.0f); // bring in closer when getting faster
-			targetDistance += std::min(3.0f, std::powf(speed * 0.04f, 2.0f) * 1.5f); // move it away when initially gaining speed
+			targetDistance -= (speedFOVThing * 2.0f); // bring in closer when getting faster
+			targetDistance += std::min(3.0f, std::powf(speed * 0.04f, 2.0f) * 0.35f); // move it away when initially gaining speed
 			
 			distance[veh] = std::lerp(distance[veh], targetDistance, gFrameTime * 0.002f);
 			
-			tVector3 camPosLocal = tVector3(tilt[veh], 3.0f, -distance[veh]);
-			tVector3 camTargetLocal = tVector3(0.0f, 2.0f, 15.0f + (kBaseDistance - distance[veh]));
-			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.05f, 0.0f, 0.0f);
+			tVector3 camPosLocal = tVector3(tilt[veh], kBaseHeight, -distance[veh]);
+			tVector3 camTargetLocal = tVector3(0.0f, 1.0f, 2.0f + (kBaseDistance - distance[veh]));
+			tVector3 camUpOffset = tVector3(-tilt[veh] * 0.07f, 0.0f, 0.0f);
 			
 			if (ticked)
 				prevCamPos[veh] = vViews[VVIEW_FIRST_PLAYER + veh].Position; // store previous pos
@@ -371,8 +373,8 @@ void World::Simulate(float timestep)
 			tMulVector(&camUp[veh], &transform, &camUpOffset);
 			
 			// fix them up
-			camTarget[veh].y = transformFlt[13] + 2.0f;
-			vViews[VVIEW_FIRST_PLAYER + veh].Position.y = transformFlt[13] + 3.0f;
+			camTarget[veh].y = transformFlt[13] + 1.0f;
+			vViews[VVIEW_FIRST_PLAYER + veh].Position.y = transformFlt[13] + kBaseHeight;
 			camUp[veh] -= globalVehPos; // make it still local to the vehicle but rotated
 			camUp[veh].y = 1.0f;
 			

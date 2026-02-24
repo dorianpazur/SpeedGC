@@ -6,18 +6,18 @@
 // car model used for rendering all vehicles
 extern vModel* gCarModel;
 
-const float speedPowerDecline = 0.035f;
-const float enginePower = 17000.0f;
+const float speedPowerDecline = 0.065f;
+const float enginePower = 14000.0f;
 const float brakePower = 50.0f;
 const float steeringClamp = 0.3f;
-const float wheelRadius = 0.5f;
-const float wheelWidth = 0.4f;
+const float wheelRadius = 0.15f;
+const float wheelWidth = 0.125f;
 const float wheelFriction = 16.0f;  //BT_LARGE_FLOAT;
 const float suspensionStiffness = 30.0f;
 const float suspensionDamping = 5.3f;
 const float suspensionCompression = 11.4f;
 const float rollInfluence = 0.03f;
-const btScalar suspensionRestLength(1.1f);
+const btScalar suspensionRestLength(0.5f);
 
 const btVector3 wheelDirectionCS0(0, -1, 0);
 const btVector3 wheelAxleCS(-1, 0, 0);
@@ -31,22 +31,27 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
     btTransform transform;
 	
 	// main body
+	
+	float kWidth = 1.35f;
+	float kLength = 3.4f;
+	float kHeight = 1.12f;
+	
     transform.setIdentity();
-	transform.setOrigin(btVector3(0, 0, -0.5f));
-	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(1.5f, 0.5f, 1.5f))); // car-sized cube
+	transform.setOrigin(btVector3(0, 0, 0));
+	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(kWidth / 2, kHeight / 4, kLength / 2))); // car-sized cube
 	
 	// front
-	transform.setIdentity();
-    transform.setOrigin(btVector3(0.25, 0, 3.0f));
-	((btCompoundShape*)shape)->addChildShape(transform, new btSphereShape(0.5f));
-	transform.setIdentity();
-    transform.setOrigin(btVector3(-0.25, 0, 3.0f));
-	((btCompoundShape*)shape)->addChildShape(transform, new btSphereShape(0.5f));
+	//transform.setIdentity();
+    //transform.setOrigin(btVector3(0.0875, 0.2f, 0.5f));
+	//((btCompoundShape*)shape)->addChildShape(transform, new btSphereShape(0.0875f));
+	//transform.setIdentity();
+    //transform.setOrigin(btVector3(-0.0875, 0.2f, 0.5f));
+	//((btCompoundShape*)shape)->addChildShape(transform, new btSphereShape(0.0875f));
 	
 	// roof
 	transform.setIdentity();
-    transform.setOrigin(btVector3(0, 0.25, 0));
-	((btCompoundShape*)shape)->addChildShape(transform, new btSphereShape(0.75f));
+    transform.setOrigin(btVector3(0, kHeight / 2, 0.25));
+	((btCompoundShape*)shape)->addChildShape(transform, new btBoxShape(btVector3(kWidth / 2, kHeight / 4, kLength / 3))); // car-sized cube
 	
     transform.setIdentity();
     transform.setOrigin(startPos);
@@ -83,23 +88,25 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 
 	mWorld->addVehicle(mRaycastVehicle);
 
-	float connectionHeight = 0.5f;
+	float connectionHeight = -0.23f;
 
 	bool isFrontWheel = true;
 
 	//choose coordinate system
 	mRaycastVehicle->setCoordinateSystem(0, 1, 2);
 
-	btVector3 connectionPointCS0(1.5 - (0.3 * wheelWidth), connectionHeight, 2 * 1.0 - wheelRadius);
-
+	btVector3 connectionPointCS0((kWidth / 2), connectionHeight, (kLength / 2) * 1.0 - wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
-	connectionPointCS0 = btVector3(-1.5 + (0.3 * wheelWidth), connectionHeight, 2 * 1.0 - wheelRadius);
-
+	
+	connectionPointCS0 = btVector3(-(kWidth / 2), connectionHeight, (kLength / 2) * 1.0 - wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
-	connectionPointCS0 = btVector3(-1.5 + (0.3 * wheelWidth), connectionHeight, -2 * 1.0 + wheelRadius);
+	
 	isFrontWheel = false;
+	
+	connectionPointCS0 = btVector3(-(kWidth / 2), connectionHeight, -(kLength / 2) * 1.0 + wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
-	connectionPointCS0 = btVector3(1.5 - (0.3 * wheelWidth), connectionHeight, -2 * 1.0 + wheelRadius);
+	
+	connectionPointCS0 = btVector3((kWidth / 2), connectionHeight, -(kLength / 2) * 1.0 + wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
 
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
@@ -199,7 +206,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	//			trans.getOrigin().getY(),
 	//			trans.getOrigin().getZ());
 	
-	btVector3 downforce = btVector3(0, -10000.0f * std::min(50.0f, speed) * timestep, 0);
+	btVector3 downforce = btVector3(0, -5000.0f * std::min(50.0f, speed) * timestep, 0);
 	mBody->applyCentralForce(mBody->getWorldTransform().getBasis() * downforce);
 	
 	float powerMod = 1.0f / (1.0f + ((speed * speedPowerDecline) * (speed * speedPowerDecline) * (speed * speedPowerDecline)));
@@ -226,9 +233,9 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		
 		btVector3 up = trans.getBasis().getColumn(1);
 		
-		trailTransform[0][3] = trans.getOrigin().getX() + (up.getX() * 0.5f);
-		trailTransform[1][3] = trans.getOrigin().getY() + (up.getY() * 0.5f);
-		trailTransform[2][3] = trans.getOrigin().getZ() + (up.getZ() * 0.5f);
+		trailTransform[0][3] = trans.getOrigin().getX() + (up.getX() * 0.15f);
+		trailTransform[1][3] = trans.getOrigin().getY() + (up.getY() * 0.15f);
+		trailTransform[2][3] = trans.getOrigin().getZ() + (up.getZ() * 0.15f);
 		
 		AddXenonEffect(true, &contrail, &trailTransform, &mVelocity); // spawn contrails
 	}
@@ -245,7 +252,7 @@ void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
 	
 	float speed = sqrtf((mVelocity.x * mVelocity.x) + (mVelocity.y * mVelocity.y) + (mVelocity.z * mVelocity.z));
 	
-	if (speed > 5.0f)
+	if (speed > 2.0f)
 	{
 		if (mOtherFrame)
 		{
