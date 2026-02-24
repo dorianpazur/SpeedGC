@@ -73,7 +73,7 @@ void vDisplayFrame()
 		// enable fog for world
 		GX_SetFog(GX_FOG_EXP2,
 			0.0f,
-			3000.0f,
+			1500.0f,
 			vViews[viewNum].NearZ,
 			vViews[viewNum].FarZ,
 		{0x9C, 0xBA, 0xDC} );

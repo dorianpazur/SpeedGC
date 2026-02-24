@@ -217,6 +217,7 @@ public:
 
 void vEffect_PARTICLES::Start()
 {
+	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE); // disable zwrite
 	
 	GX_SetNumChans(1);

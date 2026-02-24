@@ -77,8 +77,6 @@ struct SpriteBuffer
 		
 		vEffectStaticState::pCurrentEffect->Start();
 		
-		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
-		
 		// have to step through index buffer manually
 		GX_Begin(GX_QUADS, GX_VTXFMT0, mNumPolys * 4);
 		

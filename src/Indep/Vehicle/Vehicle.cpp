@@ -6,13 +6,13 @@
 // car model used for rendering all vehicles
 extern vModel* gCarModel;
 
-const float speedPowerDecline = 0.085f;
+const float speedPowerDecline = 0.05f;
 const float enginePower = 24000.0f;
 const float brakePower = 50.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.15f;
 const float wheelWidth = 0.125f;
-const float wheelFriction = 16.0f;  //BT_LARGE_FLOAT;
+const float wheelFriction = 10.0f;  //BT_LARGE_FLOAT;
 const float suspensionStiffness = 30.0f;
 const float suspensionDamping = 5.3f;
 const float suspensionCompression = 11.4f;
@@ -185,7 +185,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		brake = 1.0f;
 	}
 	
-	mBrakeInput = std::lerp(mBrakeInput, brake, 30.0f * timestep);
+	mBrakeInput = std::lerp(mBrakeInput, brake, 60.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, throttle, 30.0f * timestep);
 	float steeringTarget = -steering / (1.0 + std::min(3.0f, speed * 0.007f * mThrottleInput));
 	mSteeringInput = std::lerp(mSteeringInput, steeringTarget, (((std::abs(mSteeringInput) - std::abs(steeringTarget)) > 0.0f) ? 4.0f : 0.75f) * timestep);
@@ -209,7 +209,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	btVector3 downforce = btVector3(0, -5000.0f * std::min(50.0f, speed) * timestep, 0);
 	mBody->applyCentralForce(mBody->getWorldTransform().getBasis() * downforce);
 	
-	float powerMod = 1.0f / (1.0f + ((speed * speedPowerDecline) * (speed * speedPowerDecline) * (speed * speedPowerDecline)));
+	float powerMod = 1.0f / (1.0f + ((speed * speedPowerDecline) * (speed * speedPowerDecline) * (speed * speedPowerDecline) * (speed * speedPowerDecline)));
 	powerMod *= std::min(1.0f, 0.05f + (speed * 0.012f));
 	// TODO: modulate parameters based on speed and such
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
@@ -218,7 +218,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		wheel.m_frictionSlip = (wheelFriction * speedFrictionScale) / (1.0f + angVelFrictionLoss);
 		
 		mRaycastVehicle->applyEngineForce(mThrottleInput * enginePower * powerMod, i);
-		mRaycastVehicle->setBrake(mBrakeInput * brakePower * std::lerp(1.0f, powerMod, 0.1f), i);
+		mRaycastVehicle->setBrake(mBrakeInput * brakePower * std::lerp(1.0f, powerMod, 0.025f), i);
 		if (wheel.m_bIsFrontWheel)
 		{
 			mRaycastVehicle->setSteeringValue(mSteeringInput, i);
@@ -240,7 +240,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		AddXenonEffect(true, &contrail, &trailTransform, &mVelocity); // spawn contrails
 	}
 	
-	mOtherFrame = !mOtherFrame;
+	mCollidedThisFrame = false;
 }
 
 void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
@@ -252,7 +252,7 @@ void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
 	
 	float speed = sqrtf((mVelocity.x * mVelocity.x) + (mVelocity.y * mVelocity.y) + (mVelocity.z * mVelocity.z));
 	
-	if (speed > 2.0f)
+	if (speed > 2.0f && !mCollidedThisFrame)
 	{
 		tMatrix4 sparkTransform;
 		
@@ -262,6 +262,8 @@ void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
 		
 		AddXenonEffect(false, &fxsprk_line, &sparkTransform, &mVelocity);
 	}
+	
+	mCollidedThisFrame = true; // signal that we already collided with something this frame for optimization
 }
 
 void Vehicle::Render(vView* view)

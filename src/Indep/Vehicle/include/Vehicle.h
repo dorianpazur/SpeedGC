@@ -30,7 +30,7 @@ private:
 	float mSteeringInput = 0.0f;
 	float mBrakeInput = 0.0f;
 	
-	bool mOtherFrame = false;
+	bool mCollidedThisFrame = false;
 };
 
 #endif
