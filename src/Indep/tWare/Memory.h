@@ -29,6 +29,7 @@ extern void tInitializeMemory();
 extern void tInitMemoryPool(int poolNum, void* memory, size_t memorySize, const char* debugName);
 extern int tCountFreeMemory(int poolNum);
 extern void tMemoryPrintAllocationsByAddress(int poolNum);
+extern void tMemoryPrintAllocations();
 
 struct tMemoryPool : tTNode<tMemoryPool>
 {

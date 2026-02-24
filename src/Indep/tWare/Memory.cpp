@@ -308,6 +308,14 @@ void tMemoryPrintAllocationsByAddress(int poolNum)
 	tGetMemoryPool(poolNum)->PrintAllocationsByAddress();
 }
 
+void tMemoryPrintAllocations()
+{
+	for (int i = 0; i < TMEMORY_POOL_COUNT; i++)
+	{
+		tMemoryPrintAllocationsByAddress(i);
+	}
+}
+
 #ifdef EA_COMPILER_MSVC
 void* operator new(size_t size) throw(std::bad_alloc)
 #else
