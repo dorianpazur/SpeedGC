@@ -88,7 +88,6 @@ int main(int argc, char **argv)
 		{
 			puts("Resetting...");
 			tMemoryPrintAllocationsByAddress(MAIN_POOL);
-			tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
 		}
 		bWantsReset = false;
 		#ifdef EA_PLATFORM_GAMECUBE
@@ -102,10 +101,6 @@ int main(int argc, char **argv)
 			MainLoop();
 		}
 		
-		printf("Memory at exit:");
-		tMemoryPrintAllocationsByAddress(MAIN_POOL);
-		tMemoryPrintAllocationsByAddress(PHYSICS_POOL);
-		
 		if (gTestModel)
 		{
 			delete gTestModel;
@@ -117,6 +112,12 @@ int main(int argc, char **argv)
 			delete gCarModel;
 			gCarModel = NULL;
 		}
+		
+		if (gCubeModel)
+		{
+			delete gSkydomeModel;
+			gSkydomeModel = NULL;
+		}
 	
 		if (gCubeModel)
 		{
@@ -127,6 +128,9 @@ int main(int argc, char **argv)
 		World::Uninit();
 		NGSpriteManager.Reset();
 		vTextureCache::Uninit();
+		
+		printf("Memory at exit:");
+		tMemoryPrintAllocationsByAddress(MAIN_POOL);
 		
 	} while (bWantsReset);
 	
@@ -243,7 +247,6 @@ void LoadAssets()
 	
 	gCarModel = new vModel("Vehicles/126p/126p.glb");
 	
-	tMemoryPrintAllocationsByAddress(TINYGLTF_POOL);
 	tMemoryPrintAllocationsByAddress(MAIN_POOL);
 	
 	gCubeModel = vModel::CreateCube({ 0x30, 0x30, 0x38, 0xFF }); // dark grey-blue cube

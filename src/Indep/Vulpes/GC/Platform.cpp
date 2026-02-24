@@ -136,11 +136,11 @@ void vDisplayFrame()
 		GX_SetTexCopySrc(
 						vViews[viewNum].RenderTarget->Left,
 						vViews[viewNum].RenderTarget->Top,
-						vViews[viewNum].RenderTarget->Width,
-						vViews[viewNum].RenderTarget->Height
+						gMotionBlurTexture->width,
+						gMotionBlurTexture->height
 						);	// This sets the location on the efb you want to copy from
 		
-		GX_SetTexCopyDst(vViews[viewNum].RenderTarget->Width, vViews[viewNum].RenderTarget->Height, GX_TF_RGBA8, 0);	// This is what kind of texture you want to copy to 
+		GX_SetTexCopyDst(gMotionBlurTexture->width, gMotionBlurTexture->height, GX_TF_RGBA8, 0);	// This is what kind of texture you want to copy to 
 		
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);	
@@ -171,6 +171,7 @@ void vDisplayFrame()
 			bluroffsets[3] = -(velocityVector.y - velocityVector.z);
 				
 			GX_CopyTex(GX_GetTexObjData(&gMotionBlurTexture->GXTextureObj), GX_FALSE); // copy screen to texture
+			GX_PixModeSync();
 			
 			float width = (float)vViews[viewNum].RenderTarget->Width / (float)gMotionBlurTexture->width;
 			float height = (float)vViews[viewNum].RenderTarget->Height / (float)gMotionBlurTexture->height;

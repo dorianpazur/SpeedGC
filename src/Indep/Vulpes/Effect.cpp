@@ -38,6 +38,9 @@ void vEffectInit()
 {
 	for (int i = 0; i < NUM_VEFFECTS; i++)
 	{
+		if (vEffects[i]) // already initialized
+			continue;
+		
 		switch(i)
 		{
 		default:
