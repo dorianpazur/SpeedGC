@@ -83,8 +83,9 @@ World::World()
 	
 	// 100 rows every 100 units covers full 10km. 3cubes per row
 	{
-		const float kHalf = 4.0f; //for bullet use and rendering 
-		const float kCubeY = kHalf + 0.2f;
+		const float kHalfXZ = 4.0f;
+		const float kHalfY = 2.0f;
+		const float kCubeY = kHalfY;
 		const float kSpacing = 100.0f; // one row every 100 units // 100 rows = 10,000
 		const float kStartZ = -100.0f;
 		const float kLaneMin = -15.0f; //left edge
@@ -120,9 +121,9 @@ World::World()
 			// right cube: gap1 right edge -- lane right edge
 			float x2 = (gap1 + kGapHalf) + (kLaneMax - (gap1 + kGapHalf)) * 0.5f;
 
-			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x0, kCubeY, z), btVector3(kHalf, kHalf, kHalf));
-			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x1, kCubeY, z), btVector3(kHalf, kHalf, kHalf));
-			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x2, kCubeY, z), btVector3(kHalf, kHalf, kHalf));
+			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x0, kCubeY, z), btVector3(kHalfXZ, kHalfY, kHalfXZ));
+			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x1, kCubeY, z), btVector3(kHalfXZ, kHalfY, kHalfXZ));
+			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x2, kCubeY, z), btVector3(kHalfXZ, kHalfY, kHalfXZ));
 		}
 	}
 
