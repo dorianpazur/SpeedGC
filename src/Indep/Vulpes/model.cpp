@@ -196,7 +196,7 @@ vModel::vModel(const char* path)
 	tFile* glbFile = tOpenFile(path);
 	
 	if (!glbFile)
-		printf("oops file can't be found\n");
+		printf("oops file %s can't be found\n", path);
 	
 	bool loaded = loader.LoadBinaryFromMemory(&model, &err, &warn, (const unsigned char*)glbFile->data, glbFile->filesize, "");
 	

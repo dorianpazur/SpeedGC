@@ -20,7 +20,7 @@ struct tFile
 	size_t filesize = 0;
 	
 	DEF_TWARE_NEW_OVERRIDE(tFile, MAIN_POOL)
-
+	
 	~tFile()
 	{
 		if (data)

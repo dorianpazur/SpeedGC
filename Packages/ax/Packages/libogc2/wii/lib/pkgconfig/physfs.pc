@@ -1,0 +1,11 @@
+prefix=/opt/devkitpro/libogc2/wii
+exec_prefix=/opt/devkitpro/libogc2/wii
+libdir=/opt/devkitpro/libogc2/wii/lib
+includedir=/opt/devkitpro/libogc2/wii/include
+
+Name: PhysicsFS
+Description: PhysicsFS is a library to provide abstract access to various archives.
+URL: https://icculus.org/physfs/
+Version: 3.2.0
+Libs: -L${libdir} -lphysfs
+Cflags: -I${includedir}
