@@ -169,6 +169,11 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	if (throttle < 0.1f)
 		throttle = 0.0f;
 	
+	printf("%.2f\n", steering);
+	
+	if (steering)
+		steering = (std::abs(steering) / steering) * std::pow(std::abs(steering), 2);
+	
 	btTransform trans;
 	mBody->getMotionState()->getWorldTransform(trans);
 	
@@ -222,7 +227,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	mBrakeInput = std::lerp(mBrakeInput, brake, 60.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, throttle, 30.0f * timestep);
 	float steeringTarget = -steering / (1.0 + std::min(3.0f, speed * 0.007f * mThrottleInput));
-	mSteeringInput = std::lerp(mSteeringInput, steeringTarget, (((std::abs(mSteeringInput) - std::abs(steeringTarget)) > 0.0f) ? 4.0f : 0.75f) * timestep);
+	mSteeringInput = std::lerp(mSteeringInput, steeringTarget, (((std::abs(mSteeringInput) - std::abs(steeringTarget)) > 0.0f) ? 4.0f : 1.0f) * timestep);
 	
 	float angVelFrictionLoss = std::abs((mBody->getWorldTransform().getBasis().transpose() * mBody->getAngularVelocity()).getY()) * 0.5f;
 	angVelFrictionLoss /= 1.0f + mBrakeInput;

@@ -138,7 +138,7 @@ void InputManager::UpdateGameCubeInputs()
 		// raw input to normalized values
 		float throttle = triggerR / 255.0f;
 		float brake = triggerL / 255.0f;
-		float steering = stickX / 127.0f;
+		float steering = std::max(-1.0f, std::min(1.0f, stickX / 100.0f)); // gamecube controller readings don't report full range
 		bool  startPressed = (buttonsDown & PAD_BUTTON_START) != 0;
 
 		// build commands directly from raw input
