@@ -22,12 +22,13 @@ const size_t kNumSecondsOfBuffer = 1;
 const size_t kNumSamplesInBuffer = 32000 * kNumSecondsOfBuffer; // second
 const size_t kNumChannels = 2;
 const size_t kBufferSize = kNumSamplesInBuffer * sizeof(uint16_t) * kNumChannels;
-int16_t *streamingBuffer[2]; // double buffered 32000 stereo samples
+int16_t *streamingBuffer[2] ATTRIBUTE_ALIGN(32); // double buffered 32000 stereo samples
 
 //FILE* audioFile;
 
 tMutex gAudioMutexBuf1;
 tMutex gAudioMutexBuf2;
+tMutex gDSPTimeMutex;
 
 inline int16_t EndianSwapI16(int16_t i)
 {
@@ -45,7 +46,9 @@ void UpdateAudio()
 	
 	snprintf(path, TFILE_MAX_PATH, "%s%s", gBaseDir, "title.raw");
 	
+	gDSPTimeMutex.Lock();
 	uint64_t curFrame = 1 - (dspTime / kNumSamplesInBuffer); // get the other frame
+	gDSPTimeMutex.Unlock();
 	
 	if (prevFrame != curFrame)
 	{
@@ -57,27 +60,26 @@ void UpdateAudio()
 		
 		if (audioFile)
 		{
-			fseek(audioFile, 0, SEEK_END);
-			long size = ftell(audioFile);
-			fseek(audioFile, 0, SEEK_SET);
+			static long size = -1;
+			if (size == -1)
+			{
+				fseek(audioFile, 0, SEEK_END);
+				size = ftell(audioFile);
+				fseek(audioFile, 0, SEEK_SET);
+			}
 			
 			if (fileOffset > size - kBufferSize)
 				fileOffset = 0;
 			
-			fseek(audioFile, fileOffset, SEEK_SET);
+			//fseek(audioFile, fileOffset, SEEK_SET);
 			
 			mutex.Lock();
 			
 			fread(streamingBuffer[curFrame], kBufferSize, 1, audioFile);
 			
-			for (size_t i = 0; i < kBufferSize / sizeof(uint16_t); i++)
-			{
-				streamingBuffer[curFrame][i] = EndianSwapI16(streamingBuffer[curFrame][i]);
-			}
-			
 			mutex.Unlock();
 			
-			fileOffset += kBufferSize;
+			fileOffset = ftell(audioFile);
 		}
 	
 		//fclose(audioFile);
@@ -119,10 +121,16 @@ void AudioFrameCallback()
 	
 	if (streamingBuffer[0] && streamingBuffer[1])
 	{
+		uint32_t currentBuffer;
+		uint32_t currentSample;
+		
 		for (int i = 0; i < 160; i++)
 		{
-			bufL[other ? 0 : 1][i] = streamingBuffer[dspTime / kNumSamplesInBuffer][((dspTime + 1) * kNumChannels) % (kNumSamplesInBuffer * kNumChannels)];
-			bufR[other ? 0 : 1][i] = streamingBuffer[dspTime / kNumSamplesInBuffer][(((dspTime + 1) * kNumChannels) + (kNumChannels ? 1 : 0)) % (kNumSamplesInBuffer * kNumChannels)];
+			currentBuffer = (dspTime) / kNumSamplesInBuffer;
+			currentSample = (dspTime) % kNumSamplesInBuffer;
+			
+			bufL[other ? 0 : 1][i] = EndianSwapI16(streamingBuffer[currentBuffer][(currentSample * kNumChannels) + 0]);
+			bufR[other ? 0 : 1][i] = EndianSwapI16(streamingBuffer[currentBuffer][(currentSample * kNumChannels) + 1]);
 			
 			dspTime = (dspTime + 1) % (kNumSamplesInBuffer * 2); // both buffers
 		}
