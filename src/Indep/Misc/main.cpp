@@ -7,10 +7,12 @@
 #include <limits>
 
 #include <tWare/Memory.h>
+#include <tWare/Thread.h>
 #include <tWare/Time.h>
 #include <tWare/File.h>
 #include <tWare/Hash.h>
 #include <tWare/Debug.h>
+#include "Audio.h"
 #include "ScreenPrintf.h"
 
 #include <Vulpes/vulpes.h> // graphics
@@ -40,7 +42,6 @@ vModel *gTestModel = NULL;
 vModel* gCarModel = NULL;
 vModel* gSkydomeModel = NULL;
 vModel* gCubeModel = NULL;
-
 
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
@@ -193,11 +194,13 @@ void InitializeEverything(int argc, char** argv)
 	
 	InitializeMemory();
 	InitializePlatform(argc, argv);
+	tInitThreads();
 	vEffectInit();
 	vpInitViews();
 	tInitTicker();
 	vTextureCache::Init();
 	DebugMenuInit();
+	Audio::Init();
 	LoadAssets();
 	World::Initialize();
 	NGSpriteManager.Init();

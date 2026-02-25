@@ -25,6 +25,8 @@ size_t tGetPreviousAlignedSizeOrAddress(size_t n, size_t alignment)
 
 void tMemoryPool::Init(void* memoryBlock, size_t size, const char* name, uint32_t poolNum)
 {
+	Mutex.Lock();
+	
 	DebugName = name;
 	MemoryBlock = memoryBlock;
 	InitialAddress = (intptr_t)memoryBlock;
@@ -37,10 +39,14 @@ void tMemoryPool::Init(void* memoryBlock, size_t size, const char* name, uint32_
 	Block* startingBlock = new(memoryBlock) Block(size, poolNum);
 
 	BlockList.AddTail(startingBlock);
+	
+	Mutex.Unlock();
 }
 
 void* tMemoryPool::AllocateMemory(size_t size, uint32_t alignment, const char* debugText, uint32_t debugLine)
 {
+	Mutex.Lock();
+	
 	//printf("Allocating %u bytes for %s\n", size, debugText);
 	size_t originalSize = size; // purely for debugging
 	Block* block = GetFirstFreeBlockThatFitsSize(tGetNextAlignedSizeOrAddress(size + sizeof(Block), alignment));
@@ -94,10 +100,14 @@ void* tMemoryPool::AllocateMemory(size_t size, uint32_t alignment, const char* d
 	{
 		tBreak(); // we failed!
 	}
+	
+	Mutex.Unlock();
 }
 
 void tMemoryPool::FreeMemory(void* ptr)
 {
+	Mutex.Lock();
+	
 	Block* block = ((tMemoryPool::Block*)ptr) - 1;
 	Block* prevBlock = block->GetPrev();
 
@@ -113,10 +123,14 @@ void tMemoryPool::FreeMemory(void* ptr)
 	ConsolidateFreeBlocks(); // consolidate the blocks first
 
 	FreeSize += block->Size;
+	
+	Mutex.Unlock();
 }
 
 void tMemoryPool::ConsolidateFreeBlocks()
 {
+	Mutex.Lock();
+	
 	for (Block* block = BlockList.GetTail(); block != BlockList.EndOfList(); block = block->GetPrev())
 	{
 		if (block->Occupied)
@@ -129,10 +143,14 @@ void tMemoryPool::ConsolidateFreeBlocks()
 			block->Size += next->Size; // swallow it
 		}
 	}
+	
+	Mutex.Unlock();
 }
 
 tMemoryPool::Block* tMemoryPool::GetLargestFreeBlock()
 {
+	Mutex.Lock();
+	
 	Block* largest = NULL;
 
 	// start counting from top
@@ -153,12 +171,16 @@ tMemoryPool::Block* tMemoryPool::GetLargestFreeBlock()
 		printf("No free blocks!");
 		PrintAllocationsByAddress();
 	}
-
+	
+	Mutex.Unlock();
+	
 	return largest;
 }
 
 tMemoryPool::Block* tMemoryPool::GetFirstFreeBlockThatFitsSize(size_t size)
 {
+	Mutex.Lock();
+	
 	Block* fitting = NULL;
 
 	// start counting from top
@@ -181,11 +203,15 @@ tMemoryPool::Block* tMemoryPool::GetFirstFreeBlockThatFitsSize(size_t size)
 		PrintAllocationsByAddress();
 	}
 
+	Mutex.Unlock();
+
 	return fitting;
 }
 
 void tMemoryPool::PrintAllocationsByAddress()
 {
+	Mutex.Lock();
+	
 	printf("\nMemoryPool: \"%s\"\n", DebugName);
 	puts("Address       Size   Debug Text (& Line)");
 	puts("=========================================================");
@@ -200,10 +226,13 @@ void tMemoryPool::PrintAllocationsByAddress()
 			printf("\n");
 		}
 	}
+	Mutex.Unlock();
 }
 
 int tMemoryPool::GetAmountFree()
 {
+	Mutex.Lock();
+	
 	int amountFree = 0;
 	
 	for (Block* block = BlockList.EndOfList()->GetPrev(); block != BlockList.GetHead()->GetPrev(); block = block->GetPrev())
@@ -211,6 +240,8 @@ int tMemoryPool::GetAmountFree()
 		if (!block->Occupied)
 			amountFree += block->Size;
 	}
+	
+	Mutex.Unlock();
 	
 	return amountFree;
 }

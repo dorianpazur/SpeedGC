@@ -7,6 +7,7 @@
 #define TWARE_MEMORY_H
 
 #include <tWare/List.h>
+#include <tWare/Mutex.h>
 #include <cstdint>
 #include <memory>
 #include <cstring>
@@ -52,6 +53,7 @@ struct tMemoryPool : tTNode<tMemoryPool>
 	intptr_t InitialAddress;
 	size_t InitialSize;
 	size_t FreeSize;
+	tMutex Mutex;
 
 	void Init(void* memoryBlock, size_t size, const char* name, uint32_t poolNum);
 
