@@ -1,9 +1,6 @@
 // Gamecube-specific stuff
 
 #include <ogc/system.h>
-#include <dolphin/ax.h>
-#include <dolphin/mix.h>
-#include <dolphin/os.h>
 #include <Vulpes/vulpes.h>
 #include <tWare/Time.h>
 #include <tWare/File.h>
@@ -42,8 +39,6 @@ const tMatrix4 gVfxMatrix;
 extern double gFrameTime;
 
 vTextureCache::CachedTexture* gMotionBlurTexture;
-
-uint64_t dspTime = 0;
 
 //---------------------------------------------------------------------------------
 
@@ -298,8 +293,6 @@ void vDisplayFrame()
 	DebugMenu::render();
 	DebugMenu::renderBackground();
 	
-	ScreenPrintf(40, 40, "dspTime: %llu", dspTime);
-	
 	DrawScreenPrintfs();
 	
 	// push frame
@@ -334,76 +327,12 @@ void vDisplayFrame()
 
 //---------------------------------------------------------------------------------
 
-typedef struct
-{
-    s32 *l; // pointer to left aux channel buffer in main memory
-    s32 *r; // pointer to right aux channel buffer in main memory
-    s32 *s; // pointer to surround aux channel buffer in main memory
-} aux_data;
-
-tFile* music;
-bool play = false;
-
-inline int16_t EndianSwapI16(int16_t i)
-{
-	uint16_t* data = (uint16_t*)&i;
-	uint16_t swap = (*data >> 8) | (*data << 8);
-	return *(int16_t*)&swap;
-}
-
-int32_t buf[2][160] ATTRIBUTE_ALIGN(32);
-
-void AudioFrameCallback()
-{
-	static bool other = true;
-	
-	if (music && music->data)
-	{
-		for (int i = 0; i < 160; i++)
-		{
-			buf[other ? 0 : 1][i] = ((int16_t*)music->data)[(dspTime++) % (music->filesize / 2)];
-		}
-		
-		DCFlushRange(buf[other ? 0 : 1], 160 * sizeof(int32_t));
-	}
-	
-	other = !other;
-}
-
-void AuxACallback(void *data, void *context)
-{
-	static bool other = false;
-	const int len = 160;
-	
-	aux_data* auxData = (aux_data*)data;
-	
-	for (int i = 0; i < len; i++)
-	{
-		auxData->l[i] += buf[other ? 0 : 1][i];
-		auxData->r[i] += buf[other ? 0 : 1][i];
-	}
-	
-	other = !other;
-}
-
 void InitializePlatform(int argc, char** argv) {
 	static bool initialized = false;
 	if (!initialized)
 	{
 		VIDEO_Init();
 		PAD_Init();
-		
-		// audio
-		AR_Init(NULL, 0);
-		ARQ_Init();
-		AUDIO_Init(NULL);
-		AXInit();
-		AXSetCompressor(AX_COMPRESSOR_OFF);
-		AXRegisterAuxACallback(AuxACallback, NULL);
-		AXRegisterCallback(&AudioFrameCallback);
-		AXSetMode(AX_MODE_STEREO);
-		
-		DCFlushRangeNoSync(buf, sizeof(buf));
 		
 		rmode = VIDEO_GetPreferredMode(NULL);
 	
@@ -431,15 +360,6 @@ void InitializePlatform(int argc, char** argv) {
 			
 			tChangeBaseDir("dvd://");
 		}
-		
-		music = tOpenFile("subwaysofyourmind.raw");
-		int16_t* data = (int16_t*)music->data;
-		for (size_t i = 0; i < music->filesize / 2; i++)
-		{
-			data[i] = EndianSwapI16(data[i]);
-		}
-		
-		play = true;
 		
 		VIDEO_Configure(rmode);
 		VIDEO_SetNextFramebuffer(xfb[currentBuffer]);

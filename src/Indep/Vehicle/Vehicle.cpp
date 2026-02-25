@@ -181,34 +181,34 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	if (speed < 0.2f)
 		speed = 0.0f;
 	
-		btVector3 up = trans.getBasis().getColumn(1); // local up direction
-		// consider it really flipped only when local up points below the horizon
-		bool isFlipped = (up.getY() < 0.0f);
+	btVector3 up = trans.getBasis().getColumn(1); // local up direction
+	// consider it really flipped only when local up points below the horizon
+	bool isFlipped = (up.getY() < 0.0f);
 
-		if (rawBrake > 0.1f && isFlipped && speed < 5.0f)
-		{
-			btVector3 pos = trans.getOrigin();
-			pos.setY(pos.getY() + 0.75f); // lift slightly off the ground
+	if (rawBrake > 0.1f && isFlipped && speed < 5.0f)
+	{
+		btVector3 pos = trans.getOrigin();
+		pos.setY(pos.getY() + 0.75f); // lift slightly off the ground
 
-			btTransform upright;
-			upright.setIdentity();
-			upright.setOrigin(pos);
+		btTransform upright;
+		upright.setIdentity();
+		upright.setOrigin(pos);
 
-			// Same base rotation as spawn so the car faces the correct way down the track.
-			btQuaternion baseRotation;
-			baseRotation.setEuler(3.14159265359f, 0.0f, 0.0f);
-			upright.setRotation(baseRotation);
+		// Same base rotation as spawn so the car faces the correct way down the track.
+		btQuaternion baseRotation;
+		baseRotation.setEuler(3.14159265359f, 0.0f, 0.0f);
+		upright.setRotation(baseRotation);
 
-			mBody->setWorldTransform(upright);
-			mBody->getMotionState()->setWorldTransform(upright);
-			mBody->setLinearVelocity(btVector3(0, 0, 0));
-			mBody->setAngularVelocity(btVector3(0, 0, 0));
+		mBody->setWorldTransform(upright);
+		mBody->getMotionState()->setWorldTransform(upright);
+		mBody->setLinearVelocity(btVector3(0, 0, 0));
+		mBody->setAngularVelocity(btVector3(0, 0, 0));
 
-			// Refresh transform for the rest of Update().
-			trans = upright;
-			velocity = btVector3(0, 0, 0);
-			speed = 0.0f;
-		}
+		// Refresh transform for the rest of Update().
+		trans = upright;
+		velocity = btVector3(0, 0, 0);
+		speed = 0.0f;
+	}
 
 	// hit the brakes when going too slow and not on the throttle
 	if (speed <= 3.5f && throttle == 0.0f)

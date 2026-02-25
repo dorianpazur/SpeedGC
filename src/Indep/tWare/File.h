@@ -34,5 +34,7 @@ struct tFile
 extern tFile* tOpenFile(const char* path);
 extern void tCloseFile(tFile* file);
 extern void tChangeBaseDir(const char* path);
+extern tMutex gFileIOMutex;
+extern char gBaseDir[TFILE_MAX_PATH + 1];
 
 #endif

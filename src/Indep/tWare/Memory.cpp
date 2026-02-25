@@ -283,7 +283,7 @@ void tInitializeMemory()
 	if (!bInitializedMemory)
 	{
 		SYS_STDIO_Report(true);
-		const size_t kReserveMemory = 0x500; // keep some extra memory on heap
+		const size_t kReserveMemory = 0x2000; // keep some extra memory on heap
 		size_t mainPoolSize = (((intptr_t)SYS_GetArenaHi() - (intptr_t)SYS_GetArenaLo()) & 0xFFF00000) - kReserveMemory;
 		printf("Main pool size: 0x%08x\n", mainPoolSize);
 		tInitMemoryPool(0, malloc(mainPoolSize), mainPoolSize, "Main Pool");

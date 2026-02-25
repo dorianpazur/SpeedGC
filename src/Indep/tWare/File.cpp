@@ -15,6 +15,8 @@ eastl::vector<tFile*, tEASTLAllocator> gOpenFiles;
 
 char gBaseDir[TFILE_MAX_PATH + 1] { '\0' };
 
+tMutex gFileIOMutex;
+
 // abstracted in order to allow for an archive format to potentially be used
 tFile* tOpenFile(const char* path)
 {
@@ -25,6 +27,7 @@ tFile* tOpenFile(const char* path)
 
 	char realPath[TFILE_MAX_PATH + 1] = { 0 };
 	snprintf(realPath, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
+	gFileIOMutex.Lock();
 	FILE* cFile = fopen(realPath, "rb");
 	
 	if (cFile)
@@ -52,6 +55,7 @@ tFile* tOpenFile(const char* path)
 				free(file->data);
 				delete file;
 				fclose(cFile);
+				gFileIOMutex.Unlock();
 				return NULL;
 			}
 			
@@ -64,6 +68,7 @@ tFile* tOpenFile(const char* path)
 		}
 		
 		fclose(cFile);
+		gFileIOMutex.Unlock();
 
 		return file;
 	}
@@ -73,6 +78,7 @@ tFile* tOpenFile(const char* path)
 // closes file and releases its resources
 void tCloseFile(tFile* file)
 {
+	gFileIOMutex.Lock();
 	// find pointer in file list
 	for (size_t i = 0; i < gOpenFiles.size(); i++)
 	{
@@ -83,10 +89,13 @@ void tCloseFile(tFile* file)
 			break;
 		}
 	}
+	gFileIOMutex.Unlock();
 }
 
 // changes base directory to allow loading data from sd gecko
 void tChangeBaseDir(const char* path)
 {
+	gFileIOMutex.Lock();
 	strncpy(gBaseDir, path, TFILE_MAX_PATH);
+	gFileIOMutex.Unlock();
 }

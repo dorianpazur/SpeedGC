@@ -181,6 +181,7 @@ void MainLoop()
 	CPUTime = (float)tGetTickerDifference(CPUTimeStart);
 	
 	Main_DisplayFrame();
+	Audio::Update();
 }
 
 //---------------------------------------------------------------------------------
@@ -200,10 +201,10 @@ void InitializeEverything(int argc, char** argv)
 	tInitTicker();
 	vTextureCache::Init();
 	DebugMenuInit();
-	Audio::Init();
 	LoadAssets();
 	World::Initialize();
 	NGSpriteManager.Init();
+	Audio::Init();
 	
 	#ifdef EA_PLATFORM_GAMECUBE
 	printf("Free arena memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
