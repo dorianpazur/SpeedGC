@@ -17,7 +17,7 @@ const float suspensionStiffness = 30.0f;
 const float suspensionDamping = 5.3f;
 const float suspensionCompression = 11.4f;
 const float rollInfluence = 0.03f;
-const float drag = 0.3f;
+const float drag = 0.2f;
 const btScalar suspensionRestLength(0.5f);
 
 const btVector3 wheelDirectionCS0(0, -1, 0);
