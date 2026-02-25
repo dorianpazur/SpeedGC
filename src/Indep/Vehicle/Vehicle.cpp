@@ -169,8 +169,6 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	if (throttle < 0.1f)
 		throttle = 0.0f;
 	
-	printf("%.2f\n", steering);
-	
 	if (steering)
 		steering = (std::abs(steering) / steering) * std::pow(std::abs(steering), 2);
 	
