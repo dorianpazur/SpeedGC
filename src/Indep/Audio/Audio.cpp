@@ -68,10 +68,8 @@ void UpdateAudio()
 				fseek(audioFile, 0, SEEK_SET);
 			}
 			
-			if (fileOffset > size - kBufferSize)
-				fileOffset = 0;
-			
-			//fseek(audioFile, fileOffset, SEEK_SET);
+			if (ftell(audioFile) > size - kBufferSize)
+				fseek(audioFile, 0, SEEK_SET);
 			
 			mutex.Lock();
 			

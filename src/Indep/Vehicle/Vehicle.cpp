@@ -6,7 +6,7 @@
 // car model used for rendering all vehicles
 extern vModel* gCarModel;
 
-const float speedPowerDecline = 0.05f;
+const float speedPowerDecline = 0.04f;
 const float enginePower = 24000.0f;
 const float brakePower = 50.0f;
 const float steeringClamp = 0.3f;
@@ -17,6 +17,7 @@ const float suspensionStiffness = 30.0f;
 const float suspensionDamping = 5.3f;
 const float suspensionCompression = 11.4f;
 const float rollInfluence = 0.03f;
+const float drag = 0.3f;
 const btScalar suspensionRestLength(0.5f);
 
 const btVector3 wheelDirectionCS0(0, -1, 0);
@@ -240,7 +241,9 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 				trans.getOrigin().getY(),
 				trans.getOrigin().getZ());
 	
-	btVector3 downforce = btVector3(0, -5000.0f * std::min(50.0f, speed) * timestep, 0);
+	// aerodynamics
+	btVector3 downforce = btVector3(0, -1000.0f * std::min(50.0f, speed) * timestep, 0);
+	mBody->applyCentralForce(-velocity * drag * velocity.length());
 	mBody->applyCentralForce(mBody->getWorldTransform().getBasis() * downforce);
 	
 	float powerMod = 1.0f / (1.0f + ((speed * speedPowerDecline) * (speed * speedPowerDecline) * (speed * speedPowerDecline) * (speed * speedPowerDecline)));

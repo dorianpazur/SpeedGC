@@ -194,8 +194,9 @@ void InitializeEverything(int argc, char** argv)
 	#endif
 	
 	InitializeMemory();
-	InitializePlatform(argc, argv);
 	tInitThreads();
+	InitializePlatform(argc, argv);
+	Audio::Init();
 	vEffectInit();
 	vpInitViews();
 	tInitTicker();
@@ -204,7 +205,6 @@ void InitializeEverything(int argc, char** argv)
 	LoadAssets();
 	World::Initialize();
 	NGSpriteManager.Init();
-	Audio::Init();
 	
 	#ifdef EA_PLATFORM_GAMECUBE
 	printf("Free arena memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
