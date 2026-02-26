@@ -280,6 +280,29 @@ void World::Simulate(float timestep)
 			tVector3 testVel{-7.0f, 0, -7.0f};
 			tMatrix4 testTransform;
 			
+
+			// Update race order by progress (more negative Z = further down track = 1st)
+			if (mVehicles.size() >= 2)
+			{
+				float z0 = 0.0f;
+				float z1 = 0.0f;
+				if (mVehicles[0]->mBody && mVehicles[0]->mBody->getMotionState())
+					z0 = mVehicles[0]->mBody->getWorldTransform().getOrigin().getZ();
+				if (mVehicles[1]->mBody && mVehicles[1]->mBody->getMotionState())
+					z1 = mVehicles[1]->mBody->getWorldTransform().getOrigin().getZ();
+
+				if (z0 <= z1)
+				{
+					mFirstPlaceVehicleIndex = 0;
+					mSecondPlaceVehicleIndex = 1;
+				}
+				else
+				{
+					mFirstPlaceVehicleIndex = 1;
+					mSecondPlaceVehicleIndex = 0;
+				}
+			}
+
 			testTransform[0][3] = 25.0f;
 			testTransform[1][3] = 4.0f;
 			testTransform[2][3] = -30.0f;

@@ -46,6 +46,10 @@ public:
 	PropCube* mPropCubes[kMaxPropCubes] = {};
 	int mPropCubeCount = 0;
 
+	// Race order along track (more negative Z = ahead). Indices into mVehicles (0 = player 1, 1 = player 2).
+	int mFirstPlaceVehicleIndex = 0;
+	int mSecondPlaceVehicleIndex = 1;
+
 	World();
 	~World();
 };
