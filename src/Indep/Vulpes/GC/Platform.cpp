@@ -293,6 +293,16 @@ void vDisplayFrame()
 	DebugMenu::render();
 	DebugMenu::renderBackground();
 	
+	{
+		World* world = World::GetInstance();
+		if (world && world->mVehicles.size() >= 2)
+		{
+			int first = world->mFirstPlaceVehicleIndex;
+			int second = world->mSecondPlaceVehicleIndex;
+			ScreenPrintf(60, -250, 1.0f, 0xFFFFD700u, "Place: %s", first == 0 ? "1st" : "2nd");
+			ScreenPrintf(60, 20, 1.0f, 0xFFFFD700u, "Place: %s", first == 1 ? "1st" : "2nd");
+		}
+	}
 	DrawScreenPrintfs();
 	
 	// push frame

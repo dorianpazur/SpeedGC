@@ -189,7 +189,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	// consider it really flipped only when local up points below the horizon
 	bool isFlipped = (up.getY() < 0.0f);
 
-	if (rawBrake > 0.1f && isFlipped && speed < 5.0f)
+	if (rawBrake > 0.1f && isFlipped)
 	{
 		btVector3 pos = trans.getOrigin();
 		pos.setY(pos.getY() + 0.75f); // lift slightly off the ground
