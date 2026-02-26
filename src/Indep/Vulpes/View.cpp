@@ -35,4 +35,11 @@ void vpInitViews()
 		view->Active = false;
 		view->RenderTarget = &vRenderTargets[TARGET_DISPLAYBUFFER_P2];
 	}
+	
+	// Envmap
+	{
+		vView* view = &vViews[VVIEW_ENVMAP];
+		view->Active = true;
+		view->RenderTarget = &vRenderTargets[TARGET_ENVMAP];
+	}
 }

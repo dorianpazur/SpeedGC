@@ -32,7 +32,7 @@ namespace vTextureCache
 			
 			CachedTexturePlat(uint16_t width, uint16_t height, uint8_t format)
 			{
-				RawData = tWareMalloc(GX_GetTexBufferSize(width, height, format, GX_FALSE, 0), "Render Target", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+				RawData = tWareMalloc(GX_GetTexBufferSize(width, height, format, GX_FALSE, 0), "Render Target", __LINE__, ALLOC_PARAMS(TEXTURE_POOL, 32));
 				GX_InitTexObj(&GXTextureObj, RawData, width, height, format, GX_FALSE, GX_FALSE, GX_FALSE);
 				GX_InvalidateTexAll();
 			}
@@ -40,7 +40,7 @@ namespace vTextureCache
 			CachedTexturePlat(tFile* file)
 			{
 				snprintf(debugName, 79, "Texture %s", file->filename);
-				RawData = tWareMalloc(file->filesize, debugName, __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+				RawData = tWareMalloc(file->filesize, debugName, __LINE__, ALLOC_PARAMS(TEXTURE_POOL, 32));
 				
 				memcpy(RawData, file->data, file->filesize);
 				
@@ -76,7 +76,7 @@ namespace vTextureCache
 		uint32_t width = 0;
 		uint32_t height = 0;
 		
-		DEF_TWARE_NEW_OVERRIDE(CachedTexture, MAIN_POOL)
+		DEF_TWARE_NEW_OVERRIDE(CachedTexture, TEXTURE_POOL)
 		
 		CachedTexture(const char* debugName, uint16_t width, uint16_t height, uint16_t format) : CachedTexturePlat(width, height, format)
 		{

@@ -364,7 +364,9 @@ void World::Simulate(float timestep)
 			
 			tVector3 localVehPos = tVector3(0, 0, 0);
 			tVector3 globalVehPos;
+			tMatrix4 invTransform;
 			tMulVector(&globalVehPos, &transform, &localVehPos);
+			tInvertMatrix(&invTransform, &transform);
 			
 			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY() / 2.0f, gFrameTime * 0.006f);
 			
@@ -406,6 +408,14 @@ void World::Simulate(float timestep)
 				up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
 				look = {camTarget[veh].x, camTarget[veh].y, camTarget[veh].z};
 			tCreateLookAtMatrix(&vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, cam, look, up);
+			
+			if (veh == 0)
+			{
+				cam = globalVehPos,
+					up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
+					look = vViews[VVIEW_FIRST_PLAYER + veh].Position;
+				tCreateLookAtMatrix(&vViews[VVIEW_ENVMAP].ViewMatrix, cam, look, up);
+			}
 			
 			tMulVector(&vViews[VVIEW_FIRST_PLAYER + veh].Velocity, &vViews[VVIEW_FIRST_PLAYER + veh].ViewMatrix, &prevCamPos[veh]); // get inverse of velocity
 			vViews[VVIEW_FIRST_PLAYER + veh].Velocity *= 1.0 / std::fmaxf(kStepTime, gFrameTime * 0.001f); // make it the correct orientation and scaledish with dT

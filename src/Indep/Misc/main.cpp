@@ -197,7 +197,6 @@ void InitializeEverything(int argc, char** argv)
 	InitializeMemory();
 	tInitThreads();
 	InitializePlatform(argc, argv);
-	Audio::Init();
 	vEffectInit();
 	vpInitViews();
 	tInitTicker();
@@ -206,6 +205,7 @@ void InitializeEverything(int argc, char** argv)
 	LoadAssets();
 	World::Initialize();
 	NGSpriteManager.Init();
+	Audio::Init();
 	
 	#ifdef EA_PLATFORM_GAMECUBE
 	printf("Free arena memory after init: %u kb\n", ((uint32_t)SYS_GetArenaHi() - (uint32_t)SYS_GetArenaLo()) / 1024);
@@ -234,6 +234,12 @@ void InitializeMemory()
 		const size_t kTinyGLTFMemoryPoolSize = 0x80000; // increase this if memory runs out in the pool when loading a model
 		tInitMemoryPool(TINYGLTF_POOL, tWareMalloc(kTinyGLTFMemoryPoolSize, "TinyGLTF Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kTinyGLTFMemoryPoolSize, "TinyGLTF Pool");
 		
+		const size_t kMeshMemoryPoolSize = 0x200000; // increase this if memory runs out in the pool when loading a model
+		tInitMemoryPool(MODEL_POOL, tWareMalloc(kMeshMemoryPoolSize, "Mesh Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kMeshMemoryPoolSize, "Mesh Pool");
+		
+		const size_t kTextureMemoryPoolSize = 0x400000; // increase this if memory runs out in the pool when loading a model
+		tInitMemoryPool(TEXTURE_POOL, tWareMalloc(kTextureMemoryPoolSize, "Texture Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kTextureMemoryPoolSize, "Texture Pool");
+		
 		initializedMemory = true;
 	}
 }
@@ -250,11 +256,11 @@ void LoadAssets()
 	vTextureCache::LoadTextureFromPath("World/tarmac_diffuse.tpl");
 	vTextureCache::LoadTextureFromPath("World/tarmac_spec.tpl");
 	
-	gCarModel = new vModel("Vehicles/126p/126p.glb");
-	
-	tMemoryPrintAllocationsByAddress(MAIN_POOL);
+	//tMemoryPrintAllocationsByAddress(MAIN_POOL);
 	
 	gCubeModel = vModel::CreateCube({ 0x30, 0x30, 0x38, 0xFF }); // dark grey-blue cube
 	
 	gSkydomeModel = new vModel("Global/skydome.glb");
+	
+	gCarModel = new vModel("Vehicles/126p/126p.glb");
 }

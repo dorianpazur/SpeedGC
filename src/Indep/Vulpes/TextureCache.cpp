@@ -33,8 +33,30 @@ namespace vTextureCache
 		};
 	};
 	
+	class Allocator
+	{
+	public:
+		const char* name;
+		Allocator(const char* pName) { name = pName; };
+	
+		inline void* allocate(size_t n, int = 0)
+		{
+			return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(TEXTURE_POOL, 0));
+		}
+	
+		inline void* allocate(size_t n, size_t alignment, size_t, int = 0)
+		{
+			return (void*)tWareMalloc(n, name, 0, ALLOC_PARAMS(TEXTURE_POOL, alignment));
+		}
+	
+		inline void deallocate(void* p, size_t)
+		{
+			tFree(p);
+		}
+	};
+	
 	CachedTexture* gDefaultTexture = NULL;
-	eastl::unordered_map<tHash, CacheEntry, eastl::hash<tHash>, eastl::equal_to<tHash>, tEASTLAllocator> gTextureCache;
+	eastl::unordered_map<tHash, CacheEntry, eastl::hash<tHash>, eastl::equal_to<tHash>, Allocator> gTextureCache;
 	
 	//---------------------------------------------------------------------------------
 

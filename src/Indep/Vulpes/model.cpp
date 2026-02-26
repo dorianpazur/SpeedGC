@@ -105,7 +105,7 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 	
 	mIndexCount = indexAccessor.count;
 	
-	mIndices = (uint16_t*)tWareMalloc(mIndexCount * sizeof(uint16_t), "ModelIndices", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0));
+	mIndices = (uint16_t*)tWareMalloc(mIndexCount * sizeof(uint16_t), "ModelIndices", __LINE__, ALLOC_PARAMS(MODEL_POOL, 0));
 	
 	for (size_t i = 0; i < mIndexCount; i += 3)
 	{
@@ -280,90 +280,7 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 		return;
 	
 	for (size_t solid = 0; solid < mSolids.size(); solid++)
-	{	
-		// light test
-		/*
-		tVector3 lpos;
-		tVector3 rimPos;
-		tVector3 rimPos2;
-		
-		GXLightObj lobj;
-		GXLightObj lspecobj;
-		GXLightObj rimLight;
-		GXLightObj rimLight2;
-		GXLightObj rimLightSpec;
-		GXLightObj rimLight2Spec;
-		
-		const static GXColor lightColor[] = {
-			{0xF0,0xEA,0xB0,0xFF}, // Light color
-			{0x16,0x28,0x40,0xFF}, // Ambient color
-			{0xB0,0x9A,0x60,0xFF}, // Spec color
-			{0xE0,0xD0,0xC0,0xFF}, // rim 1
-			{0x3F,0x4F,0x5F,0xFF}, // rim 2
-			{0x00,0x00,0x00,0xFF}, // No color
-		};
-		
-		lpos.x = 0.707f * LARGE_NUMBER;
-		lpos.y = 0.707f * LARGE_NUMBER;
-		lpos.z = 0.707f * LARGE_NUMBER;
-		
-		rimPos.x =  0.5 * LARGE_NUMBER;
-		rimPos.y =  0.707f * LARGE_NUMBER;
-		rimPos.z = -0.707f * LARGE_NUMBER;
-		
-		rimPos2.x = -0.5 * LARGE_NUMBER;
-		rimPos2.y = -0.35f * LARGE_NUMBER;
-		rimPos2.z = -0.35f * LARGE_NUMBER;
-		
-		tMulVector(&lpos,&WtoL,&lpos);
-		tMulVector(&rimPos,&VtoW,&rimPos);
-		tMulVector(&rimPos2,&VtoW,&rimPos2);
-		tMulVector(&rimPos,&WtoL,&rimPos);
-		tMulVector(&rimPos2,&WtoL,&rimPos2);
-		
-		GX_InitLightPos(&lobj,lpos.x,lpos.y,lpos.z);
-		GX_InitLightColor(&lobj,lightColor[0]);
-		
-		GX_InitSpecularDir(&lspecobj,-lpos.x,-lpos.y,-lpos.z);
-		GX_InitLightColor(&lspecobj,lightColor[2]);
-		GX_InitLightShininess(&lspecobj, 44.0f);
-		
-		GX_InitLightPos(&rimLight,rimPos.x,rimPos.y,rimPos.z);
-		GX_InitLightColor(&rimLight,lightColor[3]);
-		GX_InitLightAttnA(&rimLight, 2.0, 2.0, 2.0);
-		
-		GX_InitSpecularDir(&rimLightSpec,-rimPos.x,-rimPos.y,-rimPos.z);
-		GX_InitLightColor(&rimLightSpec,lightColor[3]);
-		GX_InitLightAttnA(&rimLightSpec, 2.0, 2.0, 2.0);
-		GX_InitLightShininess(&rimLightSpec, 22.0f);
-		
-		GX_InitLightPos(&rimLight2,rimPos2.x,rimPos2.y,rimPos2.z);
-		GX_InitLightColor(&rimLight2,lightColor[4]);
-		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
-		
-		GX_InitSpecularDir(&rimLight2Spec,-rimPos2.x,-rimPos2.y,-rimPos2.z);
-		GX_InitLightColor(&rimLight2Spec,lightColor[4]);
-		GX_InitLightAttnA(&rimLight2Spec, 2.0, 2.0, 2.0);
-		GX_InitLightShininess(&rimLight2Spec, 22.0f);
-		
-		GX_LoadLightObj(&lobj,GX_LIGHT0);
-		GX_LoadLightObj(&rimLight,GX_LIGHT1);
-		GX_LoadLightObj(&rimLight2,GX_LIGHT2);
-		GX_LoadLightObj(&lspecobj,GX_LIGHT3);
-		GX_LoadLightObj(&rimLightSpec,GX_LIGHT4);
-		GX_LoadLightObj(&rimLight2Spec,GX_LIGHT5);
-		
-		// set number of rasterized color channels
-		GX_SetNumChans(2);
-		GX_SetChanCtrl(GX_COLOR0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT0 | GX_LIGHT1 | GX_LIGHT2,	GX_DF_CLAMP,	GX_AF_NONE);
-		GX_SetChanCtrl(GX_COLOR1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT3 | GX_LIGHT4 | GX_LIGHT5,	GX_DF_CLAMP,	GX_AF_SPEC);
-		GX_SetChanCtrl(GX_ALPHA0,	GX_DISABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHTNULL,						GX_DF_NONE,		GX_AF_NONE);
-		GX_SetChanCtrl(GX_ALPHA1,	GX_DISABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHTNULL,						GX_DF_NONE,		GX_AF_NONE);
-	
-		GX_SetChanAmbColor(GX_COLOR0A0, lightColor[1]);
-		GX_SetChanAmbColor(GX_COLOR1A1, lightColor[5]);
-		*/
-
+	{
 		for (size_t mesh = 0; mesh < mSolids[solid].mMeshes.size(); mesh++)
 		{
 			// tells gx where our position and color data is
@@ -393,43 +310,6 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
-			
-			/*GX_LoadTexObj(&vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap)->GXTextureObj, GX_TEXMAP0);
-			
-			// specular combining
-			GX_SetNumTexGens(1);
-			
-			static Mtx scrollMtx;
-			scrollMtx[0][0] = 1;
-			scrollMtx[0][1] = 0;
-			scrollMtx[0][2] = 0;
-			scrollMtx[1][0] = 0;
-			scrollMtx[1][1] = 1;
-			scrollMtx[1][2] = 0;
-			scrollMtx[2][0] = 0;
-			scrollMtx[2][1] = 0;
-			scrollMtx[2][2] = 1;
-			
-			scrollMtx[0][3] = 0;
-			scrollMtx[1][3] = 0.5f;
-			scrollMtx[2][3] = 0;
-
-			GX_LoadTexMtxImm(scrollMtx, GX_TEXMTX0, GX_TG_MTX2x4);
-			GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
-			
-			GX_SetNumTevStages(2);
-			
-			// diffuse
-			//GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-			GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-			GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO );
-			GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
-			
-			// specular
-			GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
-			GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC );
-			GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
-			*/
 			
 			vEffectStaticState::pCurrentEffect = vEffects[mSolids[solid].mMeshes[mesh].mEffectID];
 			vEffectStaticState::pViewMatrix = &view->ViewMatrix;
@@ -504,8 +384,8 @@ vModel* vModel::CreateCube(vColor color)
 	mesh.mVertexCount = 24;  // 6 faces × 4 vertices each
 	mesh.mIndexCount = 36;  // 6 faces × 2 triangles × 3 indices
 	mesh.mVertexBufferSize = sizeof(vVertex) * 24;
-	mesh.mVertices = (vVertex*)tWareMalloc(mesh.mVertexBufferSize, "CubeVB", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
-	mesh.mIndices = (uint16_t*)tWareMalloc(sizeof(uint16_t) * 36, "CubeIB", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+	mesh.mVertices = (vVertex*)tWareMalloc(mesh.mVertexBufferSize, "CubeVB", __LINE__, ALLOC_PARAMS(MODEL_POOL, 32));
+	mesh.mIndices = (uint16_t*)tWareMalloc(sizeof(uint16_t) * 36, "CubeIB", __LINE__, ALLOC_PARAMS(MODEL_POOL, 32));
 
 	for (int i = 0; i < 24; i++)
 	{

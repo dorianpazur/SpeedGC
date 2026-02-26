@@ -39,23 +39,14 @@ const tMatrix4 gVfxMatrix;
 extern double gFrameTime;
 
 vTextureCache::CachedTexture* gMotionBlurTexture;
+vTextureCache::CachedTexture* gEnvmapTexture;
+
+GXFogAdjTbl fogAdjTable;
 
 //---------------------------------------------------------------------------------
 
-void vDisplayFrame()
-{	
-	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_FALSE,rmode->vfilter);
-	
-	// handle view stuff
-	gCurViewMode = bSplitScreen ? VIEW_MODE_TWOH : VIEW_MODE_ONE;
-	MaybeChangeViewMode();
-	for (int viewNum = 0; viewNum < NUM_VVIEWS; viewNum++)
-	{
-		vViews[viewNum].CalculateViewMatricies();
-	}
-	
-	GXFogAdjTbl fogAdjTable;
-	
+void RenderMainView()
+{
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
 	{
 		if (!vViews[viewNum].Active)
@@ -82,49 +73,7 @@ void vDisplayFrame()
 		GX_InitFogAdjTable(&fogAdjTable, vViews[viewNum].RenderTarget->Width, *(Mtx44*)&vViews[viewNum].ProjectionMatrix);
 		GX_SetFogRangeAdj(GX_ENABLE, vViews[viewNum].RenderTarget->Left + (vViews[viewNum].RenderTarget->Width / 2), &fogAdjTable);
 		
-		// render test ground - TODO: replace this with actual track
-		
-		GX_LoadPosMtxImm(*(Mtx44*)&vViews[viewNum].ViewMatrix, GX_PNMTX0);
-		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
-		
-		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("tarmac_diffuse")));
-		vEffectStaticState::pCurrentEffect->Start();
-		for (int slice = 0; slice < 100; slice++)
-		{
-			vPoly poly;
-		
-			poly.Vertices[0].x = -25.0f;
-			poly.Vertices[0].y = 0;
-			poly.Vertices[0].z = -(slice * 100.0f) - 100.0f;
-			poly.UVs[0][0] = 0.0f;
-			poly.UVs[0][1] = 0.0f;
-			poly.Vertices[1].x = -25.0f;
-			poly.Vertices[1].y = 0;
-			poly.Vertices[1].z = -(slice * 100.0f) + 100.0f;
-			poly.UVs[1][0] = 0.0f;
-			poly.UVs[1][1] = 8.0f;
-			poly.Vertices[2].x = 25.0f;
-			poly.Vertices[2].y = 0;
-			poly.Vertices[2].z = -(slice * 100.0f) + 100.0f;
-			poly.UVs[2][0] = 8.0f;
-			poly.UVs[2][1] = 8.0f;
-			poly.Vertices[3].x = 25.0f;
-			poly.Vertices[3].y = 0;
-			poly.Vertices[3].z = -(slice * 100.0f) - 100.0f;
-			poly.UVs[3][0] = 8.0f;
-			poly.UVs[3][1] = 0.0f;
-			
-			poly.Colours[0][0] = 0xFF;
-			poly.Colours[0][1] = 0xFF;
-			poly.Colours[0][2] = 0xFF;
-			poly.Colours[0][3] = 0xFF;
-			
-			*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
-			*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
-			*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
-			vPolyRender(&poly);
-			vEffectStaticState::pCurrentEffect->End();
-		}
+		RenderWorld(&vViews[viewNum]);
 		
 		// draw prop cubes before motion blur so they are blurred with the world
 		DrawPropCubes(&vViews[viewNum]);
@@ -171,7 +120,6 @@ void vDisplayFrame()
 			bluroffsets[3] = -(velocityVector.y - velocityVector.z);
 				
 			GX_CopyTex(GX_GetTexObjData(&gMotionBlurTexture->GXTextureObj), GX_FALSE); // copy screen to texture
-			GX_PixModeSync();
 			
 			float width = (float)vViews[viewNum].RenderTarget->Width / (float)gMotionBlurTexture->width;
 			float height = (float)vViews[viewNum].RenderTarget->Height / (float)gMotionBlurTexture->height;
@@ -280,6 +228,79 @@ void vDisplayFrame()
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
 	}
+}
+
+//---------------------------------------------------------------------------------
+
+void RenderEnvmap()
+{
+	const int viewNum = VVIEW_ENVMAP;
+	{
+		if (!vViews[viewNum].Active)
+			return;
+		
+		vSetCurrentRenderTarget(vViews[viewNum].RenderTarget);
+		GX_LoadProjectionMtx(*(Mtx44*)&vViews[viewNum].ProjectionMatrix, GX_PERSPECTIVE);
+		
+		// disable fog for sky
+		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
+		
+		// render the sky
+		StuffSky(&vViews[viewNum]);
+		
+		// enable fog for world
+		GX_SetFog(GX_FOG_EXP2,
+			0.0f,
+			1500.0f,
+			vViews[viewNum].NearZ,
+			vViews[viewNum].FarZ,
+		{0x9C, 0xBA, 0xDC} );
+		
+		// fix up fog so it's more realistic
+		GX_InitFogAdjTable(&fogAdjTable, vViews[viewNum].RenderTarget->Width, *(Mtx44*)&vViews[viewNum].ProjectionMatrix);
+		GX_SetFogRangeAdj(GX_ENABLE, vViews[viewNum].RenderTarget->Left + (vViews[viewNum].RenderTarget->Width / 2), &fogAdjTable);
+		
+		RenderWorld(&vViews[viewNum]);
+		
+		// draw prop cubes before motion blur so they are blurred with the world
+		DrawPropCubes(&vViews[viewNum]);
+
+		// disable fog for rest of rendering
+		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
+		
+		// motion blur
+		GX_SetTexCopySrc(
+						vViews[viewNum].RenderTarget->Left,
+						vViews[viewNum].RenderTarget->Top,
+						vViews[viewNum].RenderTarget->Width,
+						vViews[viewNum].RenderTarget->Height
+						);	// This sets the location on the efb you want to copy from
+		
+		GX_SetTexCopyDst(gEnvmapTexture->width, gEnvmapTexture->height, GX_TF_RGBA8, 0);	// This is what kind of texture you want to copy to 
+		
+		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
+		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
+		
+		GX_CopyTex(GX_GetTexObjData(&gEnvmapTexture->GXTextureObj), GX_FALSE); // copy screen to texture
+	}
+}
+
+//---------------------------------------------------------------------------------
+
+void vDisplayFrame()
+{	
+	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_FALSE,rmode->vfilter);
+	
+	// handle view stuff
+	gCurViewMode = bSplitScreen ? VIEW_MODE_TWOH : VIEW_MODE_ONE;
+	MaybeChangeViewMode();
+	for (int viewNum = 0; viewNum < NUM_VVIEWS; viewNum++)
+	{
+		vViews[viewNum].CalculateViewMatricies();
+	}
+	
+	RenderEnvmap();
+	RenderMainView();
 	
 	// gui
 	GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
@@ -382,6 +403,7 @@ void InitializePlatform(int argc, char** argv) {
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 		
 		gMotionBlurTexture = new vTextureCache::CachedTexture("Motion Blur", rmode->fbWidth, rmode->efbHeight, GX_TF_RGBA8);
+		gEnvmapTexture = new vTextureCache::CachedTexture("Envmap", 64, 64, GX_TF_RGBA8);
 	}
 	
 	// clear texture cache

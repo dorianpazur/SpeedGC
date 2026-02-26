@@ -25,6 +25,10 @@ void vView::CalculateViewMatricies()
 		
 		guPerspective(*(Mtx44*)&ProjectionMatrix, FovDegrees * aspectCorrect, aspect / aspectCorrect, NearZ, FarZ);
 	}
+	else if (ID == VVIEW_ENVMAP)
+	{
+		guPerspective(*(Mtx44*)&ProjectionMatrix, 90, 1.0f, NearZ, FarZ);
+	}
 	else
 	{
 		guOrtho(*(Mtx44*)&ProjectionMatrix, -1.1f, 1.1f, bWideScreen ? -1.33333334f : -1.0f, bWideScreen ? 1.33333334f : 1.0f, -1.0f, 1.0f);
@@ -61,6 +65,12 @@ void MaybeChangeViewMode()
 		
 		break;
 	}
+	
+	vViews[TARGET_ENVMAP].Active = true;
+	vRenderTargets[TARGET_ENVMAP].Left = 0;
+	vRenderTargets[TARGET_ENVMAP].Top = 0;
+	vRenderTargets[TARGET_ENVMAP].Width = 64;
+	vRenderTargets[TARGET_ENVMAP].Height = 64;
 }
 
 void vSetCurrentRenderTarget(vRenderTarget* renderTarget)

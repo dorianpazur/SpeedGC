@@ -8,4 +8,5 @@
 extern void StuffSky(vView* view);
 extern void DrawVehicles(vView* view);
 extern void DrawPropCubes(vView* view);
+extern void RenderWorld(vView* view);
 #endif

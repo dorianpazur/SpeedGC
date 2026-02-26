@@ -387,6 +387,8 @@ public:
 	virtual void Start();
 };
 
+extern vTextureCache::CachedTexture* gEnvmapTexture;
+
 void vEffect_CAR::Start()
 {
 	if (texture && vEffectStaticState::pViewMatrix && vEffectStaticState::pWorldToLocalMatrix)
@@ -489,21 +491,64 @@ void vEffect_CAR::Start()
 		GX_SetChanAmbColor(GX_COLOR0A0, lightColor[2]);
 		GX_SetChanAmbColor(GX_COLOR1A1, lightColor[6]);
 		
-		GX_SetNumTexGens(1);
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 		
-		GX_SetNumTevStages(2);
+		if (gEnvmapTexture)
+		{
+			GX_SetNumTexGens(2);
+			GX_SetNumTevStages(3);
+			
+			tMatrix4 model;
+			tMatrix4 mv;
+			tMatrix4 envmap;
+			guMtxInverse(*(Mtx*)vEffectStaticState::pWorldToLocalMatrix, *(Mtx*)&model);
+			guMtxConcat(*(Mtx*)vEffectStaticState::pViewMatrix, *(Mtx*)&model, *(Mtx*)&mv);
+			guMtxInverse(*(Mtx*)&mv, *(Mtx*)&mv);
+			guMtxTranspose(*(Mtx*)&mv, *(Mtx*)&mv);
+			
+			Mtx s;
+			Mtx t;
+			
+			guMtxScale(s, 0.5F, -0.5F, 0.0F);
+			guMtxTrans(t, 0.5F, 0.5F, 1.0F);
+			guMtxConcat(s, *(Mtx*)&mv, *(Mtx*)&envmap);
+			guMtxConcat(t, *(Mtx*)&envmap, *(Mtx*)&envmap);
+			
+			GX_LoadTexObj(&gEnvmapTexture->GXTextureObj, GX_TEXMAP1);
+			GX_LoadTexMtxImm(*(Mtx44*)&envmap, GX_TEXMTX0, GX_TG_MTX3x4);
+			GX_SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX3x4, GX_TG_NRM, GX_TEXMTX0);
+		}
+		else
+		{
+			GX_SetNumTexGens(1);
+			GX_SetNumTevStages(2);
+		}
 		
 		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
 		
 		// diffuse
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO );
+		GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_RASA, GX_CA_ZERO );
 		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
+		GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
 		
 		// specular
 		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
 		GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC );
+		GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV );
 		GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
+		GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+		
+		// envmap
+		if (gEnvmapTexture)
+		{
+			GX_SetTevKColorSel(GX_TEVSTAGE2, GX_TEV_KCSEL_1_4);
+			GX_SetTevOrder(GX_TEVSTAGE2, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+			GX_SetTevColorIn(GX_TEVSTAGE2, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_CPREV );
+			GX_SetTevAlphaIn(GX_TEVSTAGE2, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV );
+			GX_SetTevColorOp(GX_TEVSTAGE2, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
+			GX_SetTevAlphaOp(GX_TEVSTAGE2, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+		}
 	}
 }

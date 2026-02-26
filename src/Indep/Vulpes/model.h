@@ -41,7 +41,7 @@ struct ALIGN(32) vMesh
 	TextureHashes mTextures;
 	VEFFECT_ID mEffectID = VEFFECT_STANDARD;
 	
-	DEF_TWARE_NEW_OVERRIDE(vMesh, MAIN_POOL)
+	DEF_TWARE_NEW_OVERRIDE(vMesh, MODEL_POOL)
 	
 	vMesh() {};
 	vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char* basePath);
@@ -61,7 +61,7 @@ private:
 	void CreateBuffer(size_t vertexCount)
 	{
 		mVertexBufferSize = sizeof(vVertex)*vertexCount;
-		mVertices = (vVertex*)tWareMalloc(mVertexBufferSize, "VertexBuffer", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+		mVertices = (vVertex*)tWareMalloc(mVertexBufferSize, "VertexBuffer", __LINE__, ALLOC_PARAMS(MODEL_POOL, 32));
 	}
 };
 
@@ -69,7 +69,7 @@ struct ALIGN(32) vSolid
 {
 	std::vector<vMesh> mMeshes;
 		
-	DEF_TWARE_NEW_OVERRIDE(vSolid, MAIN_POOL)
+	DEF_TWARE_NEW_OVERRIDE(vSolid, MODEL_POOL)
 	vSolid() {}  //to allow creating an empty vSolid when building a cube
 	vSolid(tinygltf::Model *model, tinygltf::Node &node, const char* basePath = "")
 	{	
@@ -89,7 +89,7 @@ struct ALIGN(32) vModel
 {
 	std::vector<vSolid> mSolids;
 	
-	DEF_TWARE_NEW_OVERRIDE(vModel, MAIN_POOL)
+	DEF_TWARE_NEW_OVERRIDE(vModel, MODEL_POOL)
 	
 	void BuildFromGLTFModel(tinygltf::Model* model, const char* basePath = "");
 	vModel() {}

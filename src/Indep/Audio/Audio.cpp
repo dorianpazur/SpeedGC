@@ -14,24 +14,24 @@
 void EndianSwap(int16_t& i)
 {
 	uint16_t* data = (uint16_t*)&i;
-	uint16_t swap = (*data >> 8) | (*data << 8);
+	uint16_t swap = ((*data) >> 8) | ((*data) << 8);
 	i = *(int16_t*)&swap;
 }
 
 void EndianSwap(uint16_t& i)
 {
 	uint16_t* data = (uint16_t*)&i;
-	uint16_t swap = (*data >> 8) | (*data << 8);
+	uint16_t swap = ((*data) >> 8) | ((*data) << 8);
 	i = *(uint16_t*)&swap;
 }
 
 void EndianSwap(int32_t& i)
 {
 	uint32_t* data = (uint32_t*)&i;
-	uint32_t swap =	((*data & 0xFF000000) >> 24) |
-					((*data & 0x00FF0000) >> 8) |
-					((*data & 0x0000FF00) << 8) |
-					((*data & 0x000000FF) << 24);
+	uint32_t swap =	(((*data) & 0xFF000000) >> 24) |
+					(((*data) & 0x00FF0000) >> 8) |
+					(((*data) & 0x0000FF00) << 8) |
+					(((*data) & 0x000000FF) << 24);
 	
 	i = *(int32_t*)&swap;
 }
@@ -39,10 +39,10 @@ void EndianSwap(int32_t& i)
 void EndianSwap(uint32_t& i)
 {
 	uint32_t* data = (uint32_t*)&i;
-	uint32_t swap =	((*data & 0xFF000000) >> 24) |
-					((*data & 0x00FF0000) >> 8) |
-					((*data & 0x0000FF00) << 8) |
-					((*data & 0x000000FF) << 24);
+	uint32_t swap =	(((*data) & 0xFF000000) >> 24) |
+					(((*data) & 0x00FF0000) >> 8) |
+					(((*data) & 0x0000FF00) << 8) |
+					(((*data) & 0x000000FF) << 24);
 	
 	i = *(uint32_t*)&swap;
 }
@@ -53,6 +53,19 @@ int16_t EndianSwapSample(int16_t i)
 	uint16_t swap = (*data >> 8) | (*data << 8);
 	return *(int16_t*)&swap;
 }
+
+//---------------------------------------------------------------------------------
+
+static lwpq_t thQueue;
+static lwp_t thread_handle;
+const size_t kAudioStackSize = 0x10000;
+uint8_t *gAudioStack;//[kAudioStackSize];
+
+const size_t kNumSecondsOfBuffer = 1;
+const size_t kNumSamplesInBuffer = 32000 * kNumSecondsOfBuffer; // second
+const size_t kNumChannels = 2;
+const size_t kBufferSize = kNumSamplesInBuffer * sizeof(uint16_t) * kNumChannels;
+int16_t streamingBuffer[2][kBufferSize/sizeof(uint16_t)] ATTRIBUTE_ALIGN(32); // double buffered 32000 stereo samples
 
 //---------------------------------------------------------------------------------
 
@@ -130,30 +143,36 @@ struct AudioStream
 	
 	WaveHeader header;
 	double dspTime = 0;
+	uint64_t streamTime = 0; // this must be a separate uint value to avoid value corruption weirdness
 	size_t size = 0;
 	bool playing = false;
 	bool firstFrame = false;
+	tMutex mutex;
+	bool fopenRequested = false;
+	size_t position;
 	
 	#define AudioStreamAssert(cond) \
 	if (!(cond)) \
 	{ \
 		printf("AudioStreamAssert failed on line %u: %s was false\n", __LINE__, #cond); \
-		fclose(file); \
+		ScreenPrintf(0, 0, 5.0f, 0xFFFF00FF, "AudioStreamAssert failed on line %u: %s was false\n", __LINE__, #cond); \
 		gFileIOMutex.Unlock(); \
+		CloseFile(); \
 		return false; \
 	}
 	
 	bool OpenFile(const char* path)
 	{
+		mutex.Lock();
+		
+		char pathToOpen[TFILE_MAX_PATH + 1];
+		snprintf(pathToOpen, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
+		
 		if (file)
 			CloseFile(); // close any already open files
 		
-		char realPath[TFILE_MAX_PATH + 1];
-	
-		snprintf(realPath, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
-		
 		gFileIOMutex.Lock();
-		file = fopen(realPath, "rb");
+		file = fopen(pathToOpen, "rb");
 		
 		if (!file)
 		{
@@ -182,29 +201,48 @@ struct AudioStream
 		AudioStreamAssert(header.data.ChunkID == 0x61746164); // check if says data	
 		
 		gFileIOMutex.Unlock();
+		
+		// clear the buffers
+		if (streamingBuffer[0])
+			memset(streamingBuffer[0], 0, kBufferSize);
+		if (streamingBuffer[1])
+			memset(streamingBuffer[1], 0, kBufferSize);
+		
 		firstFrame = true;
 		playing = true;
-		printf("Now Playing: %s\n", path);
+		mutex.Unlock();
 		return true;
 	};
 	
-	void GetData(void* dest, size_t bufferSize)
+	inline void GetData(void* dest, size_t bufferSize)
 	{
-		if (file)
-		{	
+		mutex.Lock();
+		
+		if (dest)
+		{
 			gFileIOMutex.Lock();
 			
-			if (((size_t)ftell(file)) > size - bufferSize)
-				fseek(file, sizeof(header), SEEK_SET); // go back to start of audio buffer to loop
-			
-			fread(dest, bufferSize, 1, file);
-			
+			if (file)
+			{
+				if (position > header.data.ChunkSize - bufferSize)
+					position = 0;
+				
+				fseek(file, sizeof(header) + position, SEEK_SET); // go back to start of audio buffer to loop
+				
+				fread(dest, bufferSize, 1, file);
+				
+				position += bufferSize;
+			}
 			gFileIOMutex.Unlock();
 		}
+		
+		mutex.Unlock();
 	}
 	
 	void CloseFile()
 	{
+		mutex.Lock();
+		
 		playing = false;
 		gFileIOMutex.Lock();
 		if (file)
@@ -212,6 +250,14 @@ struct AudioStream
 		gFileIOMutex.Unlock();
 		file = NULL;
 		dspTime = 0;
+		
+		// clear the buffers
+		if (streamingBuffer[0])
+			memset(streamingBuffer[0], 0, kBufferSize);
+		if (streamingBuffer[1])
+			memset(streamingBuffer[1], 0, kBufferSize);
+		
+		mutex.Unlock();
 	};
 	
 	~AudioStream()
@@ -224,31 +270,18 @@ struct AudioStream
 
 AudioStream stream;
 
-static lwpq_t thQueue;
-static lwp_t thread_handle;
-const size_t kAudioStackSize = 0x8000;
-uint8_t gAudioStack[kAudioStackSize];
-
-const size_t kNumSecondsOfBuffer = 1;
-const size_t kNumSamplesInBuffer = 32000 * kNumSecondsOfBuffer; // second
-const size_t kNumChannels = 2;
-const size_t kBufferSize = kNumSamplesInBuffer * sizeof(uint16_t) * kNumChannels;
-int16_t *streamingBuffer[2] ATTRIBUTE_ALIGN(32); // double buffered 32000 stereo samples
-
 tMutex gAudioMutexBuf1;
 tMutex gAudioMutexBuf2;
 tMutex gDSPTimeMutex;
 
 void UpdateAudio()
 {
-	static uint8_t prevFrame = -1;
-	
-	gDSPTimeMutex.Lock();
-	uint8_t curFrame = 1 - ((uint64_t)stream.dspTime / kNumSamplesInBuffer); // get the other frame
-	gDSPTimeMutex.Unlock();
+	static int8_t prevFrame = -1;
 	
 	if (stream.playing)
 	{
+		uint8_t curFrame = 1 - (stream.streamTime / kNumSamplesInBuffer); // get the other frame
+		
 		if (stream.firstFrame) // force a refresh when playing first frame
 			prevFrame = -1;
 	
@@ -257,14 +290,14 @@ void UpdateAudio()
 			tMutex& mutex = curFrame ? gAudioMutexBuf2 : gAudioMutexBuf1;
 			
 			mutex.Lock();
+			
 			stream.GetData(streamingBuffer[curFrame], kBufferSize);
+			
 			mutex.Unlock();
 			
 			if (stream.firstFrame)
 			{
-				gDSPTimeMutex.Lock();
 				stream.dspTime = kNumSamplesInBuffer;
-				gDSPTimeMutex.Unlock();
 			}
 			
 			prevFrame = curFrame;
@@ -303,21 +336,28 @@ void AudioFrameCallback()
 {
 	static bool other = true;
 	
-	if (streamingBuffer[0] && streamingBuffer[1] && stream.playing)
+	if (stream.playing)
 	{
+		gDSPTimeMutex.Lock();
 		uint32_t currentBuffer;
 		uint32_t currentSample;
+		double dspTime = stream.dspTime;
 		
+		//gDSPTimeMutex.Lock();
 		for (int i = 0; i < 160; i++)
 		{
-			currentBuffer = ((uint64_t)stream.dspTime) / kNumSamplesInBuffer;
-			currentSample = ((uint64_t)stream.dspTime) % kNumSamplesInBuffer;
+			currentBuffer = ((uint64_t)dspTime) / kNumSamplesInBuffer;
+			currentSample = ((uint64_t)dspTime) % kNumSamplesInBuffer;
 			
 			bufL[other ? 0 : 1][i] = EndianSwapSample(streamingBuffer[currentBuffer][(currentSample * stream.header.fmt.NumChannels) + 0]);
 			bufR[other ? 0 : 1][i] = EndianSwapSample(streamingBuffer[currentBuffer][(currentSample * stream.header.fmt.NumChannels) + 1]);
 			
-			stream.dspTime = fmod(stream.dspTime + (stream.header.fmt.SampleRate / 32000.0), (kNumSamplesInBuffer * 2)); // both buffers
+			dspTime = fmod(dspTime + (stream.header.fmt.SampleRate / 32000.0), (kNumSamplesInBuffer * 2)); // both buffers
 		}
+		
+		stream.dspTime = dspTime;
+		stream.streamTime = dspTime; // signal for loader thread
+		gDSPTimeMutex.Unlock();
 	}
 	else
 	{
@@ -370,11 +410,11 @@ namespace Audio
 			DCFlushRangeNoSync(bufL, sizeof(bufL));
 			DCFlushRangeNoSync(bufR, sizeof(bufR));
 			
-			streamingBuffer[0] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 1", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
-			streamingBuffer[1] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+			//streamingBuffer[0] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 1", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+			//streamingBuffer[1] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 			
 			LWP_InitQueue(&thQueue);
-			LWP_CreateThread(&thread_handle, AudioThread, NULL, &gAudioStack, kAudioStackSize, 0);
+			LWP_CreateThread(&thread_handle, AudioThread, NULL, tWareMalloc(kAudioStackSize, "Audio Stack", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32)), kAudioStackSize, 0);
 		}
 		
 		stream.OpenFile("Audio/Music/title.wav");
@@ -385,12 +425,6 @@ namespace Audio
 	void Uninit()
 	{
 		stream.CloseFile();
-		
-		// clear the buffers
-		if (streamingBuffer[0])
-			memset(streamingBuffer[0], 0, kBufferSize);
-		if (streamingBuffer[1])
-			memset(streamingBuffer[1], 0, kBufferSize);
 	}
 	
 	void Update()
