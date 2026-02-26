@@ -6,6 +6,7 @@
 namespace Audio
 {
 	extern void Init();
+	extern void Uninit();
 	extern void Update();
 }
 

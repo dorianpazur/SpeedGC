@@ -132,6 +132,7 @@ struct AudioStream
 	double dspTime = 0;
 	size_t size = 0;
 	bool playing = false;
+	bool firstFrame = false;
 	
 	#define AudioStreamAssert(cond) \
 	if (!(cond)) \
@@ -144,6 +145,9 @@ struct AudioStream
 	
 	bool OpenFile(const char* path)
 	{
+		if (file)
+			CloseFile(); // close any already open files
+		
 		char realPath[TFILE_MAX_PATH + 1];
 	
 		snprintf(realPath, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
@@ -178,6 +182,7 @@ struct AudioStream
 		AudioStreamAssert(header.data.ChunkID == 0x61746164); // check if says data	
 		
 		gFileIOMutex.Unlock();
+		firstFrame = true;
 		playing = true;
 		printf("Now Playing: %s\n", path);
 		return true;
@@ -200,12 +205,13 @@ struct AudioStream
 	
 	void CloseFile()
 	{
+		playing = false;
 		gFileIOMutex.Lock();
 		if (file)
 			fclose(file);
 		gFileIOMutex.Unlock();
-		playing = false;
 		file = NULL;
+		dspTime = 0;
 	};
 	
 	~AudioStream()
@@ -235,25 +241,36 @@ tMutex gDSPTimeMutex;
 
 void UpdateAudio()
 {
-	static uint64_t prevFrame = -1;
-	static uint64_t fileOffset = 0;
+	static uint8_t prevFrame = -1;
 	
 	gDSPTimeMutex.Lock();
-	uint64_t curFrame = 1 - ((uint64_t)stream.dspTime / kNumSamplesInBuffer); // get the other frame
+	uint8_t curFrame = 1 - ((uint64_t)stream.dspTime / kNumSamplesInBuffer); // get the other frame
 	gDSPTimeMutex.Unlock();
 	
-	if (prevFrame != curFrame)
+	if (stream.playing)
 	{
-		tMutex& mutex = curFrame ? gAudioMutexBuf2 : gAudioMutexBuf1;
-		
-		if (stream.playing)
+		if (stream.firstFrame) // force a refresh when playing first frame
+			prevFrame = -1;
+	
+		if (prevFrame != curFrame)
 		{
+			tMutex& mutex = curFrame ? gAudioMutexBuf2 : gAudioMutexBuf1;
+			
 			mutex.Lock();
 			stream.GetData(streamingBuffer[curFrame], kBufferSize);
 			mutex.Unlock();
+			
+			if (stream.firstFrame)
+			{
+				gDSPTimeMutex.Lock();
+				stream.dspTime = kNumSamplesInBuffer;
+				gDSPTimeMutex.Unlock();
+			}
+			
+			prevFrame = curFrame;
 		}
 		
-		prevFrame = curFrame;
+		stream.firstFrame = false;
 	}
 }
 
@@ -301,10 +318,18 @@ void AudioFrameCallback()
 			
 			stream.dspTime = fmod(stream.dspTime + (stream.header.fmt.SampleRate / 32000.0), (kNumSamplesInBuffer * 2)); // both buffers
 		}
-		
-		DCFlushRange(bufL[other ? 0 : 1], 160 * sizeof(int32_t));
-		DCFlushRange(bufR[other ? 0 : 1], 160 * sizeof(int32_t));
 	}
+	else
+	{
+		for (int i = 0; i < 160; i++)
+		{
+			bufL[other ? 0 : 1][i] = 0;
+			bufR[other ? 0 : 1][i] = 0;
+		}
+	}
+	
+	DCFlushRange(bufL[other ? 0 : 1], 160 * sizeof(int32_t));
+	DCFlushRange(bufR[other ? 0 : 1], 160 * sizeof(int32_t));
 	
 	other = !other;
 }
@@ -329,26 +354,43 @@ namespace Audio
 {
 	void Init()
 	{
-		// audio
-		AR_Init(NULL, 0);
-		ARQ_Init();
-		AUDIO_Init(NULL);
-		AXInit();
-		AXSetCompressor(AX_COMPRESSOR_OFF);
-		AXRegisterAuxACallback(AuxACallback, NULL);
-		AXRegisterCallback(&AudioFrameCallback);
-		AXSetMode(AX_MODE_STEREO);
-		
-		DCFlushRangeNoSync(bufL, sizeof(bufL));
-		DCFlushRangeNoSync(bufR, sizeof(bufR));
-		
-		streamingBuffer[0] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 1", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
-		streamingBuffer[1] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
-		
-		LWP_InitQueue(&thQueue);
-		LWP_CreateThread(&thread_handle, AudioThread, NULL, &gAudioStack, kAudioStackSize, 0);
+		static bool initialized = false;
+		if (!initialized)
+		{
+			// audio
+			AR_Init(NULL, 0);
+			ARQ_Init();
+			AUDIO_Init(NULL);
+			AXInit();
+			AXSetCompressor(AX_COMPRESSOR_OFF);
+			AXRegisterAuxACallback(AuxACallback, NULL);
+			AXRegisterCallback(&AudioFrameCallback);
+			AXSetMode(AX_MODE_STEREO);
+			
+			DCFlushRangeNoSync(bufL, sizeof(bufL));
+			DCFlushRangeNoSync(bufR, sizeof(bufR));
+			
+			streamingBuffer[0] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 1", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+			streamingBuffer[1] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+			
+			LWP_InitQueue(&thQueue);
+			LWP_CreateThread(&thread_handle, AudioThread, NULL, &gAudioStack, kAudioStackSize, 0);
+		}
 		
 		stream.OpenFile("Audio/Music/title.wav");
+		
+		initialized = true;
+	}
+	
+	void Uninit()
+	{
+		stream.CloseFile();
+		
+		// clear the buffers
+		if (streamingBuffer[0])
+			memset(streamingBuffer[0], 0, kBufferSize);
+		if (streamingBuffer[1])
+			memset(streamingBuffer[1], 0, kBufferSize);
 	}
 	
 	void Update()

@@ -125,10 +125,11 @@ int main(int argc, char **argv)
 			delete gCubeModel;
 			gCubeModel = NULL;
 		}
-
+		
 		World::Uninit();
 		NGSpriteManager.Reset();
 		vTextureCache::Uninit();
+		Audio::Uninit();
 		
 		printf("Memory at exit:");
 		tMemoryPrintAllocationsByAddress(MAIN_POOL);
