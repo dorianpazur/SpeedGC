@@ -49,7 +49,7 @@ void* tMemoryPool::AllocateMemory(size_t size, uint32_t alignment, const char* d
 	
 	//printf("Allocating %u bytes for %s\n", size, debugText);
 	size_t originalSize = size; // purely for debugging
-	Block* block = GetFirstFreeBlockThatFitsSize(tGetNextAlignedSizeOrAddress(size + sizeof(Block), alignment));
+	Block* block = GetFirstFreeBlockThatFitsSize(tGetNextAlignedSizeOrAddress(size + sizeof(Block) + alignment - 1, alignment));
 
 	if (block)
 	{

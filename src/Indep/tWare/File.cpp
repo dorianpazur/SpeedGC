@@ -27,7 +27,7 @@ tFile* tOpenFile(const char* path)
 
 	char realPath[TFILE_MAX_PATH + 1] = { 0 };
 	snprintf(realPath, TFILE_MAX_PATH, "%s%s", gBaseDir, path);
-	gFileIOMutex.Lock();
+	//gFileIOMutex.Lock();
 	FILE* cFile = fopen(realPath, "rb");
 	
 	if (cFile)
@@ -68,7 +68,7 @@ tFile* tOpenFile(const char* path)
 		}
 		
 		fclose(cFile);
-		gFileIOMutex.Unlock();
+		//gFileIOMutex.Unlock();
 
 		return file;
 	}
