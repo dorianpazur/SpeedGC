@@ -24,8 +24,6 @@ const size_t kNumChannels = 2;
 const size_t kBufferSize = kNumSamplesInBuffer * sizeof(uint16_t) * kNumChannels;
 int16_t *streamingBuffer[2] ATTRIBUTE_ALIGN(32); // double buffered 32000 stereo samples
 
-//FILE* audioFile;
-
 tMutex gAudioMutexBuf1;
 tMutex gAudioMutexBuf2;
 tMutex gDSPTimeMutex;
@@ -178,14 +176,7 @@ namespace Audio
 		
 		LWP_InitQueue(&thQueue);
 		LWP_CreateThread(&thread_handle, AudioThread, NULL, &gAudioStack, kAudioStackSize, 0);
-		
-		//music = tOpenFile("subwaysofyourmind.raw");
-		//int16_t* data = (int16_t*)music->data;
-		//for (size_t i = 0; i < music->filesize / 2; i++)
-		//{
-		//	data[i] = EndianSwapI16(data[i]);
-		//}
-		
+
 		play = true;
 	}
 	
