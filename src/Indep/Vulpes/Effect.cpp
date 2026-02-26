@@ -6,6 +6,8 @@
 #include "GC/EffectPlat.cpp"
 #endif
 
+tMatrix4 *vEffectStaticState::pViewMatrix = NULL;
+tMatrix4 *vEffectStaticState::pWorldToLocalMatrix = NULL;
 vEffect *vEffectStaticState::pCurrentEffect = NULL;
 
 vEffect *vEffects[NUM_VEFFECTS];
@@ -13,6 +15,8 @@ vEffect *vEffects[NUM_VEFFECTS];
 void vEffect::Start() {};
 void vEffect::End()
 {
+	vEffectStaticState::pViewMatrix = NULL;
+	vEffectStaticState::pWorldToLocalMatrix = NULL;
 	texture = NULL;
 };
 
@@ -20,6 +24,8 @@ VEFFECT_ID vEffect::GetEffectIDFromString(const char* str)
 {
 	if (strcmp(str, "STANDARD") == 0)
 		return VEFFECT_STANDARD;
+	else if (strcmp(str, "CAR") == 0)
+		return VEFFECT_CAR;
 	else if (strcmp(str, "FE") == 0)
 		return VEFFECT_FE;
 	else if (strcmp(str, "SKY") == 0)
@@ -46,6 +52,9 @@ void vEffectInit()
 		default:
 		case VEFFECT_STANDARD:
 			vEffects[i] = new vEffect_STANDARD();
+			break;
+		case VEFFECT_CAR:
+			vEffects[i] = new vEffect_CAR();
 			break;
 		case VEFFECT_FE:
 			vEffects[i] = new vEffect_FE();

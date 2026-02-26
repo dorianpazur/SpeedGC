@@ -379,3 +379,131 @@ void vEffect_MOTIONBLUR::Start()
 		GX_SetTevAlphaOp(GX_TEVSTAGE1,GX_TEV_ADD,GX_TB_ZERO,GX_CS_SCALE_1,GX_TRUE,GX_TEVPREV);
 	}
 }
+
+class vEffect_CAR : public vEffect
+{	
+public:
+	DEF_TWARE_NEW_OVERRIDE(vEffect_CAR, MAIN_POOL)
+	virtual void Start();
+};
+
+void vEffect_CAR::Start()
+{
+	if (texture && vEffectStaticState::pViewMatrix && vEffectStaticState::pWorldToLocalMatrix)
+	{
+		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+		
+		tMatrix4 VtoW;
+		tInvertMatrix(&VtoW, vEffectStaticState::pViewMatrix);
+		
+		const float LARGE_NUMBER = 9999999999.0f;
+		
+		tVector3 lpos;
+		tVector3 lpos2;
+		tVector3 rimPos;
+		tVector3 rimPos2;
+		
+		GXLightObj lobj;
+		GXLightObj lobj2;
+		GXLightObj lspecobj;
+		GXLightObj rimLight;
+		GXLightObj rimLight2;
+		GXLightObj rimLightSpec;
+		GXLightObj rimLight2Spec;
+		
+		const static GXColor lightColor[] = {
+			{0xB0,0xB0,0xB0,0xFF}, // Light 1 color
+			{0x58,0x58,0x58,0xFF}, // Light 2 color
+			{0x50,0x50,0x60,0xFF}, // Ambient color
+			{0x60,0x60,0x60,0xFF}, // Spec color
+			{0xE0,0xD0,0xC0,0xFF}, // rim 1
+			{0x3F,0x4F,0x5F,0xFF}, // rim 2
+			{0x00,0x00,0x00,0xFF}, // No color
+		};
+		
+		lpos.x = 0.707f * LARGE_NUMBER;
+		lpos.y = 0.707f * LARGE_NUMBER;
+		lpos.z = 0.707f * LARGE_NUMBER;
+		
+		lpos2.x = -0.707f * LARGE_NUMBER;
+		lpos2.y = -0.707f * LARGE_NUMBER;
+		lpos2.z = -0.707f * LARGE_NUMBER;
+		
+		rimPos.x =  0.5 * LARGE_NUMBER;
+		rimPos.y =  0.707f * LARGE_NUMBER;
+		rimPos.z = -0.707f * LARGE_NUMBER;
+		
+		rimPos2.x = -0.5 * LARGE_NUMBER;
+		rimPos2.y = -0.35f * LARGE_NUMBER;
+		rimPos2.z = -0.35f * LARGE_NUMBER;
+		
+		tMulVector(&lpos,vEffectStaticState::pWorldToLocalMatrix,&lpos);
+		tMulVector(&rimPos,&VtoW,&rimPos);
+		tMulVector(&rimPos2,&VtoW,&rimPos2);
+		tMulVector(&rimPos,vEffectStaticState::pWorldToLocalMatrix,&rimPos);
+		tMulVector(&rimPos2,vEffectStaticState::pWorldToLocalMatrix,&rimPos2);
+		
+		GX_InitLightPos(&lobj,lpos.x,lpos.y,lpos.z);
+		GX_InitLightColor(&lobj,lightColor[0]);
+		
+		GX_InitLightPos(&lobj2,lpos2.x,lpos2.y,lpos2.z);
+		GX_InitLightColor(&lobj2,lightColor[1]);
+		
+		GX_InitSpecularDir(&lspecobj,-lpos.x,-lpos.y,-lpos.z);
+		GX_InitLightColor(&lspecobj,lightColor[3]);
+		GX_InitLightShininess(&lspecobj, 60.0f);
+		
+		GX_InitLightPos(&rimLight,rimPos.x,rimPos.y,rimPos.z);
+		GX_InitLightColor(&rimLight,lightColor[4]);
+		GX_InitLightAttnA(&rimLight, 2.0, 2.0, 2.0);
+		
+		GX_InitSpecularDir(&rimLightSpec,-rimPos.x,-rimPos.y,-rimPos.z);
+		GX_InitLightColor(&rimLightSpec,lightColor[4]);
+		GX_InitLightAttnA(&rimLightSpec, 2.0, 2.0, 2.0);
+		GX_InitLightShininess(&rimLightSpec, 22.0f);
+		
+		GX_InitLightPos(&rimLight2,rimPos2.x,rimPos2.y,rimPos2.z);
+		GX_InitLightColor(&rimLight2,lightColor[5]);
+		GX_InitLightAttnA(&rimLight2, 2.0, 2.0, 2.0);
+		
+		GX_InitSpecularDir(&rimLight2Spec,-rimPos2.x,-rimPos2.y,-rimPos2.z);
+		GX_InitLightColor(&rimLight2Spec,lightColor[5]);
+		GX_InitLightAttnA(&rimLight2Spec, 2.0, 2.0, 2.0);
+		GX_InitLightShininess(&rimLight2Spec, 22.0f);
+		
+		GX_LoadLightObj(&lobj,GX_LIGHT0);
+		GX_LoadLightObj(&lobj2,GX_LIGHT1);
+		GX_LoadLightObj(&rimLight,GX_LIGHT2);
+		GX_LoadLightObj(&rimLight2,GX_LIGHT3);
+		GX_LoadLightObj(&lspecobj,GX_LIGHT4);
+		GX_LoadLightObj(&rimLightSpec,GX_LIGHT5);
+		GX_LoadLightObj(&rimLight2Spec,GX_LIGHT6);
+		
+		// set number of rasterized color channels
+		GX_SetNumChans(2);
+		GX_SetChanCtrl(GX_COLOR0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT0 | GX_LIGHT1 | GX_LIGHT2 | GX_LIGHT3,	GX_DF_CLAMP,	GX_AF_NONE);
+		GX_SetChanCtrl(GX_COLOR1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT4 | GX_LIGHT5 | GX_LIGHT6,	GX_DF_CLAMP,	GX_AF_SPEC);
+		GX_SetChanCtrl(GX_ALPHA0,	GX_DISABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHTNULL,						GX_DF_CLAMP,		GX_AF_NONE);
+		GX_SetChanCtrl(GX_ALPHA1,	GX_DISABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHTNULL,						GX_DF_CLAMP,		GX_AF_NONE);
+	
+		GX_SetChanAmbColor(GX_COLOR0A0, lightColor[2]);
+		GX_SetChanAmbColor(GX_COLOR1A1, lightColor[6]);
+		
+		GX_SetNumTexGens(1);
+		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+		
+		GX_SetNumTevStages(2);
+		
+		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
+		
+		// diffuse
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO );
+		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
+		
+		// specular
+		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
+		GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC );
+		GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
+	}
+}

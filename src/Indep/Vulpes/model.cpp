@@ -256,11 +256,8 @@ void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, cons
 
 void vModel::Render(vView* view, tMatrix4 *transform)
 {
-	const float LARGE_NUMBER = 9999999999.0f;
 	tMatrix4 mv; // modelview matrix.	
 	tMatrix4 WtoL; // world to local matrix.	
-	tMatrix4 VtoWtmp; // view to world matrix.	
-	tMatrix4 VtoW; // view to world matrix.	
 	
 	// bad naming: this means multiply a by b and put the result into c (ab)
 	tMulMatrix(&mv, &view->ViewMatrix, transform);
@@ -269,8 +266,6 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 	GX_LoadPosMtxImm(*(Mtx44*)&mv, GX_PNMTX0);
 	
 	tInvertMatrix(&WtoL, transform);
-	tInvertMatrix(&VtoWtmp, &view->ViewMatrix);
-    tTransposeMatrix(&VtoW, &VtoWtmp);
 	
 	GX_SetCullMode(GX_CULL_BACK);
 	
@@ -437,6 +432,8 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			*/
 			
 			vEffectStaticState::pCurrentEffect = vEffects[mSolids[solid].mMeshes[mesh].mEffectID];
+			vEffectStaticState::pViewMatrix = &view->ViewMatrix;
+			vEffectStaticState::pWorldToLocalMatrix = &WtoL;
 			
 			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap));
 			

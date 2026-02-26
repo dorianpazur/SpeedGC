@@ -6,6 +6,7 @@
 
 #include <tWare/Align.h>
 #include <tWare/Memory.h>
+#include <tWare/Math.h>
 
 #if defined(EA_PLATFORM_GAMECUBE)
 #include "GC/EffectPlat.h"
@@ -14,6 +15,7 @@
 enum VEFFECT_ID
 {
 	VEFFECT_STANDARD,
+	VEFFECT_CAR,
 	VEFFECT_FE,
 	VEFFECT_SKY,
 	VEFFECT_PARTICLES,
@@ -52,6 +54,8 @@ public:
 class vEffectStaticState
 {
 public:
+	static tMatrix4 *pViewMatrix;
+	static tMatrix4 *pWorldToLocalMatrix;
 	static vEffect *pCurrentEffect;
 };
 
