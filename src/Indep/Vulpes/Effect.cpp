@@ -6,6 +6,88 @@
 #include "GC/EffectPlat.cpp"
 #endif
 
+// material stuff
+
+vMaterial DullPlastic
+{
+	
+};
+
+vMaterial CarPaint
+{
+	.EnvmapR = 0.75f,
+	.EnvmapG = 0.75f,
+	.EnvmapB = 0.75f,
+	.EnvmapA = 0.75f,
+	
+	.DiffuseMin = 0.5f,
+	.DiffuseMax = 1.0f
+};
+
+vMaterial Glass
+{
+	.EnvmapR = 1.0f,
+	.EnvmapG = 1.0f,
+	.EnvmapB = 1.0f,
+	.EnvmapA = 1.0f,
+	
+	.DiffuseMin = 0.25f,
+	.DiffuseMax = 0.5f
+};
+
+vMaterial GlassMask
+{
+	.EnvmapR = 1.0f,
+	.EnvmapG = 1.0f,
+	.EnvmapB = 1.0f,
+	.EnvmapA = 1.0f,
+	
+	.DiffuseMin = 0.25f,
+	.DiffuseMax = 0.5f
+};
+
+vMaterial Chrome
+{
+	.EnvmapR = 2.0f,
+	.EnvmapG = 2.0f,
+	.EnvmapB = 2.0f,
+	.EnvmapA = 2.0f,
+	
+	.DiffuseMin = 0.1f,
+	.DiffuseMax = 0.25f
+};
+
+vMaterial Taillights
+{
+	.EnvmapR = 0.65f,
+	.EnvmapG = 0.65f,
+	.EnvmapB = 0.65f,
+	.EnvmapA = 0.65f,
+	
+	.DiffuseMin = 0.75f,
+	.DiffuseMax = 1.0f
+};
+
+vMaterial *vGetMaterialFromName(const char* name)
+{
+	if (strcmp(name, "DullPlastic") == 0)
+		return &DullPlastic;
+	else if (strcmp(name, "CarPaint") == 0)
+		return &CarPaint;
+	else if (strcmp(name, "Glass") == 0)
+		return &Glass;
+	else if (strcmp(name, "GlassMask") == 0)
+		return &GlassMask;
+	else if (strcmp(name, "Chrome") == 0)
+		return &Chrome;
+	else if (strcmp(name, "Taillights") == 0)
+		return &Taillights;
+	
+	return &DullPlastic; // fallback to dullplastic
+}
+
+// effect stuff
+
 tMatrix4 *vEffectStaticState::pViewMatrix = NULL;
 tMatrix4 *vEffectStaticState::pWorldToLocalMatrix = NULL;
 vEffect *vEffectStaticState::pCurrentEffect = NULL;
@@ -18,6 +100,7 @@ void vEffect::End()
 	vEffectStaticState::pViewMatrix = NULL;
 	vEffectStaticState::pWorldToLocalMatrix = NULL;
 	HalfBrightness = false;
+	Material = &DullPlastic;
 	texture = NULL;
 };
 
@@ -39,6 +122,16 @@ VEFFECT_ID vEffect::GetEffectIDFromString(const char* str)
 		return VEFFECT_WORLDROAD;
 	
 	return VEFFECT_STANDARD; // fallback to standard
+}
+
+TextureAlphaUsageType vGetTextureAlphaUsageType(const char* str)
+{
+	if (strcmp(str, "MODULATED") == 0)
+		return TEXUSAGE_MODULATED;
+	else if (strcmp(str, "PUNCHTHRU") == 0)
+		return TEXUSAGE_PUNCHTHRU;
+	
+	return TEXUSAGE_NONE; // fallback to none
 }
 
 void vEffectInit()
@@ -76,6 +169,12 @@ void vEffectInit()
 			vEffects[i] = new vEffect_MOTIONBLUR();
 			break;
 		}
+	}
+	
+	for (int i = 0; i < NUM_VEFFECTS; i++)
+	{
+		if (vEffects[i])
+			vEffects[i]->ID = (VEFFECT_ID)i;
 	}
 }
 

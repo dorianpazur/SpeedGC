@@ -33,14 +33,20 @@ enum TextureAlphaUsageType
 	TEXUSAGE_PUNCHTHRU
 };
 
+extern struct vMaterial DullPlastic;
+extern struct vMaterial CarPaint;
+extern struct vMaterial Glass;
+extern struct vMaterial Chrome;
+
 class vEffect : public vEffectPlat
 {
-protected:
-	vTextureCache::CachedTexture* texture;
 public:
+	VEFFECT_ID ID;
+	
 	DEF_TWARE_NEW_OVERRIDE(vEffect, MAIN_POOL)
 	
 	bool HalfBrightness = false;
+	struct vMaterial *Material = NULL;
 	
 	virtual void Start();
 	virtual void End();
@@ -51,6 +57,8 @@ public:
 	}
 	
 	static VEFFECT_ID GetEffectIDFromString(const char* str);
+protected:
+	vTextureCache::CachedTexture* texture;
 };
 
 struct vMaterial
@@ -59,7 +67,12 @@ struct vMaterial
 	float EnvmapG = 0.0f;
 	float EnvmapB = 0.0f;
 	float EnvmapA = 0.0f;
+	
+	float DiffuseMin = 1.0f;
+	float DiffuseMax = 1.0f;
 };
+
+vMaterial *vGetMaterialFromName(const char* name);
 
 class vEffectStaticState
 {
@@ -71,5 +84,6 @@ public:
 
 extern vEffect *vEffects[NUM_VEFFECTS];
 extern void vEffectInit();
+extern TextureAlphaUsageType vGetTextureAlphaUsageType(const char* str);
 
 #endif

@@ -12,7 +12,7 @@ const float brakePower = 50.0f;
 const float steeringClamp = 0.3f;
 const float wheelRadius = 0.15f;
 const float wheelWidth = 0.125f;
-const float wheelFriction = 10.0f;  //BT_LARGE_FLOAT;
+const float wheelFriction = 8.0f;  //BT_LARGE_FLOAT;
 const float suspensionStiffness = 30.0f;
 const float suspensionDamping = 5.3f;
 const float suspensionCompression = 11.4f;
@@ -224,7 +224,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 
 	mBrakeInput = std::lerp(mBrakeInput, brake, 60.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, throttle, 30.0f * timestep);
-	float steeringTarget = -steering / (1.0 + std::min(3.0f, speed * 0.007f * mThrottleInput));
+	float steeringTarget = -steering / (1.0 + std::min(1.5f, speed * 0.001f * mThrottleInput));
 	mSteeringInput = std::lerp(mSteeringInput, steeringTarget, (((std::abs(mSteeringInput) - std::abs(steeringTarget)) > 0.0f) ? 4.0f : 1.0f) * timestep);
 	
 	float angVelFrictionLoss = std::abs((mBody->getWorldTransform().getBasis().transpose() * mBody->getAngularVelocity()).getY()) * 0.5f;
@@ -255,7 +255,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
 	{
 		btWheelInfo& wheel = mRaycastVehicle->getWheelInfo(i);
-		wheel.m_frictionSlip = (wheelFriction * speedFrictionScale) / (1.0f + angVelFrictionLoss);
+		wheel.m_frictionSlip = ((wheel.m_bIsFrontWheel ? 0.9f : 1.0f) * wheelFriction * speedFrictionScale) / (1.0f + angVelFrictionLoss);
 		
 		if (mIsReversing)
 		{

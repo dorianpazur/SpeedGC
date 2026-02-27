@@ -140,20 +140,47 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 		}
 		
 		if (model->materials[primitive.material].extras.IsObject()) {
-			if (model->materials[primitive.material].extras.Has("effect")) {
+			if (model->materials[primitive.material].extras.Has("effect"))
+			{
 				const tinygltf::Value::Object &o =
 					model->materials[primitive.material].extras.Get<tinygltf::Value::Object>();
 				const tinygltf::Value &effect = o.find("effect")->second;
 
-				if (effect.IsString()) {
+				if (effect.IsString())
+				{
 					const std::string &str = effect.Get<std::string>();
-					//if (str.compare("curves") == 0) {
-					//	has_curves = true;
-					//}
 					
 					mEffectID = vEffect::GetEffectIDFromString(str.c_str());
 					
 					printf("Found desired effect: %s (%d)\n", str.c_str(), mEffectID);
+				}
+			}
+			
+			if (model->materials[primitive.material].extras.Has("TextureAlphaUsageType")) {
+				const tinygltf::Value::Object &o =
+					model->materials[primitive.material].extras.Get<tinygltf::Value::Object>();
+				const tinygltf::Value &type = o.find("TextureAlphaUsageType")->second;
+				
+				if (type.IsString()) 
+				{
+					const std::string &str = type.Get<std::string>();
+					
+					mTextureAlphaUsageType = vGetTextureAlphaUsageType(str.c_str());
+				}
+			}
+			
+			if (model->materials[primitive.material].extras.Has("MaterialName")) {
+				const tinygltf::Value::Object &o =
+					model->materials[primitive.material].extras.Get<tinygltf::Value::Object>();
+				const tinygltf::Value &name = o.find("MaterialName")->second;
+				
+				if (name.IsString()) 
+				{
+					const std::string &str = name.Get<std::string>();
+					
+					mMaterial = vGetMaterialFromName(str.c_str());
+					
+					printf("Got material: %s\n", str.c_str());
 				}
 			}
 		}
@@ -317,12 +344,37 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			vEffectStaticState::pWorldToLocalMatrix = &WtoL;
 			
 			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap));
+			vEffectStaticState::pCurrentEffect->Material = mSolids[solid].mMeshes[mesh].mMaterial;
 			
 			vEffectStaticState::pCurrentEffect->Start();
 			
 			if (view->ID == VVIEW_ENVMAP)
 			{
 				vEffectStaticState::pCurrentEffect->HalfBrightness = true;
+			}
+			
+			if (vEffectStaticState::pCurrentEffect->ID != VEFFECT_SKY) // sky overrides these, don't touch them
+			{
+				switch (mSolids[solid].mMeshes[mesh].mTextureAlphaUsageType)
+				{
+					case TEXUSAGE_MODULATED:
+						if (mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap == CTStringHash("glass"))
+						{
+							GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+							GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+						}
+						else
+						{
+							GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+							GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+						}
+						break;
+					default:
+					case TEXUSAGE_NONE:
+						GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+						GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+						break;
+				}
 			}
 			
 			// have to step through index buffer manually
@@ -339,8 +391,8 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			
 			GX_End();
 			vEffectStaticState::pCurrentEffect->End();
+			vEffectStaticState::pCurrentEffect = NULL;
 		}
-		vEffectStaticState::pCurrentEffect = NULL;
 	}
 }
 

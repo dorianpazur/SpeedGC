@@ -412,13 +412,16 @@ void vEffect_CAR::Start()
 		GXLightObj lspecobj;
 		GXLightObj fresnelLight;
 		
-		const static GXColor lightColor[] = {
+		uint8_t DiffuseMin = (uint8_t)(((uint32_t)(Material->DiffuseMin * 255.0f)) & 0xFF);
+		uint8_t DiffuseRange = (uint8_t)(((uint32_t)((Material->DiffuseMax - Material->DiffuseMin) * 255.0f)) & 0xFF);
+		
+		GXColor lightColor[] = {
 			{0xF0,0xF0,0xF0,0xFF}, // Light 1 color
 			{0x78,0x78,0x78,0xFF}, // Light 2 color
 			{0x80,0x80,0x80,0xFF}, // Ambient color
 			{0xA0,0xA0,0xA0,0xFF}, // Spec color
-			{0x8F,0x8F,0x8F,0xFF}, // diffuse
-			{0x00,0x00,0x00,0x7F}, // No color, alpha is diffusemin
+			{DiffuseRange,DiffuseRange,DiffuseRange,DiffuseRange}, // diffuse
+			{0x00,0x00,0x00,DiffuseMin}, // No color, alpha is diffusemin
 		};
 		
 		lpos.x = 0.707f * LARGE_NUMBER;
@@ -527,8 +530,13 @@ void vEffect_CAR::Start()
 		// envmap
 		if (gEnvmapTexture)
 		{
-			const float kTempEnvmapIntensity = 0.75f;
-			GXColor envmapColor { (uint8_t)(0xFF * kTempEnvmapIntensity), (uint8_t)(0xFF * kTempEnvmapIntensity), (uint8_t)(0xFF * kTempEnvmapIntensity), 0xFF };
+			GXColor envmapColor
+			{
+				(uint8_t)(((uint32_t)(0xFF * Material->EnvmapR)) & 0xFF),
+				(uint8_t)(((uint32_t)(0xFF * Material->EnvmapG)) & 0xFF),
+				(uint8_t)(((uint32_t)(0xFF * Material->EnvmapB)) & 0xFF),
+				(uint8_t)(((uint32_t)(0xFF * Material->EnvmapA)) & 0xFF)
+			};
 			GX_SetTevKColor(GX_KCOLOR0, envmapColor);
 			GX_SetTevKColorSel(GX_TEVSTAGE3, GX_TEV_KCSEL_K0);
 			GX_SetTevKAlphaSel(GX_TEVSTAGE3, GX_TEV_KASEL_K0_A);
@@ -537,6 +545,29 @@ void vEffect_CAR::Start()
 			GX_SetTevAlphaIn(GX_TEVSTAGE3, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV);
 			GX_SetTevColorOp(GX_TEVSTAGE3, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
 			GX_SetTevAlphaOp(GX_TEVSTAGE3, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+			
+			// overbright
+			if (Material->EnvmapR > 1.0f || Material->EnvmapG > 1.0f || Material->EnvmapB > 1.0f || Material->EnvmapA > 1.0f)
+			{
+				GX_SetNumTevStages(5);
+				
+				GXColor envmapOverbrightColor
+				{
+					(uint8_t)(((uint32_t)(0xFF * std::max(0.0f, Material->EnvmapR - 1.0f))) & 0xFF),
+					(uint8_t)(((uint32_t)(0xFF * std::max(0.0f, Material->EnvmapG - 1.0f))) & 0xFF),
+					(uint8_t)(((uint32_t)(0xFF * std::max(0.0f, Material->EnvmapB - 1.0f))) & 0xFF),
+					(uint8_t)(((uint32_t)(0xFF * std::max(0.0f, Material->EnvmapA - 1.0f))) & 0xFF)
+				};
+				
+				GX_SetTevKColor(GX_KCOLOR1, envmapOverbrightColor);
+				GX_SetTevKColorSel(GX_TEVSTAGE4, GX_TEV_KCSEL_K1);
+				GX_SetTevKAlphaSel(GX_TEVSTAGE4, GX_TEV_KASEL_K1_A);
+				GX_SetTevOrder(GX_TEVSTAGE4, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+				GX_SetTevColorIn(GX_TEVSTAGE4, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_CPREV);
+				GX_SetTevAlphaIn(GX_TEVSTAGE4, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV);
+				GX_SetTevColorOp(GX_TEVSTAGE4, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+				GX_SetTevAlphaOp(GX_TEVSTAGE4, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+			}
 		}
 	}
 }

@@ -40,6 +40,8 @@ struct ALIGN(32) vMesh
 	
 	TextureHashes mTextures;
 	VEFFECT_ID mEffectID = VEFFECT_STANDARD;
+	TextureAlphaUsageType mTextureAlphaUsageType = TEXUSAGE_NONE;
+	vMaterial *mMaterial = vGetMaterialFromName("DullPlastic");
 	
 	DEF_TWARE_NEW_OVERRIDE(vMesh, MODEL_POOL)
 	
