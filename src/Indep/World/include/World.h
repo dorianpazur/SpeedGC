@@ -34,6 +34,7 @@ public:
 	static void Initialize();
 	static void Uninit();
 	static World* GetInstance();
+	static void SpawnPlayer2();
 	
 	float mTimeElapsed = 0.0f;
 	

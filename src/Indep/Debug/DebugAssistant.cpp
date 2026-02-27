@@ -7,6 +7,7 @@
 #include "FloatWidget.h"
 #include "StringListWidget.h"
 #include "ScreenPrintf.h"
+#include "World.h"
 
 extern int twkVblankCount;
 extern bool bSplitScreen;
@@ -54,9 +55,10 @@ void DebugMenuLoad()
     DebugMenu* race = DebugMenu::create("Race ->", root); {
         
     } DebugMenu::endNewestMenu();
-
-    DebugMenu* pod = DebugMenu::create("Pod ->", root); {
-        
+	
+	// car menu
+    DebugMenu* car = DebugMenu::create("Car ->", root); {
+        DebugMenu::addWidgetToNewestMenu(new ActionWidget("Spawn Player 2 car", World::SpawnPlayer2));
     } DebugMenu::endNewestMenu();
 
     // rendering menu

@@ -79,7 +79,7 @@ World::World()
 	// CREATE CUBE VEHICLE
 
 	// Vehicle constructor creates the body internally
-	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(0, 1, 0)));
+	mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(-2, 1, 0)));
 	
 	// 100 rows every 100 units covers full 10km. 3cubes per row
 	{
@@ -207,6 +207,18 @@ World::World()
 
 //---------------------------------------------------------------------------------
 
+void World::SpawnPlayer2()
+{
+	World* instance = GetInstance();
+	if (instance && instance->mVehicles.size() < 2)
+	{
+		bSplitScreen = true;
+		instance->mVehicles.emplace_back(new Vehicle(instance->dynamicsWorld, btVector3(2, 1, 0)));
+	}
+}
+
+//---------------------------------------------------------------------------------
+
 void World::Simulate(float timestep)
 {
 	if (!ShouldPauseWorld())
@@ -248,12 +260,9 @@ void World::Simulate(float timestep)
 					steering[idx] = cmd.value;
 					break;
 				case InputCommandType::StartPressed:
-					if (idx == 1 && mVehicles.size() < 2)
+					if (idx == 1)
 					{
-						printf("StartPressed received for player %d, current vehicles: %zu\n", idx, mVehicles.size());
-						printf("Adding second vehicle!\n");
-						bSplitScreen = true;
-						mVehicles.emplace_back(new Vehicle(dynamicsWorld, btVector3(20, 10, 0)));
+						SpawnPlayer2();
 					}
 					break;
 				case InputCommandType::ResetRequested:
