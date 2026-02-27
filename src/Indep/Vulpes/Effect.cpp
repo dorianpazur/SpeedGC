@@ -68,6 +68,17 @@ vMaterial Taillights
 	.DiffuseMax = 1.0f
 };
 
+vMaterial Reflectors
+{
+	.EnvmapR = 0.85f,
+	.EnvmapG = 0.85f,
+	.EnvmapB = 0.85f,
+	.EnvmapA = 0.85f,
+	
+	.DiffuseMin = 0.25f,
+	.DiffuseMax = 0.5f
+};
+
 vMaterial *vGetMaterialFromName(const char* name)
 {
 	if (strcmp(name, "DullPlastic") == 0)
@@ -82,6 +93,8 @@ vMaterial *vGetMaterialFromName(const char* name)
 		return &Chrome;
 	else if (strcmp(name, "Taillights") == 0)
 		return &Taillights;
+	else if (strcmp(name, "Reflectors") == 0)
+		return &Reflectors;
 	
 	return &DullPlastic; // fallback to dullplastic
 }
