@@ -15,6 +15,7 @@ extern void ScreenPrintf(int x, int y, char const* fmt, ...);
 extern void ScreenPrintf(int x, int y, float duration, char const* fmt, ...);
 extern void ScreenPrintf(int x, int y, unsigned int color, char const* fmt, ...);
 extern void ScreenPrintf(int x, int y, float duration, unsigned int color, char const* fmt, ...);
+extern void ScreenShadowPrintf(int x, int y, float duration, unsigned int color, char const* fmt, ...);
 extern void ScreenShadowPrintf(int x, int y, unsigned int color, char const* fmt, ...);
 extern void ScreenShadowPrintf(int x, int y, char const* fmt, ...);
 

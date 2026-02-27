@@ -154,8 +154,9 @@ struct AudioStream
 	#define AudioStreamAssert(cond) \
 	if (!(cond)) \
 	{ \
+		mutex.Unlock(); \
 		printf("AudioStreamAssert failed on line %u: %s was false\n", __LINE__, #cond); \
-		ScreenPrintf(0, 0, 5.0f, 0xFFFF00FF, "AudioStreamAssert failed on line %u: %s was false\n", __LINE__, #cond); \
+		ScreenShadowPrintf(0, 0, 5.0f, 0xFFFF0000, "AudioStreamAssert failed on line %u:\n%s was false\n", __LINE__, #cond); \
 		gFileIOMutex.Unlock(); \
 		CloseFile(); \
 		return false; \
@@ -244,20 +245,25 @@ struct AudioStream
 		mutex.Lock();
 		
 		playing = false;
-		gFileIOMutex.Lock();
+		
 		if (file)
+		{
+			gFileIOMutex.Lock();
 			fclose(file);
-		gFileIOMutex.Unlock();
-		file = NULL;
+			gFileIOMutex.Unlock();
+			file = NULL;
+		}
+		
 		dspTime = 0;
+		streamTime = 0;
+		
+		mutex.Unlock();
 		
 		// clear the buffers
 		if (streamingBuffer[0])
 			memset(streamingBuffer[0], 0, kBufferSize);
 		if (streamingBuffer[1])
 			memset(streamingBuffer[1], 0, kBufferSize);
-		
-		mutex.Unlock();
 	};
 	
 	~AudioStream()
@@ -420,7 +426,7 @@ namespace Audio
 			LWP_CreateThread(&thread_handle, AudioThread, NULL, tWareMalloc(kAudioStackSize, "Audio Stack", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32)), kAudioStackSize, 0);
 		}
 		
-		stream.OpenFile("Audio/Music/title.wav");
+		stream.OpenFile("Audio/Music/Location.wav");
 		
 		initialized = true;
 	}

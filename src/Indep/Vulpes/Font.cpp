@@ -119,12 +119,13 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 	
 	GX_Begin(GX_QUADS, GX_VTXFMT0, characterCount * 4);
 	
-	float currentOffset = 0.0f;
+	float currentOffsetX = 0.0f;
+	float currentOffsetY = 0.0f;
 	
 	for (size_t c = 0; c < characterCount; c++)
 	{
-		float leftX = ((x + currentOffset) / 320.0f) - (10.0f / 320.0f);
-		float topY = (y / 240.0f) - (6.0f / 320.0f);
+		float leftX = ((x + currentOffsetX) / 320.0f) - (10.0f / 320.0f);
+		float topY = ((y + currentOffsetY) / 240.0f) - (6.0f / 320.0f);
 		float rightX = leftX + (30.0f / 320.0f);
 		float bottomY = topY + (30.0f / 240.0f);
 		
@@ -139,6 +140,11 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 		
 		texTopY += 0.5f/fontTexture->height;
 		texBottomY -= 0.5f/fontTexture->height;
+		
+		if (text[c] == '\r' || text[c] == '\n')
+		{
+			leftX = topY = rightX = bottomY = 0.0f; // degenerate
+		}
 		
 		GX_Position3f32(rightX, topY, 0);
 		GX_Color4u8( (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF );
@@ -156,7 +162,13 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 		GX_Color4u8( (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF );
 		GX_TexCoord2f32(texLeftX, texTopY);
 		
-		currentOffset += vGetFontKern(text[c], fontName);
+		if (text[c] == '\r' || text[c] == '\n')
+		{
+			currentOffsetX = 0.0f;
+			currentOffsetY += 16.0f;
+		}
+		else
+			currentOffsetX += vGetFontKern(text[c], fontName);
 	}
 	
 	GX_End();
