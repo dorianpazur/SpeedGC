@@ -256,6 +256,7 @@ void LoadAssets()
 	vTextureCache::LoadTextureFromPath("Global/EnvmapFresnel.tpl");
 	vTextureCache::LoadTextureFromPath("World/tarmac_diffuse.tpl");
 	vTextureCache::LoadTextureFromPath("World/tarmac_spec.tpl");
+	vTextureCache::LoadTextureFromPath("Global/CarShadow.tpl");
 	
 	//tMemoryPrintAllocationsByAddress(MAIN_POOL);
 	

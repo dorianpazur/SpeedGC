@@ -351,6 +351,57 @@ void Vehicle::Render(vView* view)
 	transform[0][3] = transformFlt[12];
 	transform[1][3] = transformFlt[13];
 	transform[2][3] = transformFlt[14];
-
+	
+	tVector3 fl = tVector3(1, 0, 1.45);
+	tVector3 fr = tVector3(-1, 0, 1.45);
+	tVector3 rl = tVector3(1, 0, -1.7);
+	tVector3 rr = tVector3(-1, 0, -1.7);
+	tMulVector(&fl, &transform, &fl);
+	tMulVector(&fr, &transform, &fr);
+	tMulVector(&rl, &transform, &rl);
+	tMulVector(&rr, &transform, &rr);
+	
+	GX_LoadPosMtxImm(*(Mtx44*)&view->ViewMatrix, GX_PNMTX0);
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_STANDARD];
+	
+	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("CarShadow")));
+	vEffectStaticState::pCurrentEffect->Start();
+	GX_SetBlendMode(GX_BM_BLEND, GX_BL_ZERO, GX_BL_SRCCLR, GX_LO_CLEAR);
+	
+	vPoly poly;
+	
+	poly.Vertices[0].x = fl.x - 0.15;
+	poly.Vertices[0].y = 0.1f;
+	poly.Vertices[0].z = fl.z - 0.15;
+	poly.UVs[0][0] = 0.0f;
+	poly.UVs[0][1] = 0.0f;
+	poly.Vertices[1].x = rl.x - 0.15;
+	poly.Vertices[1].y = 0.05f;
+	poly.Vertices[1].z = rl.z - 0.15;
+	poly.UVs[1][0] = 0.0f;
+	poly.UVs[1][1] = 1.0f;
+	poly.Vertices[2].x = rr.x - 0.15;
+	poly.Vertices[2].y = 0.05f;
+	poly.Vertices[2].z = rr.z - 0.15;
+	poly.UVs[2][0] = 1.0f;
+	poly.UVs[2][1] = 1.0f;
+	poly.Vertices[3].x = fr.x - 0.15;
+	poly.Vertices[3].y = 0.05f;
+	poly.Vertices[3].z = fr.z - 0.15;
+	poly.UVs[3][0] = 1.0f;
+	poly.UVs[3][1] = 0.0f;
+	
+	poly.Colours[0][0] = 0xFF;
+	poly.Colours[0][1] = 0xFF;
+	poly.Colours[0][2] = 0xFF;
+	poly.Colours[0][3] = 0xFF;
+	
+	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+	vPolyRender(&poly);
+	
+	vEffectStaticState::pCurrentEffect->End();
+	
 	gCarModel->Render(view, &transform);
 }
