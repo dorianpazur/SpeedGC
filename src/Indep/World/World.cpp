@@ -411,7 +411,9 @@ void World::Simulate(float timestep)
 			
 			if (veh == 0)
 			{
-				cam = globalVehPos,
+				vViews[VVIEW_ENVMAP].Position = globalVehPos;
+				
+				cam = vViews[VVIEW_ENVMAP].Position,
 					up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
 					look = vViews[VVIEW_FIRST_PLAYER + veh].Position;
 				tCreateLookAtMatrix(&vViews[VVIEW_ENVMAP].ViewMatrix, cam, look, up);

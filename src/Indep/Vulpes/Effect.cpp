@@ -17,6 +17,7 @@ void vEffect::End()
 {
 	vEffectStaticState::pViewMatrix = NULL;
 	vEffectStaticState::pWorldToLocalMatrix = NULL;
+	HalfBrightness = false;
 	texture = NULL;
 };
 

@@ -253,6 +253,7 @@ void LoadAssets()
 	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
 	vTextureCache::LoadTextureFromPath("Global/particles.tpl");
 	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
+	vTextureCache::LoadTextureFromPath("Global/EnvmapFresnel.tpl");
 	vTextureCache::LoadTextureFromPath("World/tarmac_diffuse.tpl");
 	vTextureCache::LoadTextureFromPath("World/tarmac_spec.tpl");
 	

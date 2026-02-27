@@ -62,6 +62,12 @@ void RenderWorld(vView* view)
 	
 	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("tarmac_diffuse")));
 	vEffectStaticState::pCurrentEffect->Start();
+	
+	if (view->ID == VVIEW_ENVMAP)
+	{
+		vEffectStaticState::pCurrentEffect->HalfBrightness = true;
+	}
+	
 	for (int slice = 0; slice < 100; slice++)
 	{
 		vPoly poly;

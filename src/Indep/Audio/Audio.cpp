@@ -65,7 +65,7 @@ const size_t kNumSecondsOfBuffer = 1;
 const size_t kNumSamplesInBuffer = 32000 * kNumSecondsOfBuffer; // second
 const size_t kNumChannels = 2;
 const size_t kBufferSize = kNumSamplesInBuffer * sizeof(uint16_t) * kNumChannels;
-int16_t streamingBuffer[2][kBufferSize/sizeof(uint16_t)] ATTRIBUTE_ALIGN(32); // double buffered 32000 stereo samples
+int16_t *streamingBuffer[2] ATTRIBUTE_ALIGN(32); // double buffered 32000 stereo samples
 
 //---------------------------------------------------------------------------------
 
@@ -287,6 +287,9 @@ void UpdateAudio()
 	
 		if (prevFrame != curFrame)
 		{
+			if (curFrame > 1)
+				tBreak();
+			
 			tMutex& mutex = curFrame ? gAudioMutexBuf2 : gAudioMutexBuf1;
 			
 			mutex.Lock();
@@ -410,8 +413,8 @@ namespace Audio
 			DCFlushRangeNoSync(bufL, sizeof(bufL));
 			DCFlushRangeNoSync(bufR, sizeof(bufR));
 			
-			//streamingBuffer[0] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 1", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
-			//streamingBuffer[1] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+			streamingBuffer[0] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 1", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
+			streamingBuffer[1] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 			
 			LWP_InitQueue(&thQueue);
 			LWP_CreateThread(&thread_handle, AudioThread, NULL, tWareMalloc(kAudioStackSize, "Audio Stack", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32)), kAudioStackSize, 0);

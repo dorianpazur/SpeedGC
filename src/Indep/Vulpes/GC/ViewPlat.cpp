@@ -15,15 +15,16 @@ void vView::CalculateViewMatricies()
 		f32 w = rmode->viWidth;
 		f32 h = rmode->viHeight;
 		
-		f32 aspect = (f32)w/h;
-		f32 aspectCorrect = aspect / (4.0f/3.0f); // not quite the right size
+		f32 aspectCorrect = 1.1f; // not quite the right size
+		f32 aspect = (4.0f/3.0f);
 		
 		if (bSplitScreen)
 			aspect *= 2.0f;
 		if (bWideScreen)
 			aspect *= 1.33333334f;
 		
-		guPerspective(*(Mtx44*)&ProjectionMatrix, FovDegrees * aspectCorrect, aspect / aspectCorrect, NearZ, FarZ);
+		guPerspective(*(Mtx44*)&ProjectionMatrix, FovDegrees, aspect, NearZ, FarZ);
+		ProjectionMatrix[1][1] /= aspectCorrect;
 	}
 	else if (ID == VVIEW_ENVMAP)
 	{

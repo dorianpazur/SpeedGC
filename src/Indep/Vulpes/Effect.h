@@ -40,6 +40,8 @@ protected:
 public:
 	DEF_TWARE_NEW_OVERRIDE(vEffect, MAIN_POOL)
 	
+	bool HalfBrightness = false;
+	
 	virtual void Start();
 	virtual void End();
 	
@@ -49,6 +51,14 @@ public:
 	}
 	
 	static VEFFECT_ID GetEffectIDFromString(const char* str);
+};
+
+struct vMaterial
+{
+	float EnvmapR = 0.0f;
+	float EnvmapG = 0.0f;
+	float EnvmapB = 0.0f;
+	float EnvmapA = 0.0f;
 };
 
 class vEffectStaticState
