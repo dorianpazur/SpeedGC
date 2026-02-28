@@ -370,6 +370,7 @@ void World::Simulate(float timestep)
 			}
 			
 			tMatrix4 transform;
+			tMatrix4 transformVec;
 			float transformFlt[16];
 			trans.getOpenGLMatrix(transformFlt);
 			
@@ -390,13 +391,22 @@ void World::Simulate(float timestep)
 			transform[1][3] = transformFlt[13];
 			transform[2][3] = transformFlt[14];
 			
-			tVector3 localVehPos = tVector3(0, 0, 0);
+			transformVec = transform;
+			
+			transformVec[0][3] = 0.0f;
+			transformVec[1][3] = 0.0f;
+			transformVec[2][3] = 0.0f;
+			
+			tVector3 localVehPos(0, 0, 0);
 			tVector3 globalVehPos;
+			tVector3 localAngVel(body->getAngularVelocity().getX(), body->getAngularVelocity().getY(), body->getAngularVelocity().getZ());
+			tVector3 globalAngVel;
 			tMatrix4 invTransform;
 			tMulVector(&globalVehPos, &transform, &localVehPos);
+			tMulVector(&globalAngVel, &transformVec, &localAngVel);
 			tInvertMatrix(&invTransform, &transform);
 			
-			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY() / 2.0f, gFrameTime * 0.006f);
+			tilt[veh] = std::lerp(tilt[veh], globalAngVel.y / 2.0f, gFrameTime * 0.006f);
 			
 			float speed = std::fmax(0.0f, body->getLinearVelocity().length() - 0.01f);
 			
