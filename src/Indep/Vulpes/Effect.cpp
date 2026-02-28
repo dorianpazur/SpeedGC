@@ -15,21 +15,21 @@ vMaterial DullPlastic
 
 vMaterial CarPaint
 {
-	.EnvmapR = 0.75f,
-	.EnvmapG = 0.75f,
-	.EnvmapB = 0.75f,
-	.EnvmapA = 0.75f,
+	.EnvmapR = 0.6f,
+	.EnvmapG = 0.6f,
+	.EnvmapB = 0.6f,
+	.EnvmapA = 0.6f,
 	
-	.DiffuseMin = 0.5f,
+	.DiffuseMin = 0.65f,
 	.DiffuseMax = 1.0f
 };
 
 vMaterial Glass
 {
-	.EnvmapR = 1.0f,
-	.EnvmapG = 1.0f,
-	.EnvmapB = 1.0f,
-	.EnvmapA = 1.0f,
+	.EnvmapR = 0.7f,
+	.EnvmapG = 0.7f,
+	.EnvmapB = 0.7f,
+	.EnvmapA = 0.7f,
 	
 	.DiffuseMin = 0.25f,
 	.DiffuseMax = 0.5f
@@ -37,10 +37,10 @@ vMaterial Glass
 
 vMaterial GlassMask
 {
-	.EnvmapR = 1.0f,
-	.EnvmapG = 1.0f,
-	.EnvmapB = 1.0f,
-	.EnvmapA = 1.0f,
+	.EnvmapR = 0.7f,
+	.EnvmapG = 0.7f,
+	.EnvmapB = 0.7f,
+	.EnvmapA = 0.7f,
 	
 	.DiffuseMin = 0.25f,
 	.DiffuseMax = 0.5f

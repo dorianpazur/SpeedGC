@@ -405,10 +405,12 @@ void vEffect_CAR::Start()
 		
 		tVector3 lpos;
 		tVector3 lpos2;
+		tVector3 lpos3;
 		tVector3 fresnelPos;
 		
 		GXLightObj lobj;
 		GXLightObj lobj2;
+		GXLightObj lobj3;
 		GXLightObj lspecobj;
 		GXLightObj diffuseRangeLight;
 		
@@ -416,8 +418,9 @@ void vEffect_CAR::Start()
 		uint8_t DiffuseRange = (uint8_t)(((uint32_t)((Material->DiffuseMax - Material->DiffuseMin) * 255.0f)) & 0xFF);
 		
 		GXColor light1Color = {0xF0,0xF0,0xF0,0}; // Light 1 color
-		GXColor light2Color = {0x78,0x78,0x78,0}; // Light 2 color
-		GXColor ambientColor = {0x80,0x80,0x80,DiffuseMin}; // Ambient color
+		GXColor light2Color = {0xD8,0xD8,0xD8,0}; // Light 2 color
+		GXColor light3Color = {0xD8,0xD8,0xD8,0}; // Light 3 color
+		GXColor ambientColor = {0x20,0x20,0x20,DiffuseMin}; // Ambient color
 		GXColor specularColor = {0xA0,0xA0,0xA0,0}; // Spec color
 		GXColor diffuseRangeColor = {0,0,0,DiffuseRange}; // diffuse
 		GXColor diffuseMinColor = {0x00,0x00,0x00,DiffuseMin}; // No color, alpha is diffusemin
@@ -429,6 +432,10 @@ void vEffect_CAR::Start()
 		lpos2.x = -0.707f * LARGE_NUMBER;
 		lpos2.y = -0.707f * LARGE_NUMBER;
 		lpos2.z = -0.707f * LARGE_NUMBER;
+		
+		lpos3.x = 0;
+		lpos3.y = 1.0 * LARGE_NUMBER;
+		lpos3.z = 0;
 		
 		fresnelPos.x =  0 * LARGE_NUMBER;
 		fresnelPos.y =  0 * LARGE_NUMBER;
@@ -453,6 +460,10 @@ void vEffect_CAR::Start()
 		GX_InitLightColor(&lobj2,light2Color);
 		GX_InitLightAttnA(&lobj2, 0.0f, 1.0f, 0.1f);
 		
+		GX_InitLightPos(&lobj3,lpos3.x,lpos3.y,lpos3.z);
+		GX_InitLightColor(&lobj3,light3Color);
+		GX_InitLightAttnA(&lobj3, 0.0f, 0.5f, 0.5f);
+		
 		GX_InitSpecularDir(&lspecobj,-lpos.x,-lpos.y,-lpos.z);
 		GX_InitLightColor(&lspecobj,specularColor);
 		GX_InitLightShininess(&lspecobj, 120.0f);
@@ -462,14 +473,15 @@ void vEffect_CAR::Start()
 		
 		GX_LoadLightObj(&lobj,GX_LIGHT0);
 		GX_LoadLightObj(&lobj2,GX_LIGHT1);
-		GX_LoadLightObj(&lspecobj,GX_LIGHT2);
-		GX_LoadLightObj(&diffuseRangeLight,GX_LIGHT3);
+		GX_LoadLightObj(&lobj3,GX_LIGHT2);
+		GX_LoadLightObj(&lspecobj,GX_LIGHT3);
+		GX_LoadLightObj(&diffuseRangeLight,GX_LIGHT4);
 		
 		// set number of rasterized color channels
 		GX_SetNumChans(2);
-		GX_SetChanCtrl(GX_COLOR0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT0 | GX_LIGHT1 ,	GX_DF_CLAMP,	GX_AF_NONE); // diffuse light
-		GX_SetChanCtrl(GX_COLOR1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHT2,	GX_DF_CLAMP,	GX_AF_SPEC); // specular light
-		GX_SetChanCtrl(GX_ALPHA0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT3, GX_DF_CLAMP,	GX_AF_NONE); // diffuse falloff
+		GX_SetChanCtrl(GX_COLOR0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT0 | GX_LIGHT1 | GX_LIGHT2,	GX_DF_CLAMP,	GX_AF_NONE); // diffuse light
+		GX_SetChanCtrl(GX_COLOR1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHT3,	GX_DF_CLAMP,	GX_AF_SPEC); // specular light
+		GX_SetChanCtrl(GX_ALPHA0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT4, GX_DF_CLAMP,	GX_AF_NONE); // diffuse falloff
 		GX_SetChanCtrl(GX_ALPHA1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHTNULL, GX_DF_NONE,	GX_AF_NONE); // unused
 	
 		GX_SetChanAmbColor(GX_COLOR0A0, ambientColor);
