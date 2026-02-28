@@ -67,6 +67,7 @@ void DebugMenuLoad()
 		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Widescreen", &bWideScreen, NULL));
 		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Splitscreen", &bSplitScreen, NULL));
 		DebugMenu::addWidgetToNewestMenu(new BoolWidget("Deflicker", &twkDeflicker, NULL));
+        DebugMenu::addWidgetToNewestMenu(new BoolWidget("Pause World", &gDebugMenuIOHandler->mPauseWorld, NULL));
 		DebugMenu::addWidgetToNewestMenu(new ActionWidget("Dump Memory Allocations", tMemoryPrintAllocations));
     } DebugMenu::endNewestMenu();
 

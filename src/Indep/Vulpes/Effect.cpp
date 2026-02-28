@@ -115,6 +115,7 @@ void vEffect::End()
 	HalfBrightness = false;
 	Material = &DullPlastic;
 	texture = NULL;
+	miscmap1 = NULL;
 };
 
 VEFFECT_ID vEffect::GetEffectIDFromString(const char* str)

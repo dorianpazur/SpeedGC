@@ -370,7 +370,8 @@ void World::Simulate(float timestep)
 			}
 			
 			tMatrix4 transform;
-			float transformFlt[16];
+			tMatrix4 transformVec;
+			btScalar transformFlt[16];
 			trans.getOpenGLMatrix(transformFlt);
 			
 			// Bullet (OpenGL) using GX matrix
@@ -390,13 +391,22 @@ void World::Simulate(float timestep)
 			transform[1][3] = transformFlt[13];
 			transform[2][3] = transformFlt[14];
 			
-			tVector3 localVehPos = tVector3(0, 0, 0);
+			transformVec = transform;
+			
+			transformVec[0][3] = 0.0f;
+			transformVec[1][3] = 0.0f;
+			transformVec[2][3] = 0.0f;
+			
+			tVector3 localVehPos(0, 0, 0);
 			tVector3 globalVehPos;
+			tVector3 localAngVel((float)body->getAngularVelocity().getX(), (float)body->getAngularVelocity().getY(), (float)body->getAngularVelocity().getZ());
+			tVector3 globalAngVel;
 			tMatrix4 invTransform;
 			tMulVector(&globalVehPos, &transform, &localVehPos);
+			tMulVector(&globalAngVel, &transformVec, &localAngVel);
 			tInvertMatrix(&invTransform, &transform);
 			
-			tilt[veh] = std::lerp(tilt[veh], body->getAngularVelocity().getY() / 2.0f, gFrameTime * 0.006f);
+			tilt[veh] = std::lerp(tilt[veh], globalAngVel.y / 2.0f, gFrameTime * 0.006f);
 			
 			float speed = std::fmax(0.0f, body->getLinearVelocity().length() - 0.01f);
 			
@@ -472,8 +482,8 @@ bool World::ContactProcessedCallback(btManifoldPoint& cp, void* body0, void* bod
 	const btVector3& pointOnBody0bt = cp.getPositionWorldOnB();
 	const btVector3& pointOnBody1bt = cp.getPositionWorldOnA();
 	
-	tVector3 pointOnBody0{pointOnBody0bt.getX(), pointOnBody0bt.getY(), pointOnBody0bt.getZ()};
-	tVector3 pointOnBody1{pointOnBody1bt.getX(), pointOnBody1bt.getY(), pointOnBody1bt.getZ()};
+	tVector3 pointOnBody0{(float)pointOnBody0bt.getX(), (float)pointOnBody0bt.getY(), (float)pointOnBody0bt.getZ()};
+	tVector3 pointOnBody1{(float)pointOnBody1bt.getX(), (float)pointOnBody1bt.getY(), (float)pointOnBody1bt.getZ()};
 	
 	if (simable1)
 		simable1->OnCollide(simable2, pointOnBody0);

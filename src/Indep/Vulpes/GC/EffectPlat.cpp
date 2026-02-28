@@ -65,10 +65,10 @@ public:
 
 void vEffect_FE::Start()
 {
+	u8 stage = 0;
 	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 	
 	GX_SetNumChans(1);
-	GX_SetNumTevStages(1);
 	
 	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
 	
@@ -76,14 +76,28 @@ void vEffect_FE::Start()
 	{
 		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-		GX_SetNumTexGens(1);
+		GX_SetNumTexGens(2);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
-			
+		GX_SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX1, GX_IDENTITY);
+		
 		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
-	
-		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		
+		GX_SetTevOp(stage, GX_MODULATE);
+		GX_SetTevOrder(stage, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		stage++;
+		
+		if (miscmap1) // use this as mask for UI
+		{
+			GX_LoadTexObj(&miscmap1->GXTextureObj, GX_TEXMAP1);
+			
+			GX_SetTevOrder(stage, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+			GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV );
+			GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_APREV, GX_CA_TEXA, GX_CA_ZERO );
+			GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+			GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+			stage++;
+		}
 	}
 	else
 	{
@@ -92,7 +106,10 @@ void vEffect_FE::Start()
 		
 		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+		stage++;
 	}
+	
+	GX_SetNumTevStages(stage);
 }
 
 class vEffect_SKY : public vEffect
@@ -179,7 +196,7 @@ void vEffect_SKY::Start()
 			
 			GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
 			
-			GX_SetTevColorIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CC_CPREV );
+			GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV );
 			GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_APREV, GX_CA_TEXA, GX_CA_ZERO );
 			GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
 			GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV);
@@ -421,9 +438,8 @@ void vEffect_CAR::Start()
 		GXColor light2Color = {0xD8,0xD8,0xD8,0}; // Light 2 color
 		GXColor light3Color = {0xD8,0xD8,0xD8,0}; // Light 3 color
 		GXColor ambientColor = {0x20,0x20,0x20,DiffuseMin}; // Ambient color
-		GXColor specularColor = {0xA0,0xA0,0xA0,0}; // Spec color
+		GXColor specularColor = {0xA0,0xA0,0xA0,0xA0}; // Spec color
 		GXColor diffuseRangeColor = {0,0,0,DiffuseRange}; // diffuse
-		GXColor diffuseMinColor = {0x00,0x00,0x00,DiffuseMin}; // No color, alpha is diffusemin
 		
 		lpos.x = 0.707f * LARGE_NUMBER;
 		lpos.y = 0.707f * LARGE_NUMBER;
@@ -479,14 +495,15 @@ void vEffect_CAR::Start()
 		
 		// set number of rasterized color channels
 		GX_SetNumChans(2);
-		GX_SetChanCtrl(GX_COLOR0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT0 | GX_LIGHT1 | GX_LIGHT2,	GX_DF_CLAMP,	GX_AF_NONE); // diffuse light
-		GX_SetChanCtrl(GX_COLOR1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHT3,	GX_DF_CLAMP,	GX_AF_SPEC); // specular light
-		GX_SetChanCtrl(GX_ALPHA0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT4, GX_DF_CLAMP,	GX_AF_NONE); // diffuse falloff
-		GX_SetChanCtrl(GX_ALPHA1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHTNULL, GX_DF_NONE,	GX_AF_NONE); // unused
+		GX_SetChanCtrl(GX_COLOR0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHT0 | GX_LIGHT1 | GX_LIGHT2,	GX_DF_CLAMP,	GX_AF_NONE); // diffuse light
+		GX_SetChanCtrl(GX_ALPHA0,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHT4, GX_DF_CLAMP,	GX_AF_NONE); // diffuse falloff
+		GX_SetChanCtrl(GX_COLOR1,	GX_DISABLE,	GX_SRC_REG,	GX_SRC_VTX,	GX_LIGHT_NULL, GX_DF_NONE,	GX_AF_NONE); // envmap
+		GX_SetChanCtrl(GX_ALPHA1,	GX_ENABLE,	GX_SRC_REG,	GX_SRC_REG,	GX_LIGHT3,	GX_DF_CLAMP,	GX_AF_SPEC); // specular light
 	
 		GX_SetChanAmbColor(GX_COLOR0A0, ambientColor);
 		GX_SetChanMatColor(GX_COLOR0A0, (GXColor){0xFF,0xFF,0xFF,0xFF});
-		GX_SetChanAmbColor(GX_COLOR1A1, diffuseMinColor);
+		
+		GX_SetChanAmbColor(GX_COLOR1A1, (GXColor){0x00,0x00,0x00,0x00});
 		GX_SetChanMatColor(GX_COLOR1A1, (GXColor){0xFF,0xFF,0xFF,0xFF});
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
@@ -494,7 +511,6 @@ void vEffect_CAR::Start()
 		if (gEnvmapTexture)
 		{
 			GX_SetNumTexGens(2);
-			GX_SetNumTevStages(4);
 			
 			tMatrix4 model;
 			tMatrix4 mv;
@@ -519,33 +535,35 @@ void vEffect_CAR::Start()
 		else
 		{
 			GX_SetNumTexGens(1);
-			GX_SetNumTevStages(3);
 		}
 		
 		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
 		
+		u8 stage = GX_TEVSTAGE0;
+		
 		// diffuse
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
-		GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_ONE, GX_CA_ZERO);
-		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-		GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevOrder(stage, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_RASC, GX_CC_ZERO);
+		GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_TEXA, GX_CA_ONE, GX_CA_ZERO);
+		GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		stage++;
 		
 		// diffuse falloff
-		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-		GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_CPREV, GX_CC_RASA, GX_CC_ZERO);
-		GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV);
-		GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-		GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevOrder(stage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+		GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_CPREV, GX_CC_RASA, GX_CC_ZERO);
+		GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+		GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		stage++;
 		
 		// specular
-		GX_SetTevOrder(GX_TEVSTAGE2, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
-		GX_SetTevColorIn(GX_TEVSTAGE2, GX_CC_ZERO, GX_CC_CPREV, GX_CC_ONE, GX_CC_RASC);
-		GX_SetTevAlphaIn(GX_TEVSTAGE2, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV);
-		GX_SetTevColorOp(GX_TEVSTAGE2, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-		GX_SetTevAlphaOp(GX_TEVSTAGE2, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-		
-		GX_SetTevColor(GX_TEVREG1, (GXColor){0xFF, 0xFF, 0xFF, 0xFF});
+		GX_SetTevOrder(stage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
+		GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_RASA, GX_CC_ONE, GX_CC_CPREV);
+		GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+		GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		stage++;
 		
 		// envmap
 		if (gEnvmapTexture)
@@ -558,19 +576,18 @@ void vEffect_CAR::Start()
 				(uint8_t)(((uint32_t)(0xFF * Material->EnvmapA)) & 0xFF)
 			};
 			GX_SetTevKColor(GX_KCOLOR0, envmapColor);
-			GX_SetTevKColorSel(GX_TEVSTAGE3, GX_TEV_KCSEL_K0);
-			GX_SetTevKAlphaSel(GX_TEVSTAGE3, GX_TEV_KASEL_K0_A);
-			GX_SetTevOrder(GX_TEVSTAGE3, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
-			GX_SetTevColorIn(GX_TEVSTAGE3, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_CPREV);
-			GX_SetTevAlphaIn(GX_TEVSTAGE3, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV);
-			GX_SetTevColorOp(GX_TEVSTAGE3, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-			GX_SetTevAlphaOp(GX_TEVSTAGE3, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+			GX_SetTevKColorSel(stage, GX_TEV_KCSEL_K0);
+			GX_SetTevKAlphaSel(stage, GX_TEV_KASEL_K0_A);
+			GX_SetTevOrder(stage, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR1A1);
+			GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_CPREV);
+			GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+			GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+			GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+			stage++;
 			
 			// overbright
 			if (Material->EnvmapR > 1.0f || Material->EnvmapG > 1.0f || Material->EnvmapB > 1.0f || Material->EnvmapA > 1.0f)
-			{
-				GX_SetNumTevStages(5);
-				
+			{	
 				GXColor envmapOverbrightColor
 				{
 					(uint8_t)(((uint32_t)(0xFF * std::max(0.0f, Material->EnvmapR - 1.0f))) & 0xFF),
@@ -580,14 +597,25 @@ void vEffect_CAR::Start()
 				};
 				
 				GX_SetTevKColor(GX_KCOLOR1, envmapOverbrightColor);
-				GX_SetTevKColorSel(GX_TEVSTAGE4, GX_TEV_KCSEL_K1);
-				GX_SetTevKAlphaSel(GX_TEVSTAGE4, GX_TEV_KASEL_K1_A);
-				GX_SetTevOrder(GX_TEVSTAGE4, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
-				GX_SetTevColorIn(GX_TEVSTAGE4, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_CPREV);
-				GX_SetTevAlphaIn(GX_TEVSTAGE4, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CA_APREV);
-				GX_SetTevColorOp(GX_TEVSTAGE4, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-				GX_SetTevAlphaOp(GX_TEVSTAGE4, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+				GX_SetTevKColorSel(stage, GX_TEV_KCSEL_K1);
+				GX_SetTevKAlphaSel(stage, GX_TEV_KASEL_K1_A);
+				GX_SetTevOrder(stage, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR1A1);
+				GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_CPREV);
+				GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+				GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+				GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+				stage++;
 			}
 		}
+		
+		// multiply lighting by vertex color
+		GX_SetTevOrder(stage, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR1A1);
+		GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_CPREV, GX_CC_RASC, GX_CC_ZERO);
+		GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+		GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		stage++;
+		
+		GX_SetNumTevStages(stage);
 	}
 }

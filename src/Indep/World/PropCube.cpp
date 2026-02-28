@@ -61,7 +61,7 @@ void PropCube::Render(vView* view)
         return;
 
     tMatrix4 transform;
-    float transformFlt[16];
+    btScalar transformFlt[16];
     btTransform trans;
 
     if (mBody->getMotionState())

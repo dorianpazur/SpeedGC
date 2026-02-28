@@ -138,11 +138,11 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 		float texBottomY = texTopY + (1 / 16.0f);
 		
 		// offset by half a pixel so it looks a bit nicer
-		texLeftX += 0.5f/fontTexture->width;
-		texRightX -= 0.5f/fontTexture->width;
+		texLeftX += (0.5/(double)fontTexture->width);
+		texRightX -= (0.5/(double)fontTexture->width);
 		
-		texTopY += 0.5f/fontTexture->height;
-		texBottomY -= 0.5f/fontTexture->height;
+		texTopY += (0.5/(double)fontTexture->height);
+		texBottomY -= (0.5/(double)fontTexture->height);
 		
 		if (text[c] == '\r' || text[c] == '\n')
 		{

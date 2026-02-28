@@ -56,9 +56,15 @@ public:
 		this->texture = texture;
 	}
 	
+	inline void SetMiscmap1(vTextureCache::CachedTexture* texture)
+	{
+		this->miscmap1 = texture;
+	}
+	
 	static VEFFECT_ID GetEffectIDFromString(const char* str);
 protected:
 	vTextureCache::CachedTexture* texture;
+	vTextureCache::CachedTexture* miscmap1;
 };
 
 struct vMaterial
