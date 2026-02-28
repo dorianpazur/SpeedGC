@@ -70,8 +70,8 @@ void MaybeChangeViewMode()
 	vViews[TARGET_ENVMAP].Active = true;
 	vRenderTargets[TARGET_ENVMAP].Left = 0;
 	vRenderTargets[TARGET_ENVMAP].Top = 0;
-	vRenderTargets[TARGET_ENVMAP].Width = 64;
-	vRenderTargets[TARGET_ENVMAP].Height = 64;
+	vRenderTargets[TARGET_ENVMAP].Width = 128;
+	vRenderTargets[TARGET_ENVMAP].Height = 128;
 }
 
 void vSetCurrentRenderTarget(vRenderTarget* renderTarget)

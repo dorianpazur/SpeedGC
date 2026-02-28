@@ -65,10 +65,10 @@ public:
 
 void vEffect_FE::Start()
 {
+	u8 stage = 0;
 	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 	
 	GX_SetNumChans(1);
-	GX_SetNumTevStages(1);
 	
 	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
 	
@@ -76,14 +76,28 @@ void vEffect_FE::Start()
 	{
 		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-		GX_SetNumTexGens(1);
+		GX_SetNumTexGens(2);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
-			
+		GX_SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX1, GX_IDENTITY);
+		
 		GX_LoadTexObj(&texture->GXTextureObj, GX_TEXMAP0);
-	
-		GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		
+		GX_SetTevOp(stage, GX_MODULATE);
+		GX_SetTevOrder(stage, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		stage++;
+		
+		if (miscmap1) // use this as mask for UI
+		{
+			GX_LoadTexObj(&miscmap1->GXTextureObj, GX_TEXMAP1);
+			
+			GX_SetTevOrder(stage, GX_TEXCOORD1, GX_TEXMAP1, GX_COLOR0A0);
+			GX_SetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV );
+			GX_SetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_APREV, GX_CA_TEXA, GX_CA_ZERO );
+			GX_SetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+			GX_SetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+			stage++;
+		}
 	}
 	else
 	{
@@ -92,7 +106,10 @@ void vEffect_FE::Start()
 		
 		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+		stage++;
 	}
+	
+	GX_SetNumTevStages(stage);
 }
 
 class vEffect_SKY : public vEffect
@@ -179,7 +196,7 @@ void vEffect_SKY::Start()
 			
 			GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
 			
-			GX_SetTevColorIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CC_CPREV );
+			GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_CPREV );
 			GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_APREV, GX_CA_TEXA, GX_CA_ZERO );
 			GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
 			GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV);

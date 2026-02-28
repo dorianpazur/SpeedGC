@@ -45,6 +45,133 @@ GXFogAdjTbl fogAdjTable;
 
 //---------------------------------------------------------------------------------
 
+void DrawRVM()
+{
+	vPoly poly;
+	
+	poly.Vertices[0].x = -0.35f;
+	poly.Vertices[0].y = -1.0f;
+	poly.Vertices[0].z = 1;
+	poly.Vertices[1].x = -0.35f;
+	poly.Vertices[1].y = -0.65f;
+	poly.Vertices[1].z = 1;
+	poly.Vertices[2].x = 0.35f;
+	poly.Vertices[2].y = -0.65f;
+	poly.Vertices[2].z = 1;
+	poly.Vertices[3].x = 0.35f;
+	poly.Vertices[3].y = -1.0f;
+	poly.Vertices[3].z = 1;
+	
+	poly.Colours[0][0] = 0xE0;
+	poly.Colours[0][1] = 0xE0;
+	poly.Colours[0][2] = 0xE0;
+	poly.Colours[0][3] = 0xFF;
+	
+	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+	
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+	
+	vEffectStaticState::pCurrentEffect->SetTexture(gEnvmapTexture);
+	vEffectStaticState::pCurrentEffect->SetMiscmap1(vTextureCache::GetTexture(CTStringHash("RVMMask")));
+	vEffectStaticState::pCurrentEffect->Start();
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV); // double in brightness
+	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV); // double in brightness
+	
+	poly.UVs[0][0] = 1;
+	poly.UVs[0][1] = 0.42;
+	
+	poly.UVs[1][0] = 1;
+	poly.UVs[1][1] = 0.77;
+	
+	poly.UVs[2][0] = 0;
+	poly.UVs[2][1] = 0.77;
+	
+	poly.UVs[3][0] = 0;
+	poly.UVs[3][1] = 0.42;
+	
+	poly.UVsMask[0][0] = 1;
+	poly.UVsMask[0][1] = 0;
+	
+	poly.UVsMask[1][0] = 1;
+	poly.UVsMask[1][1] = 1;
+	
+	poly.UVsMask[2][0] = 0;
+	poly.UVsMask[2][1] = 1;
+	
+	poly.UVsMask[3][0] = 0;
+	poly.UVsMask[3][1] = 0;
+	
+	GX_SetCullMode(GX_CULL_NONE);
+	
+	GX_ClearVtxDesc();
+	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_TEX1, GX_DIRECT);
+	
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
+	
+	GX_SetNumChans(1);
+	
+	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
+				GX_DF_NONE, GX_AF_NONE);
+	
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		GX_Position3f32(poly.Vertices[i].x, poly.Vertices[i].y, poly.Vertices[i].z);
+		GX_Color4u8(poly.Colours[i][0], poly.Colours[i][1], poly.Colours[i][2], poly.Colours[i][3]);
+		GX_TexCoord2f32(poly.UVs[i][0], poly.UVs[i][1]);
+		GX_TexCoord2f32(poly.UVsMask[i][0], poly.UVsMask[i][1]);
+	}
+	
+	GX_End();
+	
+	vEffectStaticState::pCurrentEffect->End();
+	
+	// draw the frame
+	
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+	
+	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("RVM")));
+	vEffectStaticState::pCurrentEffect->Start();
+	
+	// set UVs back
+	poly.UVs[0][0] = 1;
+	poly.UVs[0][1] = 0;
+	
+	poly.UVs[1][0] = 1;
+	poly.UVs[1][1] = 1;
+	
+	poly.UVs[2][0] = 0;
+	poly.UVs[2][1] = 1;
+	
+	poly.UVs[3][0] = 0;
+	poly.UVs[3][1] = 0;
+	
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		GX_Position3f32(poly.Vertices[i].x, poly.Vertices[i].y, poly.Vertices[i].z);
+		GX_Color4u8(poly.Colours[i][0], poly.Colours[i][1], poly.Colours[i][2], poly.Colours[i][3]);
+		GX_TexCoord2f32(poly.UVs[i][0], poly.UVs[i][1]);
+		GX_TexCoord2f32(poly.UVsMask[i][0], poly.UVsMask[i][1]);
+	}
+	
+	GX_End();
+	
+	vEffectStaticState::pCurrentEffect->End();
+}
+
+//---------------------------------------------------------------------------------
+
 void RenderMainView()
 {
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
@@ -95,7 +222,7 @@ void RenderMainView()
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);	
 		
 		// was double passed, got effectively 16 blur samples out of just 8, but that was too performance heavy
-		for (int pass = 0; pass < 1; pass++)
+		for (int pass = 0; pass < (gCurViewMode == VIEW_MODE_ONE ? 1 : 0); pass++)
 		{
 			const int kBlurSamples = 4;
 			float bluroffsets[4];
@@ -439,7 +566,6 @@ void RenderEnvmap()
 		GX_SetTexCopyDst(gEnvmapTexture->width, gEnvmapTexture->height, GX_TF_RGBA8, 0);
 		
 		GX_CopyTex(GX_GetTexObjData(&gEnvmapTexture->GXTextureObj), GX_FALSE); // copy screen to texture
-		GX_PixModeSync();
 		GX_InvalidateTexAll();
 	}
 }
@@ -470,8 +596,8 @@ void vDisplayFrame()
 	
 	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 	
-	DebugMenu::render();
-	DebugMenu::renderBackground();
+	if (gCurViewMode == VIEW_MODE_ONE)
+		DrawRVM();
 	
 	{
 		World* world = World::GetInstance();
@@ -506,7 +632,9 @@ void vDisplayFrame()
 			}
 		}
 	}
-
+	
+	DebugMenu::render();
+	DebugMenu::renderBackground();
 
 	DrawScreenPrintfs();
 	
@@ -527,12 +655,18 @@ void vDisplayFrame()
 	if (twkVblankCount > 0)
 	{
 		static unsigned int lastVbla = tGetTicker();
+		GX_PixModeSync();
 		double maxTime = (1.0/60.0) * twkVblankCount;
 		double frameTime = tGetTickerDifference(lastVbla);
-		if (frameTime * 0.001 <= maxTime)
+		if (frameTime * 0.001 < maxTime)
 		{
 			for (uint8_t i = 0; i < twkVblankCount; i++)
+			{
 				VIDEO_WaitVSync();
+				frameTime = tGetTickerDifference(lastVbla);
+				if (frameTime * 0.001 >= maxTime)
+					break;
+			}
 		}
 		lastVbla = tGetTicker();
 	}
@@ -587,7 +721,7 @@ void InitializePlatform(int argc, char** argv) {
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 		
 		gMotionBlurTexture = new vTextureCache::CachedTexture("Motion Blur", rmode->fbWidth, rmode->efbHeight, GX_TF_RGBA8);
-		gEnvmapTexture = new vTextureCache::CachedTexture("Envmap", 64, 64, GX_TF_RGBA8);
+		gEnvmapTexture = new vTextureCache::CachedTexture("Envmap", 128, 128, GX_TF_RGBA8);
 	}
 	
 	// clear texture cache
