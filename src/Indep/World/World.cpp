@@ -371,7 +371,7 @@ void World::Simulate(float timestep)
 			
 			tMatrix4 transform;
 			tMatrix4 transformVec;
-			float transformFlt[16];
+			btScalar transformFlt[16];
 			trans.getOpenGLMatrix(transformFlt);
 			
 			// Bullet (OpenGL) using GX matrix
@@ -399,7 +399,7 @@ void World::Simulate(float timestep)
 			
 			tVector3 localVehPos(0, 0, 0);
 			tVector3 globalVehPos;
-			tVector3 localAngVel(body->getAngularVelocity().getX(), body->getAngularVelocity().getY(), body->getAngularVelocity().getZ());
+			tVector3 localAngVel((float)body->getAngularVelocity().getX(), (float)body->getAngularVelocity().getY(), (float)body->getAngularVelocity().getZ());
 			tVector3 globalAngVel;
 			tMatrix4 invTransform;
 			tMulVector(&globalVehPos, &transform, &localVehPos);
@@ -482,8 +482,8 @@ bool World::ContactProcessedCallback(btManifoldPoint& cp, void* body0, void* bod
 	const btVector3& pointOnBody0bt = cp.getPositionWorldOnB();
 	const btVector3& pointOnBody1bt = cp.getPositionWorldOnA();
 	
-	tVector3 pointOnBody0{pointOnBody0bt.getX(), pointOnBody0bt.getY(), pointOnBody0bt.getZ()};
-	tVector3 pointOnBody1{pointOnBody1bt.getX(), pointOnBody1bt.getY(), pointOnBody1bt.getZ()};
+	tVector3 pointOnBody0{(float)pointOnBody0bt.getX(), (float)pointOnBody0bt.getY(), (float)pointOnBody0bt.getZ()};
+	tVector3 pointOnBody1{(float)pointOnBody1bt.getX(), (float)pointOnBody1bt.getY(), (float)pointOnBody1bt.getZ()};
 	
 	if (simable1)
 		simable1->OnCollide(simable2, pointOnBody0);

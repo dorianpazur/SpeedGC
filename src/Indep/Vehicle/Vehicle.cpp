@@ -18,6 +18,7 @@ const float suspensionCompression = 9.4f;
 const float rollInfluence = -0.17f;
 const float drag = 0.2f;
 const btScalar suspensionRestLength(0.27f);
+const float connectionHeight = -0.23f;
 
 const btVector3 wheelDirectionCS0(0, -1, 0);
 const btVector3 wheelAxleCS(-1, 0, 0);
@@ -88,25 +89,23 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 
 	mWorld->addVehicle(mRaycastVehicle);
 
-	float connectionHeight = -0.23f;
-
 	bool isFrontWheel = true;
 
 	//choose coordinate system
 	mRaycastVehicle->setCoordinateSystem(0, 1, 2);
 
-	btVector3 connectionPointCS0((kWidth / 2), connectionHeight, (kLength / 2) * 1.0 - wheelRadius);
+	btVector3 connectionPointCS0((kWidth / 2) - 0.1f, connectionHeight, (kLength / 2) * 1.0 - wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
 	
-	connectionPointCS0 = btVector3(-(kWidth / 2), connectionHeight, (kLength / 2) * 1.0 - wheelRadius);
+	connectionPointCS0 = btVector3(-(kWidth / 2) + 0.1f, connectionHeight, (kLength / 2) * 1.0 - wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
 	
 	isFrontWheel = false;
 	
-	connectionPointCS0 = btVector3(-(kWidth / 2), connectionHeight, -(kLength / 2) * 1.0 + wheelRadius);
+	connectionPointCS0 = btVector3(-(kWidth / 2) + 0.1f, connectionHeight, -(kLength / 2) * 1.0 + wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
 	
-	connectionPointCS0 = btVector3((kWidth / 2), connectionHeight, -(kLength / 2) * 1.0 + wheelRadius);
+	connectionPointCS0 = btVector3((kWidth / 2) - 0.1f, connectionHeight, -(kLength / 2) * 1.0 + wheelRadius);
 	mRaycastVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, mTuning, isFrontWheel);
 
 	for (int i = 0; i < mRaycastVehicle->getNumWheels(); i++)
@@ -169,7 +168,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		throttle = 0.0f;
 	
 	if (steering)
-		steering = (std::abs(steering) / steering) * std::pow(std::abs(steering), 2);
+		steering = (std::abs(steering) / steering) * std::pow(std::abs(steering), 4);
 	
 	btTransform trans;
 	mBody->getMotionState()->getWorldTransform(trans);
@@ -275,7 +274,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		}
 		if (wheel.m_bIsFrontWheel)
 		{
-			mRaycastVehicle->setSteeringValue(mSteeringInput, i);
+			mRaycastVehicle->setSteeringValue(mSteeringInput * 0.4f, i);
 		}
 		
 		mRaycastVehicle->updateWheelTransform(i, true);
@@ -326,7 +325,7 @@ void Vehicle::Render(vView* view)
 		return;
 	
 	tMatrix4 transform;
-	float transformFlt[16];
+	btScalar transformFlt[16];
 	btTransform trans;
 	
 	if (mBody->getMotionState())

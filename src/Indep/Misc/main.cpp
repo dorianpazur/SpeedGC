@@ -226,7 +226,7 @@ void InitializeMemory()
 	{
 		tInitializeMemory();
 		
-		const size_t kPhysicsMemoryPoolSize = 0x200000; // 2mb
+		const size_t kPhysicsMemoryPoolSize = 0x400000; // 4mb
 		tInitMemoryPool(PHYSICS_POOL, tWareMalloc(kPhysicsMemoryPoolSize, "Physics Pool", __LINE__, ALLOC_PARAMS(MAIN_POOL, 0)), kPhysicsMemoryPoolSize, "Physics Pool");
 		btAlignedAllocSetCustom(btAllocOverride, tFree);
 		btAlignedAllocSetCustomAligned(btAlignedAllocOverride, tFree);
