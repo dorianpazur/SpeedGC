@@ -42,6 +42,7 @@ vModel *gTestModel = NULL;
 vModel* gCarModel = NULL;
 vModel* gSkydomeModel = NULL;
 vModel* gCubeModel = NULL;
+vModel* gBatteryModel = NULL;
 
 float CPUTime = 0.0f;
 float GPUTime = 0.0f;
@@ -125,7 +126,10 @@ int main(int argc, char **argv)
 			delete gCubeModel;
 			gCubeModel = NULL;
 		}
-		
+		if (gBatteryModel && gBatteryModel != gCubeModel)
+			delete gBatteryModel;
+		gBatteryModel = NULL;
+
 		World::Uninit();
 		NGSpriteManager.Reset();
 		vTextureCache::Uninit();
@@ -266,4 +270,11 @@ void LoadAssets()
 	gSkydomeModel = new vModel("Global/skydome.glb");
 	
 	gCarModel = new vModel("Vehicles/126p/126p.glb");
+
+	gBatteryModel = new vModel("Indep/sphere.glb");
+	if (gBatteryModel && gBatteryModel->IsEmpty())
+	{
+		delete gBatteryModel;
+		gBatteryModel = vModel::CreateCube({ 0xFF, 0xFF, 0x00, 0xFF });
+	}
 }

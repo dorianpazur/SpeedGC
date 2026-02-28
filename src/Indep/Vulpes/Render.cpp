@@ -56,13 +56,16 @@ void DrawPropCubes(vView* view)
 
 void DrawBatteries(vView* view)
 {
+	if (!view)
+		return;
+
 	World* world = World::GetInstance();
 	if (!world)
 		return;
 	for (int i = 0; i < world->mBatteryCount; i++)
 	{
 		Battery* bat = world->mBatteries[i];
-		if (!bat || bat->mCollected)
+		if (!bat || bat->mCollected || !bat->mBody)
 			continue;
 		bat->Render(view);
 	}

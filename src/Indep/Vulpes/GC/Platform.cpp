@@ -176,7 +176,7 @@ void RenderMainView()
 {
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
 	{
-		if (!vViews[viewNum].Active)
+		if (!vViews[viewNum].Active || !vViews[viewNum].RenderTarget)
 			continue;
 		
 		vSetCurrentRenderTarget(vViews[viewNum].RenderTarget);

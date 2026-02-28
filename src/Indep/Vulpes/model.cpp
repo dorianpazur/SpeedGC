@@ -283,6 +283,8 @@ void vModel::CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, cons
 
 void vModel::Render(vView* view, tMatrix4 *transform)
 {
+	if (!view || !transform)
+		return;
 	tMatrix4 mv; // modelview matrix.	
 	tMatrix4 WtoL; // world to local matrix.	
 	
@@ -311,13 +313,16 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 	{
 		for (size_t mesh = 0; mesh < mSolids[solid].mMeshes.size(); mesh++)
 		{
+			vMesh& m = mSolids[solid].mMeshes[mesh];
+			if (!m.mVertices || !m.mIndices || m.mVertexCount == 0 || m.mIndexCount == 0)
+				continue;
 			// tells gx where our position and color data is
 			// args: type of data, pointer, array stride
-			GX_SetArray(GX_VA_POS, &mSolids[solid].mMeshes[mesh].mVertices[0].position, sizeof(vVertex));
-			GX_SetArray(GX_VA_CLR0, &mSolids[solid].mMeshes[mesh].mVertices[0].color, sizeof(vVertex));
-			GX_SetArray(GX_VA_CLR1, &mSolids[solid].mMeshes[mesh].mVertices[0].color, sizeof(vVertex));
-			GX_SetArray(GX_VA_TEX0, &mSolids[solid].mMeshes[mesh].mVertices[0].texcoord, sizeof(vVertex));
-			GX_SetArray(GX_VA_NRM, &mSolids[solid].mMeshes[mesh].mVertices[0].normal, sizeof(vVertex));
+			GX_SetArray(GX_VA_POS, &m.mVertices[0].position, sizeof(vVertex));
+			GX_SetArray(GX_VA_CLR0, &m.mVertices[0].color, sizeof(vVertex));
+			GX_SetArray(GX_VA_CLR1, &m.mVertices[0].color, sizeof(vVertex));
+			GX_SetArray(GX_VA_TEX0, &m.mVertices[0].texcoord, sizeof(vVertex));
+			GX_SetArray(GX_VA_NRM, &m.mVertices[0].normal, sizeof(vVertex));
 			//DCFlushRange(mSolids[solid].mMeshes[mesh].mVertices, mSolids[solid].mMeshes[mesh].mVertexBufferSize);
 			
 			// setup the vertex descriptor
@@ -342,12 +347,14 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
 			
-			vEffectStaticState::pCurrentEffect = vEffects[mSolids[solid].mMeshes[mesh].mEffectID];
+			vEffectStaticState::pCurrentEffect = vEffects[m.mEffectID];
+			if (!vEffectStaticState::pCurrentEffect)
+				continue;
 			vEffectStaticState::pViewMatrix = &view->ViewMatrix;
 			vEffectStaticState::pWorldToLocalMatrix = &WtoL;
 			
-			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap));
-			vEffectStaticState::pCurrentEffect->Material = mSolids[solid].mMeshes[mesh].mMaterial;
+			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(m.mTextures.DiffuseMap));
+			vEffectStaticState::pCurrentEffect->Material = m.mMaterial;
 			
 			vEffectStaticState::pCurrentEffect->Start();
 			
@@ -358,10 +365,10 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			
 			if (vEffectStaticState::pCurrentEffect->ID != VEFFECT_SKY) // sky overrides these, don't touch them
 			{
-				switch (mSolids[solid].mMeshes[mesh].mTextureAlphaUsageType)
+				switch (m.mTextureAlphaUsageType) 
 				{
 					case TEXUSAGE_MODULATED:
-						if (mSolids[solid].mMeshes[mesh].mTextures.DiffuseMap == CTStringHash("glass"))
+						if (m.mTextures.DiffuseMap == CTStringHash("glass"))
 						{
 							GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
 							GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
@@ -381,11 +388,11 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			}
 			
 			// have to step through index buffer manually
-			GX_Begin(GX_TRIANGLES, GX_VTXFMT0, mSolids[solid].mMeshes[mesh].mIndexCount);
-			
-			for (size_t i = 0; i < mSolids[solid].mMeshes[mesh].mIndexCount; i++)
+			GX_Begin(GX_TRIANGLES, GX_VTXFMT0, m.mIndexCount);
+
+			for (size_t i = 0; i < m.mIndexCount; i++) 
 			{
-				uint16_t index = mSolids[solid].mMeshes[mesh].mIndices[i];
+				uint16_t index = m.mIndices[i];
 				GX_Position1x16(index);
 				GX_Color1x16(index);
 				GX_Color1x16(index);
