@@ -156,6 +156,7 @@ void RenderMainView()
 			for (int i = kBlurSamples / 2; i > 0; i--)
 			{
 				int sample = i * 2;
+				
 				poly.UVs[0][0] = -(sample * bluroffsets[0]);
 				poly.UVs[0][1] = -(sample * bluroffsets[1]);
 				
@@ -227,6 +228,81 @@ void RenderMainView()
 		// postfx
 		GX_LoadProjectionMtx(*(Mtx44*)&gVfxMatrix, GX_ORTHOGRAPHIC);
 		GX_LoadPosMtxImm(*(Mtx44*)&gIdentityMatrix, GX_PNMTX0);
+		
+		// vignette
+		vPoly poly;
+		
+		poly.Vertices[0].x = -1.0f;
+		poly.Vertices[0].y = -1.0f;
+		poly.Vertices[0].z = 1;
+		poly.Vertices[1].x = -1.0f;
+		poly.Vertices[1].y = 1.0f;
+		poly.Vertices[1].z = 1;
+		poly.Vertices[2].x = 1.0f;
+		poly.Vertices[2].y = 1.0f;
+		poly.Vertices[2].z = 1;
+		poly.Vertices[3].x = 1.0f;
+		poly.Vertices[3].y = -1.0f;
+		poly.Vertices[3].z = 1;
+		
+		poly.Colours[0][0] = 0xFF;
+		poly.Colours[0][1] = 0xFF;
+		poly.Colours[0][2] = 0xFF;
+		poly.Colours[0][3] = 0xFF;
+		
+		*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+		*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+		
+		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_STANDARD];
+		
+		vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("vignette")));
+		vEffectStaticState::pCurrentEffect->Start();
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_ZERO, GX_BL_SRCCLR, GX_LO_CLEAR);
+		
+		poly.UVs[0][0] = 0;
+		poly.UVs[0][1] = 0;
+		
+		poly.UVs[1][0] = 0;
+		poly.UVs[1][1] = 1;
+		
+		poly.UVs[2][0] = 1;
+		poly.UVs[2][1] = 1;
+		
+		poly.UVs[3][0] = 1;
+		poly.UVs[3][1] = 0;
+		
+		GX_SetCullMode(GX_CULL_NONE);
+	
+		GX_ClearVtxDesc();
+		GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+		GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+		GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+		GX_SetVtxDesc(GX_VA_TEX1, GX_DIRECT);
+		
+		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
+		
+		GX_SetNumChans(1);
+		
+		GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
+					GX_DF_NONE, GX_AF_NONE);
+		
+		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+		
+		for (int i = 0; i < 4; i++)
+		{
+			GX_Position3f32(poly.Vertices[i].x, poly.Vertices[i].y, poly.Vertices[i].z);
+			GX_Color4u8(poly.Colours[i][0], poly.Colours[i][1], poly.Colours[i][2], poly.Colours[i][3]);
+			GX_TexCoord2f32(poly.UVs[i][0], poly.UVs[i][1]);
+			GX_TexCoord2f32(poly.UVsMask[i][0], poly.UVsMask[i][1]);
+		}
+		
+		GX_End();
+		
+		vEffectStaticState::pCurrentEffect->End();
 	}
 }
 

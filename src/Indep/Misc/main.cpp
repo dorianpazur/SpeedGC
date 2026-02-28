@@ -248,8 +248,6 @@ void InitializeMemory()
 
 void LoadAssets()
 {
-	printf("draw_init\n");
-	
 	vTextureCache::LoadTextureFromPath("Global/DefaultTexture.tpl");
 	vTextureCache::LoadTextureFromPath("Global/particles.tpl");
 	vTextureCache::LoadTextureFromPath("Global/Fonts/Arial.tpl");
@@ -257,6 +255,7 @@ void LoadAssets()
 	vTextureCache::LoadTextureFromPath("World/tarmac_diffuse.tpl");
 	vTextureCache::LoadTextureFromPath("World/tarmac_spec.tpl");
 	vTextureCache::LoadTextureFromPath("Global/CarShadow.tpl");
+	vTextureCache::LoadTextureFromPath("Global/vignette.tpl");
 	
 	//tMemoryPrintAllocationsByAddress(MAIN_POOL);
 	
