@@ -36,7 +36,7 @@ struct vView
 	VVIEW_ID ID;
 	
 	bool Active = false;
-	float NearZ = 0.75f;
+	float NearZ = 0.25f;
 	float FarZ = 15000.0f;
 	float FovDegrees = 60.0f;
 	

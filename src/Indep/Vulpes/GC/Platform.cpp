@@ -62,9 +62,9 @@ void DrawRVM()
 	poly.Vertices[3].y = -1.0f;
 	poly.Vertices[3].z = 1;
 	
-	poly.Colours[0][0] = 0xE0;
-	poly.Colours[0][1] = 0xE0;
-	poly.Colours[0][2] = 0xE0;
+	poly.Colours[0][0] = 0xBA;
+	poly.Colours[0][1] = 0xBA;
+	poly.Colours[0][2] = 0xBA;
 	poly.Colours[0][3] = 0xFF;
 	
 	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
@@ -79,17 +79,17 @@ void DrawRVM()
 	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV); // double in brightness
 	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_2, GX_TRUE, GX_TEVPREV); // double in brightness
 	
-	poly.UVs[0][0] = 1;
-	poly.UVs[0][1] = 0.42;
+	poly.UVs[0][0] = 0.8;
+	poly.UVs[0][1] = 0.35;
 	
-	poly.UVs[1][0] = 1;
-	poly.UVs[1][1] = 0.77;
+	poly.UVs[1][0] = 0.8;
+	poly.UVs[1][1] = 0.64;
 	
-	poly.UVs[2][0] = 0;
-	poly.UVs[2][1] = 0.77;
+	poly.UVs[2][0] = 0.2;
+	poly.UVs[2][1] = 0.64;
 	
-	poly.UVs[3][0] = 0;
-	poly.UVs[3][1] = 0.42;
+	poly.UVs[3][0] = 0.2;
+	poly.UVs[3][1] = 0.35;
 	
 	poly.UVsMask[0][0] = 1;
 	poly.UVsMask[0][1] = 0;
@@ -437,7 +437,9 @@ void RenderMainView()
 
 void RenderEnvmap()
 {
+	static bool everyOther = true; // only draw it every other frame
 	const int viewNum = VVIEW_ENVMAP;
+	if (everyOther)
 	{
 		if (!vViews[viewNum].Active)
 			return;
@@ -559,8 +561,8 @@ void RenderEnvmap()
 		GX_SetTexCopySrc(
 						vViews[viewNum].RenderTarget->Left,
 						vViews[viewNum].RenderTarget->Top,
-						gEnvmapTexture->width,
-						gEnvmapTexture->height
+						vViews[viewNum].RenderTarget->Width,
+						vViews[viewNum].RenderTarget->Height
 						);	// This sets the location on the efb you want to copy from
 		
 		GX_SetTexCopyDst(gEnvmapTexture->width, gEnvmapTexture->height, GX_TF_RGBA8, 0);
@@ -568,6 +570,7 @@ void RenderEnvmap()
 		GX_CopyTex(GX_GetTexObjData(&gEnvmapTexture->GXTextureObj), GX_FALSE); // copy screen to texture
 		GX_InvalidateTexAll();
 	}
+	everyOther = !everyOther;
 }
 
 //---------------------------------------------------------------------------------
@@ -721,7 +724,7 @@ void InitializePlatform(int argc, char** argv) {
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 		
 		gMotionBlurTexture = new vTextureCache::CachedTexture("Motion Blur", rmode->fbWidth, rmode->efbHeight, GX_TF_RGBA8);
-		gEnvmapTexture = new vTextureCache::CachedTexture("Envmap", 128, 128, GX_TF_RGBA8);
+		gEnvmapTexture = new vTextureCache::CachedTexture("Envmap", 256, 256, GX_TF_RGBA8);
 	}
 	
 	// clear texture cache

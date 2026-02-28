@@ -435,9 +435,9 @@ void vEffect_CAR::Start()
 		uint8_t DiffuseRange = (uint8_t)(((uint32_t)((Material->DiffuseMax - Material->DiffuseMin) * 255.0f)) & 0xFF);
 		
 		GXColor light1Color = {0xF0,0xF0,0xF0,0}; // Light 1 color
-		GXColor light2Color = {0xD8,0xD8,0xD8,0}; // Light 2 color
-		GXColor light3Color = {0xD8,0xD8,0xD8,0}; // Light 3 color
-		GXColor ambientColor = {0x20,0x20,0x20,DiffuseMin}; // Ambient color
+		GXColor light2Color = {0xB8,0xB8,0xB8,0}; // Light 2 color
+		GXColor light3Color = {0xB8,0xB8,0xB8,0}; // Light 3 color
+		GXColor ambientColor = {0x50,0x50,0x50,DiffuseMin}; // Ambient color
 		GXColor specularColor = {0xA0,0xA0,0xA0,0xA0}; // Spec color
 		GXColor diffuseRangeColor = {0,0,0,DiffuseRange}; // diffuse
 		

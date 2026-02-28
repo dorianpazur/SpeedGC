@@ -398,11 +398,14 @@ void World::Simulate(float timestep)
 			transformVec[2][3] = 0.0f;
 			
 			tVector3 localVehPos(0, 0, 0);
+			tVector3 reflectionPos(0, 0.5f, 0);
 			tVector3 globalVehPos;
+			tVector3 globalReflectionPos;
 			tVector3 localAngVel((float)body->getAngularVelocity().getX(), (float)body->getAngularVelocity().getY(), (float)body->getAngularVelocity().getZ());
 			tVector3 globalAngVel;
 			tMatrix4 invTransform;
 			tMulVector(&globalVehPos, &transform, &localVehPos);
+			tMulVector(&globalReflectionPos, &transform, &reflectionPos);
 			tMulVector(&globalAngVel, &transformVec, &localAngVel);
 			tInvertMatrix(&invTransform, &transform);
 			
@@ -449,7 +452,7 @@ void World::Simulate(float timestep)
 			
 			if (veh == 0)
 			{
-				vViews[VVIEW_ENVMAP].Position = globalVehPos;
+				vViews[VVIEW_ENVMAP].Position = globalReflectionPos;
 				
 				cam = vViews[VVIEW_ENVMAP].Position,
 					up = {camUp[veh].x, camUp[veh].y, camUp[veh].z},
