@@ -51,7 +51,7 @@ public:
 	int mFirstPlaceVehicleIndex = 0;
 	int mSecondPlaceVehicleIndex = 1;
 	
-	static constexpr float kFinishLineZ = -4450.0f;
+	static constexpr float kFinishLineZ = -9950.0f;
 	bool mRaceFinished = false;
 	int mWinnerVehicleIndex = -1;
 
