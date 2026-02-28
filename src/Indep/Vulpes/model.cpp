@@ -315,6 +315,7 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			// args: type of data, pointer, array stride
 			GX_SetArray(GX_VA_POS, &mSolids[solid].mMeshes[mesh].mVertices[0].position, sizeof(vVertex));
 			GX_SetArray(GX_VA_CLR0, &mSolids[solid].mMeshes[mesh].mVertices[0].color, sizeof(vVertex));
+			GX_SetArray(GX_VA_CLR1, &mSolids[solid].mMeshes[mesh].mVertices[0].color, sizeof(vVertex));
 			GX_SetArray(GX_VA_TEX0, &mSolids[solid].mMeshes[mesh].mVertices[0].texcoord, sizeof(vVertex));
 			GX_SetArray(GX_VA_NRM, &mSolids[solid].mMeshes[mesh].mVertices[0].normal, sizeof(vVertex));
 			//DCFlushRange(mSolids[solid].mMeshes[mesh].mVertices, mSolids[solid].mMeshes[mesh].mVertexBufferSize);
@@ -325,6 +326,7 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			GX_ClearVtxDesc();
 			GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
 			GX_SetVtxDesc(GX_VA_CLR0, GX_INDEX16);
+			GX_SetVtxDesc(GX_VA_CLR1, GX_INDEX16);
 			GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
 			GX_SetVtxDesc(GX_VA_NRM, GX_INDEX16);
 			
@@ -336,6 +338,7 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			// bits for non float data.
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR1, GX_CLR_RGBA, GX_RGBA8, 0);
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 			GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
 			
@@ -384,6 +387,7 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			{
 				uint16_t index = mSolids[solid].mMeshes[mesh].mIndices[i];
 				GX_Position1x16(index);
+				GX_Color1x16(index);
 				GX_Color1x16(index);
 				GX_TexCoord1x16(index);
 				GX_Normal1x16(index);
