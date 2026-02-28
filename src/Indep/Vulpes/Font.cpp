@@ -85,7 +85,7 @@ float vGetFontKern(char c, tHash fontName)
 	return kern;
 }
 
-void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName)
+void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName, float scale) 
 {
 	GX_SetCullMode(GX_CULL_NONE);
 	
@@ -122,12 +122,15 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 	float currentOffsetX = 0.0f;
 	float currentOffsetY = 0.0f;
 	
+	const float charW = 30.0f * scale;
+	const float charH = 30.0f * scale;
+
 	for (size_t c = 0; c < characterCount; c++)
 	{
 		float leftX = ((x + currentOffsetX) / 320.0f) - (10.0f / 320.0f);
 		float topY = ((y + currentOffsetY) / 240.0f) - (6.0f / 320.0f);
-		float rightX = leftX + (30.0f / 320.0f);
-		float bottomY = topY + (30.0f / 240.0f);
+		float rightX = leftX + (charW / 320.0f);
+		float bottomY = topY + (charH / 240.0f);
 		
 		float texLeftX = (text[c] % 16) / 16.0f;
 		float texTopY = (text[c] / 16) / 16.0f;
@@ -168,7 +171,7 @@ void vScreenPrint(int x, int y, const char* text, uint32_t color, tHash fontName
 			currentOffsetY += 16.0f;
 		}
 		else
-			currentOffsetX += vGetFontKern(text[c], fontName);
+			currentOffsetX += vGetFontKern(text[c], fontName) * scale;
 	}
 	
 	GX_End();

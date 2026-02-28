@@ -407,6 +407,31 @@ void vDisplayFrame()
 			ScreenPrintf(60, 20, 1.0f, 0xFFFFD700u, "Place: %s", first == 1 ? "1st" : "2nd");
 		}
 	}
+
+	// Win/lose HUD
+	{
+		World* world = World::GetInstance();
+		if (world && world->mRaceFinished && world->mWinnerVehicleIndex >= 0)
+		{
+			const unsigned int winColor = 0xFF00FF00u;  // green
+			const unsigned int loseColor = 0xFFFF0000u; // red
+			const float kHudScale = 2.5f;
+			const int centerY = 100;
+			const int leftStartX = -95;
+			if (world->mWinnerVehicleIndex == 0)
+			{
+				vScreenPrint(leftStartX, centerY - 300, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
+				vScreenPrint(leftStartX, centerY, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
+			}
+			else
+			{
+				vScreenPrint(leftStartX, centerY - 300, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
+				vScreenPrint(leftStartX, centerY, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
+			}
+		}
+	}
+
+
 	DrawScreenPrintfs();
 	
 	// push frame

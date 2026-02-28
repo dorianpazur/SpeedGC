@@ -50,6 +50,10 @@ public:
 	// Race order along track (more negative Z = ahead). Indices into mVehicles (0 = player 1, 1 = player 2).
 	int mFirstPlaceVehicleIndex = 0;
 	int mSecondPlaceVehicleIndex = 1;
+	
+	static constexpr float kFinishLineZ = -4450.0f;
+	bool mRaceFinished = false;
+	int mWinnerVehicleIndex = -1;
 
 	World();
 	~World();

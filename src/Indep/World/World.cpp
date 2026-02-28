@@ -312,6 +312,25 @@ void World::Simulate(float timestep)
 				}
 			}
 
+			if (!mRaceFinished && mVehicles.size() >= 2)
+			{
+				float z0 = 0.0f;
+				float z1 = 0.0f;
+				if (mVehicles[0]->mBody && mVehicles[0]->mBody->getMotionState())
+					z0 = mVehicles[0]->mBody->getWorldTransform().getOrigin().getZ();
+				if (mVehicles[1]->mBody && mVehicles[1]->mBody->getMotionState())
+					z1 = mVehicles[1]->mBody->getWorldTransform().getOrigin().getZ();
+
+				if (z0 <= kFinishLineZ || z1 <= kFinishLineZ)
+				{
+					mRaceFinished = true;
+					if (z0 <= z1)
+						mWinnerVehicleIndex = 0;
+					else
+						mWinnerVehicleIndex = 1;
+				}
+			}
+
 			testTransform[0][3] = 25.0f;
 			testTransform[1][3] = 4.0f;
 			testTransform[2][3] = -30.0f;
@@ -438,6 +457,8 @@ void World::Simulate(float timestep)
 
 bool World::ShouldPauseWorld()
 {
+	if (mRaceFinished)
+		return true;
 	return DebugMenuShouldPauseWorld();
 }
 
