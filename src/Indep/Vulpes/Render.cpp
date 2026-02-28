@@ -4,6 +4,7 @@
 #include "World.h"
 #include "Vehicle.h"
 #include "PropCube.h"
+#include "Battery.h"
 
 extern vModel *gSkydomeModel;
 
@@ -50,6 +51,20 @@ void DrawPropCubes(vView* view)
 		if (!cube || !cube->mBody)
 			continue;
 		cube->Render(view);
+	}
+}
+
+void DrawBatteries(vView* view)
+{
+	World* world = World::GetInstance();
+	if (!world)
+		return;
+	for (int i = 0; i < world->mBatteryCount; i++)
+	{
+		Battery* bat = world->mBatteries[i];
+		if (!bat || bat->mCollected)
+			continue;
+		bat->Render(view);
 	}
 }
 

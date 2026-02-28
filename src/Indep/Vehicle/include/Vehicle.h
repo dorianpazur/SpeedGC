@@ -16,7 +16,8 @@ public:
 	~Vehicle();
     void Update(float throttle, float brake, float steering, float timestep);
 	virtual void OnCollide(ISimable* other, const tVector3 &contactPoint);
-	
+	virtual void AddFuel(float amount) override;
+
 	virtual void Render(vView* view) override;
 
 private:
@@ -32,6 +33,11 @@ private:
 	
 	bool mCollidedThisFrame = false;
 	bool mIsReversing = false;
+
+	float mFuel = 0.0f;
+	static constexpr float kMaxFuel = 100.0f;
+	static constexpr float kFuelConsumptionPerSecond = 10.0f;
+
 };
 
 #endif
