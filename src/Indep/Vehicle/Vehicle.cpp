@@ -13,12 +13,12 @@ const float steeringClamp = 0.3f;
 const float wheelRadius = 0.15f;
 const float wheelWidth = 0.125f;
 const float wheelFriction = 8.0f;  //BT_LARGE_FLOAT;
-const float suspensionStiffness = 30.0f;
+const float suspensionStiffness = 10.0f;
 const float suspensionDamping = 5.3f;
-const float suspensionCompression = 11.4f;
-const float rollInfluence = 0.03f;
+const float suspensionCompression = 2.4f;
+const float rollInfluence = -0.25f;
 const float drag = 0.2f;
-const btScalar suspensionRestLength(0.5f);
+const btScalar suspensionRestLength(0.85f);
 
 const btVector3 wheelDirectionCS0(0, -1, 0);
 const btVector3 wheelAxleCS(-1, 0, 0);
@@ -245,7 +245,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 				trans.getOrigin().getZ());
 	
 	// aerodynamics
-	btVector3 downforce = btVector3(0, -1000.0f * std::min(50.0f, speed) * timestep, 0);
+	btVector3 downforce = btVector3(0, -600.0f * std::min(50.0f, speed) * timestep, 0);
 	mBody->applyCentralForce(-velocity * drag * velocity.length());
 	mBody->applyCentralForce(mBody->getWorldTransform().getBasis() * downforce);
 	
