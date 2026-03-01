@@ -219,6 +219,8 @@ void RenderWorld(vView* view)
 	DrawPropCubes(view);
 	DrawBatteries(view);
 	
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
+	
 	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("barrier")));
 	
 	if (view->ID == VVIEW_ENVMAP)
