@@ -219,7 +219,8 @@ void RenderWorld(vView* view)
 	DrawPropCubes(view);
 	DrawBatteries(view);
 	
-	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLD];
+	GX_LoadPosMtxImm(*(Mtx44*)&view->ViewMatrix, GX_PNMTX0);
 	
 	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("barrier")));
 	
