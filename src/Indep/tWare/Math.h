@@ -338,5 +338,6 @@ extern unsigned int tRandom(int range, unsigned int *seed);
 float tRandom(float range, unsigned int *seed);
 unsigned int tRandom(int range);
 float tRandom(float range);
+#define tMoveTowards(cur, target, maxDelta) (cur + std::fmaxf(-(maxDelta), std::fminf(maxDelta, target - cur)))
 
 #endif

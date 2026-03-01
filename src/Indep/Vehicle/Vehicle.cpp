@@ -15,7 +15,7 @@ const float wheelFriction = 6.0f;
 const float suspensionStiffness = 40.0f;
 const float suspensionDamping = 2.3f;
 const float suspensionCompression = 9.4f;
-const float rollInfluence = -0.17f;
+const float rollInfluence = -0.24f;
 const float drag = 0.2f;
 const btScalar suspensionRestLength(0.27f);
 const float connectionHeight = -0.23f;
@@ -222,12 +222,11 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 
 	mBrakeInput = std::lerp(mBrakeInput, brake, 60.0f * timestep);
 	mThrottleInput = std::lerp(mThrottleInput, throttle, 30.0f * timestep);
-	float steeringTarget = -steering / (1.0 + std::min(1.5f, speed * 0.001f * mThrottleInput));
+	float steeringTarget = -steering / (1.0 + std::fminf(1.5f, speed * 0.001f * mThrottleInput));
 	//mSteeringInput = std::lerp(mSteeringInput, steeringTarget, (1.4f + (std::abs(steeringTarget) * 1.4f)) * timestep);
 	
-	#define tMoveTowards(cur, target, maxDelta) (cur + std::fmaxf(-(maxDelta), std::fminf(maxDelta, target - cur)))
-	
-	mSteeringInput = tMoveTowards(mSteeringInput, steeringTarget, timestep * (3.0f - (std::abs(steeringTarget) * 1.5f)));
+	float turnSpeed = (3.0f - (std::abs(steeringTarget) * 1.5f)) * (2.0f / (std::fminf(1.0f, speed / 33.0f) + 1.0f));
+	mSteeringInput = tMoveTowards(mSteeringInput, steeringTarget, timestep * turnSpeed);
 	
 	float angVelFrictionLoss = std::abs((mBody->getWorldTransform().getBasis().transpose() * mBody->getAngularVelocity()).getY()) * 0.5f;
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
