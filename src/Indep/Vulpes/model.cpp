@@ -365,12 +365,12 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 			vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(m.mTextures.DiffuseMap));
 			vEffectStaticState::pCurrentEffect->Material = m.mMaterial;
 			
-			vEffectStaticState::pCurrentEffect->Start();
-			
 			if (view->ID == VVIEW_ENVMAP)
 			{
 				vEffectStaticState::pCurrentEffect->HalfBrightness = true;
 			}
+			
+			vEffectStaticState::pCurrentEffect->Start();
 			
 			if (vEffectStaticState::pCurrentEffect->ID != VEFFECT_SKY) // sky overrides these, don't touch them
 			{

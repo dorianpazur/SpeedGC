@@ -62,9 +62,9 @@ void DrawRVM()
 	poly.Vertices[3].y = -1.0f;
 	poly.Vertices[3].z = 1;
 	
-	poly.Colours[0][0] = 0xBA;
-	poly.Colours[0][1] = 0xBA;
-	poly.Colours[0][2] = 0xBA;
+	poly.Colours[0][0] = 0xFF;
+	poly.Colours[0][1] = 0xFF;
+	poly.Colours[0][2] = 0xFF;
 	poly.Colours[0][3] = 0xFF;
 	
 	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
