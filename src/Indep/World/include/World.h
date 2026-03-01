@@ -39,10 +39,10 @@ public:
 	
 	float mTimeElapsed = 0.0f;
 	
-	void Simulate(float timestep);
+	void Simulate();
 	bool ShouldPauseWorld();
 	
-	static constexpr int kMaxPropCubes = 300;
+	static constexpr int kMaxPropCubes = 299;
 	static constexpr int kMaxBatteries = 40;
 
 	std::vector<Vehicle*, tStdAllocator<Vehicle*>> mVehicles;

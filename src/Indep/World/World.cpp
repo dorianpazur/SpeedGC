@@ -6,6 +6,7 @@
 #include <Vulpes/Platform.h>
 #include <Vulpes/Particles.h>
 #include <tWare/Time.h>
+#include "ScreenPrintf.h"
 #include "InputManager.h"
 #include "InputCommand.h"
 #include "PropCube.h"
@@ -146,8 +147,29 @@ World::World()
 
 		}
 	}
-
-	for (int i = 0; i < 100; i++)
+	
+	{
+		btCollisionShape* groundShape = new btBoxShape(btVector3(25, 100, 1)); // rear cap
+		
+		collisionShapes.push_back(groundShape);
+		
+		btTransform groundTransform;
+		groundTransform.setIdentity();
+		groundTransform.setOrigin(btVector3(0, 100, 51)); // place it at start of course
+	
+		btDefaultMotionState* groundMotion =
+			new btDefaultMotionState(groundTransform);
+	
+		//the fixed ground 
+		btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
+	
+		btRigidBody* groundBody = new btRigidBody(groundInfo);
+		//add body to the world
+		dynamicsWorld->addRigidBody(groundBody);
+	}
+	
+	int chunk = 0;
+	for (chunk = 0; chunk < 100; chunk++)
 	{
 		{
 			btCollisionShape* groundShape = new btBoxShape(btVector3(25, 1, 50)); //the ground
@@ -156,7 +178,7 @@ World::World()
 			
 			btTransform groundTransform;
 			groundTransform.setIdentity();
-			groundTransform.setOrigin(btVector3(0, -1, -100 * i)); //the ground position
+			groundTransform.setOrigin(btVector3(0, -1, -100 * chunk)); //the ground position
 		
 			btDefaultMotionState* groundMotion =
 				new btDefaultMotionState(groundTransform);
@@ -176,7 +198,7 @@ World::World()
 		
 			btTransform groundTransform;
 			groundTransform.setIdentity();
-			groundTransform.setOrigin(btVector3(26, -6, -100 * i));
+			groundTransform.setOrigin(btVector3(26, -6, -100 * chunk));
 		
 			btScalar mass(0.);
 		
@@ -203,7 +225,7 @@ World::World()
 		
 			btTransform groundTransform;
 			groundTransform.setIdentity();
-			groundTransform.setOrigin(btVector3(-26, -6, -100 * i));
+			groundTransform.setOrigin(btVector3(-26, -6, -100 * chunk));
 		
 			btScalar mass(0.);
 		
@@ -223,6 +245,26 @@ World::World()
 			dynamicsWorld->addRigidBody(body);
 		}
 	}
+	
+	{
+		btCollisionShape* groundShape = new btBoxShape(btVector3(25, 100, 1)); // end cap
+		
+		collisionShapes.push_back(groundShape);
+		
+		btTransform groundTransform;
+		groundTransform.setIdentity();
+		groundTransform.setOrigin(btVector3(0, 100, (-100 * (chunk - 1)) - 51)); // place it at end of course
+	
+		btDefaultMotionState* groundMotion =
+			new btDefaultMotionState(groundTransform);
+	
+		//the fixed ground 
+		btRigidBody::btRigidBodyConstructionInfo groundInfo( 0.0f, groundMotion, groundShape);
+	
+		btRigidBody* groundBody = new btRigidBody(groundInfo);
+		//add body to the world
+		dynamicsWorld->addRigidBody(groundBody);
+	}
 }
 
 //---------------------------------------------------------------------------------
@@ -239,20 +281,35 @@ void World::SpawnPlayer2()
 
 //---------------------------------------------------------------------------------
 
-void World::Simulate(float timestep)
+void World::Simulate()
 {
+	static double timeElapsedFix = 0.0;
+	const double kStepTimeMillis = 1000.0 / (1260000000.0/88.0/455.0/525.0); // 59.94fps
+	const double kStepTime = kStepTimeMillis / 1000.0; // 59.94fps
+	bool ticked = false;
+	int ticks = 0;
+	
+	static unsigned int time = tGetTicker();
+	
+	double timestep;
+	
+	do
+	{
+		timestep = tGetTickerDifference(time);
+	}
+	while (timestep < 1000.0 / 59.0);
+	
+	time = tGetTicker();
+	
 	if (!ShouldPauseWorld())
-	{	
-		mTimeElapsed += timestep;
-		static float timeElapsedFix = 0.0f;
-		const float kStepTime = 1.0f / 60.0f;
-		bool ticked = false;
+	{
+		timeElapsedFix += std::min(timestep, kStepTimeMillis * 4.0);
+		mTimeElapsed += std::min(timestep, kStepTimeMillis * 4.0) / 1000.0;
 		
-		timeElapsedFix += timestep;
-		
-		while (timeElapsedFix >= kStepTime)
+		do
 		{
 			ticked = true;
+			ticks++;
 			// auto default inputs per vehicle this frame
 			float engineForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 			float brakeForce[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -304,7 +361,7 @@ void World::Simulate(float timestep)
 				mVehicles[i]->Update(engineForce[idx], brakeForce[idx], steering[idx], kStepTime); 
 			}
 			
-			dynamicsWorld->stepSimulation(kStepTime, 8);
+			dynamicsWorld->stepSimulation(kStepTime, 4);
 	
 			// Remove collected batteries
 			for (int i = 0; i < mBatteryCount; i++)
@@ -368,14 +425,16 @@ void World::Simulate(float timestep)
 			
 			UpdateXenonEmitters(kStepTime);
 			
-			timeElapsedFix -= kStepTime;
-		}
+			timeElapsedFix -= kStepTimeMillis;
+		} while (timeElapsedFix >= kStepTimeMillis);
 		
 		static tVector3 camTarget[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(0.0f, 0.0f, 0.0f) };
 		static tVector3 camUp[2] { tVector3(0.0f, 1.0f, 0.0f), tVector3(0.0f, 1.0f, 0.0f) };
 		static tVector3 prevCamPos[2] { tVector3(0.0f, 0.0f, 0.0f), tVector3(30.0f, 30.0f, 30.0f) };
 		static float tilt[2] { 0.0f, 0.0f };
 		static float distance[2] { 10.0f, 10.0f };
+		
+		//ScreenPrintf(0, 0, "Ticks done: %d", ticks);
 		
 		// TODO - replace this with camera movers
 		for (size_t veh = 0; veh < mVehicles.size(); veh++)

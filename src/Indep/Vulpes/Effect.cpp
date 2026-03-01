@@ -21,7 +21,10 @@ vMaterial CarPaint
 	.EnvmapA = 0.8f,
 	
 	.DiffuseMin = 0.55f,
-	.DiffuseMax = 1.0f
+	.DiffuseMax = 1.0f,
+	
+	.SpecularBrightness = 0.65f,
+	.SpecularPower = 255.0f
 };
 
 vMaterial Glass
@@ -32,7 +35,10 @@ vMaterial Glass
 	.EnvmapA = 0.9f,
 	
 	.DiffuseMin = 0.25f,
-	.DiffuseMax = 0.5f
+	.DiffuseMax = 0.5f,
+	
+	.SpecularBrightness = 0.75f,
+	.SpecularPower = 255.0f
 };
 
 vMaterial GlassMask
@@ -43,7 +49,10 @@ vMaterial GlassMask
 	.EnvmapA = 0.9f,
 	
 	.DiffuseMin = 0.25f,
-	.DiffuseMax = 0.5f
+	.DiffuseMax = 0.5f,
+	
+	.SpecularBrightness = 0.75f,
+	.SpecularPower = 255.0f
 };
 
 vMaterial Chrome
@@ -54,7 +63,10 @@ vMaterial Chrome
 	.EnvmapA = 2.0f,
 	
 	.DiffuseMin = 0.1f,
-	.DiffuseMax = 0.25f
+	.DiffuseMax = 0.25f,
+	
+	.SpecularBrightness = 0.35f,
+	.SpecularPower = 255.0f
 };
 
 vMaterial Taillights
@@ -65,7 +77,10 @@ vMaterial Taillights
 	.EnvmapA = 0.65f,
 	
 	.DiffuseMin = 0.75f,
-	.DiffuseMax = 1.0f
+	.DiffuseMax = 1.0f,
+	
+	.SpecularBrightness = 0.75f,
+	.SpecularPower = 255.0f
 };
 
 vMaterial Reflectors
@@ -76,7 +91,10 @@ vMaterial Reflectors
 	.EnvmapA = 0.85f,
 	
 	.DiffuseMin = 0.25f,
-	.DiffuseMax = 0.5f
+	.DiffuseMax = 0.5f,
+	
+	.SpecularBrightness = 0.35f,
+	.SpecularPower = 255.0f
 };
 
 vMaterial *vGetMaterialFromName(const char* name)

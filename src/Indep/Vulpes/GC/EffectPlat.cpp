@@ -433,12 +433,13 @@ void vEffect_CAR::Start()
 		
 		uint8_t DiffuseMin = (uint8_t)(((uint32_t)(Material->DiffuseMin * 255.0f)) & 0xFF);
 		uint8_t DiffuseRange = (uint8_t)(((uint32_t)((Material->DiffuseMax - Material->DiffuseMin) * 255.0f)) & 0xFF);
+		uint8_t SpecularBrightness = (uint8_t)(((uint32_t)(Material->SpecularBrightness * 255.0f)) & 0xFF);
 		
 		GXColor light1Color = {0xF0,0xF0,0xF0,0}; // Light 1 color
 		GXColor light2Color = {0xB8,0xB8,0xB8,0}; // Light 2 color
 		GXColor light3Color = {0xB8,0xB8,0xB8,0}; // Light 3 color
 		GXColor ambientColor = {0x50,0x50,0x50,DiffuseMin}; // Ambient color
-		GXColor specularColor = {0xA0,0xA0,0xA0,0xA0}; // Spec color
+		GXColor specularColor = {SpecularBrightness,SpecularBrightness,SpecularBrightness,SpecularBrightness}; // Spec color
 		GXColor diffuseRangeColor = {0,0,0,DiffuseRange}; // diffuse
 		
 		lpos.x = 0.707f * LARGE_NUMBER;
@@ -482,7 +483,7 @@ void vEffect_CAR::Start()
 		
 		GX_InitSpecularDir(&lspecobj,-lpos.x,-lpos.y,-lpos.z);
 		GX_InitLightColor(&lspecobj,specularColor);
-		GX_InitLightShininess(&lspecobj, 120.0f);
+		GX_InitLightShininess(&lspecobj, Material->SpecularPower);
 		
 		GX_InitLightPos(&diffuseRangeLight,fresnelPos.x,fresnelPos.y,fresnelPos.z);
 		GX_InitLightColor(&diffuseRangeLight, diffuseRangeColor);

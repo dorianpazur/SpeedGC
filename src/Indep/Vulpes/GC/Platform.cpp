@@ -30,7 +30,7 @@ GXColor background = {0x00, 0x00, 0x00, 0xff};
 
 bool bSplitScreen = false;
 bool bWideScreen = true;
-int twkVblankCount = 1;
+int twkVblankCount = 0;
 bool twkDeflicker = false;
 
 const tMatrix4 gIdentityMatrix;
@@ -726,7 +726,7 @@ void InitializePlatform(int argc, char** argv) {
 		GX_Init(gp_fifo, GX_FIFO_MINSIZE);
 		
 		gMotionBlurTexture = new vTextureCache::CachedTexture("Motion Blur", rmode->fbWidth, rmode->efbHeight, GX_TF_RGBA8);
-		gEnvmapTexture = new vTextureCache::CachedTexture("Envmap", 256, 256, GX_TF_RGBA8);
+		gEnvmapTexture = new vTextureCache::CachedTexture("Envmap", 160, 160, GX_TF_RGBA8);
 	}
 	
 	// clear texture cache

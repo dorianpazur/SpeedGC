@@ -76,6 +76,9 @@ struct vMaterial
 	
 	float DiffuseMin = 1.0f;
 	float DiffuseMax = 1.0f;
+	
+	float SpecularBrightness = 0.2f;
+	float SpecularPower = 2.0f;
 };
 
 vMaterial *vGetMaterialFromName(const char* name);

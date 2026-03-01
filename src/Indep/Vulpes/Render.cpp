@@ -87,10 +87,15 @@ void RenderWorld(vView* view)
 	
 	vEffectStaticState::pCurrentEffect->Start();
 	
+	float maxRenderDistance = view->ID == VVIEW_ENVMAP ? 300.0f : 1000.0f;
+	
+	vPoly poly;
+	
 	// road
-	for (int slice = 0; slice < 100; slice++)
+	for (int slice = -10; slice < 110; slice++)
 	{
-		vPoly poly;
+		if (std::abs((-(slice * 100.0f)) - view->Position.z) > maxRenderDistance)
+			continue;
 	
 		poly.Vertices[0].x = -25.0f;
 		poly.Vertices[0].y = 0;
@@ -136,9 +141,10 @@ void RenderWorld(vView* view)
 	vEffectStaticState::pCurrentEffect->Start();
 	
 	// edges
-	for (int slice = 0; slice < 100; slice++)
+	for (int slice = -10; slice < 110; slice++)
 	{
-		vPoly poly;
+		if (std::abs((-(slice * 100.0f)) - view->Position.z) > maxRenderDistance)
+			continue;
 	
 		poly.Vertices[0].x = -35.0f;
 		poly.Vertices[0].y = 7;

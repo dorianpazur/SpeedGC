@@ -307,7 +307,7 @@ void vModel::Render(vView* view, tMatrix4 *transform)
 	
 	GX_SetCullMode(GX_CULL_BACK);
 	
-	const float kMaxRenderDist = 1000.0f; // 1km away max
+	const float kMaxRenderDist = 800.0f; // 800m away max
 	const float kMaxRenderDistEnvmap = 150.0f; // 150m away max
 	float x2x1 = ((*transform)[0][3]) - view->Position.x;
 	float y2y1 = ((*transform)[1][3]) - view->Position.y;

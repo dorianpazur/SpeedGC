@@ -181,7 +181,7 @@ void MainLoop()
 	if (gDebugMenuIOHandler)
 		gDebugMenuIOHandler->PollInput();
 	
-	World::GetInstance()->Simulate(gFrameTime * 0.001f);
+	World::GetInstance()->Simulate();
 	
 	CPUTime = (float)tGetTickerDifference(CPUTimeStart);
 	
