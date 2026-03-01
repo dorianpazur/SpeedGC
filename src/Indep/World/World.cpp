@@ -6,6 +6,7 @@
 #include <Vulpes/Platform.h>
 #include <Vulpes/Particles.h>
 #include <tWare/Time.h>
+#include <tWare/Thread.h>
 #include "ScreenPrintf.h"
 #include "InputManager.h"
 #include "InputCommand.h"
@@ -169,7 +170,7 @@ World::World()
 	}
 	
 	int chunk = 0;
-	for (chunk = 0; chunk < 100; chunk++)
+	for (chunk = 0; chunk < 102; chunk++)
 	{
 		{
 			btCollisionShape* groundShape = new btBoxShape(btVector3(25, 1, 50)); //the ground
@@ -295,6 +296,7 @@ void World::Simulate()
 	
 	do
 	{
+		tThreadYield();
 		timestep = tGetTickerDifference(time);
 	}
 	while (timestep < 1000.0 / 59.0);

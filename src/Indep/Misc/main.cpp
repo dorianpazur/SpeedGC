@@ -130,10 +130,10 @@ int main(int argc, char **argv)
 			delete gBatteryModel;
 		gBatteryModel = NULL;
 
+		Audio::Uninit();
 		World::Uninit();
 		NGSpriteManager.Reset();
 		vTextureCache::Uninit();
-		Audio::Uninit();
 		
 		printf("Memory at exit:");
 		tMemoryPrintAllocationsByAddress(MAIN_POOL);
@@ -154,6 +154,7 @@ void MainLoop()
 	static double fps = 0.0f;
 	
 	unsigned int CPUTimeStart = tGetTicker();
+	tThreadYield();
 	unsigned int now = tGetTicker();
 	
 	gFrameTime = tGetTickerDifference(prevFrameTime, now);

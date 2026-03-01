@@ -286,7 +286,6 @@ void *AudioThread(void*)
 	while (true)
 	{
 		UpdateAudio();
-		
 		tThreadYield();
 	}
 	
@@ -388,7 +387,7 @@ namespace Audio
 			streamingBuffer[1] = (int16_t*)tWareMalloc(kBufferSize, "Audio Buffer 2", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32));
 			
 			LWP_InitQueue(&thQueue);
-			LWP_CreateThread(&thread_handle, AudioThread, NULL, tWareMalloc(kAudioStackSize, "Audio Stack", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32)), kAudioStackSize, 0);
+			LWP_CreateThread(&thread_handle, AudioThread, NULL, tWareMalloc(kAudioStackSize, "Audio Stack", __LINE__, ALLOC_PARAMS(MAIN_POOL, 32)), kAudioStackSize, 64);
 		}
 		
 		stream.OpenFile("Audio/Music/Location.wav");

@@ -237,7 +237,7 @@ void RenderMainView()
 			velocityVector *= 1.0f / velocityLength;
 			
 			velocityLength -= 10.0f;
-			velocityLength = std::fmin(1.0f, velocityLength * 0.003f) / (kBlurSamples * 20.0f);
+			velocityLength = std::fmin(1.0f, velocityLength * 0.02f) / (kBlurSamples * 30.0f);
 			
 			velocityVector *= velocityLength;
 			velocityVector.x *= 0.65f;
@@ -270,7 +270,7 @@ void RenderMainView()
 			poly.Colours[0][0] = 0xFF;
 			poly.Colours[0][1] = 0xFF;
 			poly.Colours[0][2] = 0xFF;
-			poly.Colours[0][3] = 0xFF / 2;
+			poly.Colours[0][3] = 0x9F;
 			
 			*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
 			*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];

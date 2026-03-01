@@ -438,7 +438,9 @@ void Vehicle::Render(vView* view)
 	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
 	*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
 	*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE); // disable zwrite
 	vPolyRender(&poly);
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE); // enable zwrite
 	
 	vEffectStaticState::pCurrentEffect->End();
 	
