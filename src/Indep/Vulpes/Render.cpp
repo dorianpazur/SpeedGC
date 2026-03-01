@@ -229,6 +229,7 @@ void RenderWorld(vView* view)
 	float HorizUVScale = 16.0f;
 	
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE); // disable zwrite
+	GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
 	
 	// barriers
 	for (int slice = 0; slice < 100; slice++)

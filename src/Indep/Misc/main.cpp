@@ -268,7 +268,7 @@ void LoadAssets()
 	
 	//tMemoryPrintAllocationsByAddress(MAIN_POOL);
 	
-	gCubeModel = vModel::CreateCube({ 0x30, 0x30, 0x38, 0xFF }); // dark grey-blue cube
+	gCubeModel = new vModel("Misc/block.glb");//vModel::CreateCube({ 0x30, 0x30, 0x38, 0xFF }); // dark grey-blue cube
 	
 	gSkydomeModel = new vModel("Global/skydome.glb");
 	

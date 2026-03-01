@@ -73,10 +73,10 @@ void PropCube::Render(vView* view)
 
     // Scale each rotation column by the box half-extents so the unit cube
     // mesh matches the Bullet btBoxShape exactly
-    btVector3 halfExtents = ((btBoxShape*)mShape)->getHalfExtentsWithoutMargin();
-    float sx = halfExtents.getX();
-    float sy = halfExtents.getY();
-    float sz = halfExtents.getZ();
+    //btVector3 halfExtents = ((btBoxShape*)mShape)->getHalfExtentsWithoutMargin();
+    const float sx = 1.0f;//halfExtents.getX();
+    const float sy = 1.0f;//halfExtents.getY();
+    const float sz = 1.0f;//halfExtents.getZ();
 
 
     // the GameCube GPU(GX) doesn't understand Bullet's matrix format
@@ -94,7 +94,7 @@ void PropCube::Render(vView* view)
     transform[2][2] = transformFlt[10] * sz;
 
     transform[0][3] = transformFlt[12];
-    transform[1][3] = transformFlt[13];
+    transform[1][3] = transformFlt[13] - 2.0f;
     transform[2][3] = transformFlt[14];
 
     gCubeModel->Render(view, &transform);

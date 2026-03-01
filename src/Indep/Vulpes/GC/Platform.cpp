@@ -243,7 +243,7 @@ void RenderMainView()
 		// enable fog for world
 		GX_SetFog(GX_FOG_EXP2,
 			0.0f,
-			1500.0f,
+			1000.0f,
 			vViews[viewNum].NearZ,
 			vViews[viewNum].FarZ,
 		{0x9C, 0xBA, 0xDC} );
@@ -253,6 +253,13 @@ void RenderMainView()
 		GX_SetFogRangeAdj(GX_ENABLE, vViews[viewNum].RenderTarget->Left + (vViews[viewNum].RenderTarget->Width / 2), &fogAdjTable);
 		
 		RenderWorld(&vViews[viewNum]);
+		
+		GX_SetFog(GX_FOG_EXP2,
+			0.0f,
+			1000.0f,
+			vViews[viewNum].NearZ,
+			vViews[viewNum].FarZ,
+		{0x9C, 0xBA, 0xDC} );
 		
 		// draw prop cubes and batteries before motion blur so they are blurred with the world
 		DrawPropCubes(&vViews[viewNum]);
