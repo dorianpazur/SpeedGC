@@ -7,7 +7,8 @@
 extern vModel* gCarModel;
 
 const float speedPowerDecline = 0.04f;
-const float enginePower = 24000.0f;
+const float kSpeedRate = 1.5f;
+const float enginePower = 24000.0f * kSpeedRate;
 const float brakePower = 50.0f;
 const float wheelRadius = 0.15f;
 const float wheelWidth = 0.125f;
@@ -79,6 +80,10 @@ Vehicle::Vehicle(btDynamicsWorld* world, const btVector3& startPos)
 	mBody->setRestitution(0.0);
 	mBody->setUserPointer(this);
 	
+	// Continuous collision detection so the car doesn't tunnel through batteries at speed
+	mBody->setCcdSweptSphereRadius(0.5f);
+	mBody->setCcdMotionThreshold(0.2f);
+
     mWorld->addRigidBody(mBody);
 	
 	mRaycastVehicleRaycaster = new btDefaultVehicleRaycaster(mWorld);
@@ -228,6 +233,29 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	float turnSpeed = (3.0f - (std::abs(steeringTarget) * 1.5f)) * (2.0f / (std::fminf(1.0f, speed / 33.0f) + 1.0f));
 	mSteeringInput = tMoveTowards(mSteeringInput, steeringTarget, timestep * turnSpeed);
 	
+	// Fuel: consume on throttle, baseline power when empty
+	if (mThrottleInput > 0.01f)
+		mFuel -= kFuelConsumptionPerSecond * mThrottleInput * timestep;
+	if (mFuel < 0.0f)
+		mFuel = 0.0f;
+
+	const float kBasePowerScale = 0.3f; // always-available power (0..1)
+	float fuelScaleRaw = (mFuel > 0.01f) ? std::min(1.0f, mFuel / kMaxFuel) : 0.0f;
+	float fuelScale = kBasePowerScale + (1.0f - kBasePowerScale) * fuelScaleRaw;
+
+	const float kBaseMaxSpeed = 30.0f * kSpeedRate;
+	const float kExtraMaxSpeed = 45.0f * kSpeedRate;
+	float fuelFraction = (mFuel > 0.0f) ? (mFuel / kMaxFuel) : 0.0f;
+	if (fuelFraction > 1.0f) fuelFraction = 1.0f;
+	float targetMaxSpeed = kBaseMaxSpeed + kExtraMaxSpeed * fuelFraction;
+
+	float speedLimiter = 1.0f;
+	if (speed > targetMaxSpeed)
+	{
+		float over = speed - targetMaxSpeed;
+		speedLimiter = std::max(0.0f, 1.0f - over * 0.25f);
+	}
+
 	float angVelFrictionLoss = std::powf(std::abs(mBody->getAngularVelocity().getY()) * 0.5f, 2.0f);
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
 	mThrottleInput /= 1.0f + (mBrakeInput * 2.0f);
@@ -268,7 +296,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		}
 		else
 		{
-			mRaycastVehicle->applyEngineForce(mThrottleInput * enginePower * powerMod, i);
+			mRaycastVehicle->applyEngineForce(mThrottleInput* enginePower* powerMod* fuelScale* speedLimiter, i);
 			mRaycastVehicle->setBrake(mBrakeInput * brakePower * std::lerp(1.0f, powerMod, 0.025f), i);
 		}
 		if (wheel.m_bIsFrontWheel)
@@ -279,7 +307,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		mRaycastVehicle->updateWheelTransform(i, true);
 	}
 	
-	if (speed >= 44.0f) // if going fast enough
+	if (speed >= 44.0f * kSpeedRate)
 	{
 		tMatrix4 trailTransform;
 		
@@ -317,6 +345,14 @@ void Vehicle::OnCollide(ISimable* other, const tVector3 &contactPoint)
 	
 	mCollidedThisFrame = true; // signal that we already collided with something this frame for optimization
 }
+
+void Vehicle::AddFuel(float amount)
+{
+	mFuel += amount;
+	if (mFuel > kMaxFuel)
+		mFuel = kMaxFuel;
+}
+
 
 void Vehicle::Render(vView* view)
 {

@@ -13,6 +13,7 @@
 #include "btBulletDynamicsCommon.h"
 #include "Vehicle.h"
 #include "PropCube.h"
+#include "Battery.h"
 #include <tWare/Align.h>
 #include <tWare/Memory.h>
 
@@ -42,16 +43,20 @@ public:
 	bool ShouldPauseWorld();
 	
 	static constexpr int kMaxPropCubes = 300;
+	static constexpr int kMaxBatteries = 40;
 
 	std::vector<Vehicle*, tStdAllocator<Vehicle*>> mVehicles;
 	PropCube* mPropCubes[kMaxPropCubes] = {};
 	int mPropCubeCount = 0;
 
+	Battery* mBatteries[kMaxBatteries] = {};
+	int mBatteryCount = 0;
+
 	// Race order along track (more negative Z = ahead). Indices into mVehicles (0 = player 1, 1 = player 2).
 	int mFirstPlaceVehicleIndex = 0;
 	int mSecondPlaceVehicleIndex = 1;
 	
-	static constexpr float kFinishLineZ = -9950.0f;
+	static constexpr float kFinishLineZ = -4050.0f;
 	bool mRaceFinished = false;
 	int mWinnerVehicleIndex = -1;
 

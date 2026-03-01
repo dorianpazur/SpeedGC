@@ -19,6 +19,7 @@ public:
 	
 	// per object rendering by each ISimable subclass
 	virtual void Render(vView* view);
+	virtual void AddFuel(float amount);
 
 	virtual ~ISimable() = 0;
 };

@@ -176,7 +176,7 @@ void RenderMainView()
 {
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
 	{
-		if (!vViews[viewNum].Active)
+		if (!vViews[viewNum].Active || !vViews[viewNum].RenderTarget)
 			continue;
 		
 		vSetCurrentRenderTarget(vViews[viewNum].RenderTarget);
@@ -202,8 +202,9 @@ void RenderMainView()
 		
 		RenderWorld(&vViews[viewNum]);
 		
-		// draw prop cubes before motion blur so they are blurred with the world
+		// draw prop cubes and batteries before motion blur so they are blurred with the world
 		DrawPropCubes(&vViews[viewNum]);
+		DrawBatteries(&vViews[viewNum]);
 
 		// disable fog for rest of rendering
 		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
@@ -471,9 +472,10 @@ void RenderEnvmap()
 			
 			RenderWorld(&vViews[viewNum]);
 			
-			// draw prop cubes before motion blur so they are blurred with the world
+			// draw prop cubes and batteries before motion blur so they are blurred with the world
 			DrawPropCubes(&vViews[viewNum]);
-			
+			DrawBatteries(&vViews[viewNum]);
+
 			GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
 		}
 		

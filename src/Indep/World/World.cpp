@@ -9,6 +9,7 @@
 #include "InputManager.h"
 #include "InputCommand.h"
 #include "PropCube.h"
+#include "Battery.h"
 
 World* World::gWorld = NULL;
 extern double gFrameTime;
@@ -124,6 +125,25 @@ World::World()
 			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x0, kCubeY, z), btVector3(kHalfXZ, kHalfY, kHalfXZ));
 			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x1, kCubeY, z), btVector3(kHalfXZ, kHalfY, kHalfXZ));
 			mPropCubes[mPropCubeCount++] = new PropCube(dynamicsWorld, btVector3(x2, kCubeY, z), btVector3(kHalfXZ, kHalfY, kHalfXZ));
+		
+
+			// Batteries: between rows, X varies within gap
+			if ((row % 2) == 0 && mBatteryCount < kMaxBatteries)
+			{
+				uint32_t hb = (uint32_t)(row * 3266489917u);
+				float t = (float)(hb & 0xFFFF) / 65535.0f;
+				bool useLeftGap = (hb >> 16) & 1u;
+				float gapCenter = useLeftGap ? gap0 : gap1;
+				float offset = (t * 2.0f - 1.0f) * (kGapHalf * 0.7f);
+				float batX = gapCenter + offset;
+				float batZ = z - (kSpacing * 0.5f);
+
+				const float kBatY = 1.2f;
+				const float kBatRadius = 1.0f;
+
+				mBatteries[mBatteryCount++] = new Battery(dynamicsWorld, btVector3(batX, kBatY, batZ), kBatRadius);
+			}
+
 		}
 	}
 
@@ -286,6 +306,17 @@ void World::Simulate(float timestep)
 			
 			dynamicsWorld->stepSimulation(kStepTime, 8);
 	
+			// Remove collected batteries
+			for (int i = 0; i < mBatteryCount; i++)
+			{
+				if (mBatteries[i] && mBatteries[i]->mCollected)
+				{
+					delete mBatteries[i];
+					mBatteries[i] = NULL;
+				}
+			}
+
+
 			tVector3 testVel{-7.0f, 0, -7.0f};
 			tMatrix4 testTransform;
 			
@@ -479,6 +510,9 @@ bool World::ShouldPauseWorld()
 
 bool World::ContactProcessedCallback(btManifoldPoint& cp, void* body0, void* body1)
 {
+	if (!body0 || !body1)
+		return true;
+
 	ISimable* simable1 = (ISimable*)(((btCollisionObject*)body0)->getUserPointer());
 	ISimable* simable2 = (ISimable*)(((btCollisionObject*)body1)->getUserPointer());
 	
@@ -520,6 +554,17 @@ World::~World()
 		mPropCubes[i] = NULL;
 	}
 	mPropCubeCount = 0;
+
+	// remove batteries
+	for (int i = 0; i < mBatteryCount; i++)
+	{
+		if (mBatteries[i])
+		{
+			delete mBatteries[i];
+			mBatteries[i] = NULL;
+		}
+	}
+	mBatteryCount = 0;
 
 	// remove the remaining rigidbodies
 	for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)

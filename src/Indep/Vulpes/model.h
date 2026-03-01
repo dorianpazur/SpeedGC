@@ -99,6 +99,7 @@ struct ALIGN(32) vModel
 	vModel(const char *path);
 	void Render(vView* view, tMatrix4 *transform);
 	void CreateMeshesFromNode(tinygltf::Model* model, size_t nodeIndex, const char* basePath = "");
+	bool IsEmpty() const { return mSolids.empty(); }
 
 	// Build a unit cube (half-extent = 1) with a flat vertex color
 	static vModel* CreateCube(vColor color);

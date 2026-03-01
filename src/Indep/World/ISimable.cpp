@@ -12,6 +12,11 @@ void ISimable::Render(vView* view)
 {
 }
 
+void ISimable::AddFuel(float amount)
+{
+}
+
+
 ISimable::~ISimable()
 {
 }
