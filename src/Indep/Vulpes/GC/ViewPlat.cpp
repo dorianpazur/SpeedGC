@@ -7,6 +7,7 @@ vRenderTarget vRenderTargets[NUM_RENDER_TARGETS];
 extern GXRModeObj *rmode;
 extern bool bSplitScreen;
 extern bool bWideScreen;
+extern vTextureCache::CachedTexture* gEnvmapTexture;
 
 void vView::CalculateViewMatricies()
 {
@@ -18,7 +19,7 @@ void vView::CalculateViewMatricies()
 		f32 aspectCorrect = 1.1f; // not quite the right size
 		f32 aspect = (4.0f/3.0f);
 		
-		if (bSplitScreen)
+		if (gCurViewMode == VIEW_MODE_TWOH)
 			aspect *= 2.0f;
 		if (bWideScreen)
 			aspect *= 1.33333334f;
@@ -28,7 +29,7 @@ void vView::CalculateViewMatricies()
 	}
 	else if (ID == VVIEW_ENVMAP)
 	{
-		guPerspective(*(Mtx44*)&ProjectionMatrix, 90, 1.0f, NearZ, FarZ);
+		guPerspective(*(Mtx44*)&ProjectionMatrix, 160, 1.0f, NearZ, FarZ);
 	}
 	else
 	{
@@ -70,8 +71,8 @@ void MaybeChangeViewMode()
 	vViews[TARGET_ENVMAP].Active = true;
 	vRenderTargets[TARGET_ENVMAP].Left = 0;
 	vRenderTargets[TARGET_ENVMAP].Top = 0;
-	vRenderTargets[TARGET_ENVMAP].Width = 128;
-	vRenderTargets[TARGET_ENVMAP].Height = 128;
+	vRenderTargets[TARGET_ENVMAP].Width = gEnvmapTexture->width;
+	vRenderTargets[TARGET_ENVMAP].Height = gEnvmapTexture->height;
 }
 
 void vSetCurrentRenderTarget(vRenderTarget* renderTarget)

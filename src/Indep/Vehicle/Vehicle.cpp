@@ -228,11 +228,11 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	float turnSpeed = (3.0f - (std::abs(steeringTarget) * 1.5f)) * (2.0f / (std::fminf(1.0f, speed / 33.0f) + 1.0f));
 	mSteeringInput = tMoveTowards(mSteeringInput, steeringTarget, timestep * turnSpeed);
 	
-	float angVelFrictionLoss = std::abs((mBody->getWorldTransform().getBasis().transpose() * mBody->getAngularVelocity()).getY()) * 0.5f;
+	float angVelFrictionLoss = std::powf(std::abs(mBody->getAngularVelocity().getY()) * 0.5f, 2.0f);
 	angVelFrictionLoss /= 1.0f + mBrakeInput;
 	mThrottleInput /= 1.0f + (mBrakeInput * 2.0f);
 	float speedFrictionScaleF = std::min(1.0f, 0.3f + (speed * 0.025f));
-	float speedFrictionScaleR = std::min(1.0f, 0.2f + (speed * 0.0303f));
+	float speedFrictionScaleR = std::min(1.0f, 0.05f + (speed * 0.035f));
 	
 	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
 	ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
