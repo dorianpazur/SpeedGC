@@ -8,7 +8,7 @@ class DebugMenuInputHandler
 public:
     bool mActiveSpeed = false;
     bool mPrevPrintfState = false;
-    bool mPrevFEngDrawState = true;
+    bool mPrevFEDrawState = true;
     bool mPauseWorld = false;
 private:
     bool mActiveShift = false;

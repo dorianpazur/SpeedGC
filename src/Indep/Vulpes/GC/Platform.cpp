@@ -43,6 +43,8 @@ vTextureCache::CachedTexture* gEnvmapTexture;
 
 GXFogAdjTbl fogAdjTable;
 
+bool gDrawFE = true;
+
 //---------------------------------------------------------------------------------
 
 void DrawRVM()
@@ -172,6 +174,56 @@ void DrawRVM()
 
 //---------------------------------------------------------------------------------
 
+void DrawFE()
+{
+	if (!gDrawFE)
+		return;
+	
+	if (gCurViewMode == VIEW_MODE_ONE)
+		DrawRVM();
+	
+	{
+		World* world = World::GetInstance();
+		if (world && world->mVehicles.size() >= 2)
+		{
+			int first = world->mFirstPlaceVehicleIndex;
+			int second = world->mSecondPlaceVehicleIndex;
+			ScreenPrintf(60, -250, 1.0f, 0xFFFFD700u, "Place: %s", first == 0 ? "1st" : "2nd");
+			ScreenPrintf(60, 20, 1.0f, 0xFFFFD700u, "Place: %s", first == 1 ? "1st" : "2nd");
+		}
+	}
+
+	// Win/lose HUD
+	{
+		World* world = World::GetInstance();
+		if (world && world->mRaceFinished && world->mWinnerVehicleIndex >= 0)
+		{
+			const unsigned int winColor = 0xFF00FF00u;  // green
+			const unsigned int loseColor = 0xFFFF0000u; // red
+			const float kHudScale = 2.5f;
+			const int centerY = 100;
+			const int leftStartX = -95;
+			if (world->mWinnerVehicleIndex == 0)
+			{
+				vScreenPrint(leftStartX, centerY - 300, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
+				vScreenPrint(leftStartX, centerY, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
+			}
+			else
+			{
+				vScreenPrint(leftStartX, centerY - 300, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
+				vScreenPrint(leftStartX, centerY, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
+			}
+		}
+	}
+	
+	DebugMenu::render();
+	DebugMenu::renderBackground();
+
+	DrawScreenPrintfs();
+};
+
+//---------------------------------------------------------------------------------
+
 void RenderMainView()
 {
 	for (int viewNum = VVIEW_FIRST_PLAYER; viewNum <= VVIEW_LAST_PLAYER; viewNum++)
@@ -237,7 +289,7 @@ void RenderMainView()
 			velocityVector *= 1.0f / velocityLength;
 			
 			velocityLength -= 10.0f;
-			velocityLength = std::fmin(1.0f, velocityLength * 0.02f) / (kBlurSamples * 30.0f);
+			velocityLength = std::fmin(1.0f, velocityLength * 0.02f) / (kBlurSamples * 20.0f);
 			
 			velocityVector *= velocityLength;
 			velocityVector.x *= 0.65f;
@@ -321,11 +373,6 @@ void RenderMainView()
 				GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 				GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 				GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
-				
-				GX_SetNumChans(1);
-				
-				GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
-							GX_DF_NONE, GX_AF_NONE);
 				
 				GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 				
@@ -601,47 +648,7 @@ void vDisplayFrame()
 	
 	GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 	
-	if (gCurViewMode == VIEW_MODE_ONE)
-		DrawRVM();
-	
-	{
-		World* world = World::GetInstance();
-		if (world && world->mVehicles.size() >= 2)
-		{
-			int first = world->mFirstPlaceVehicleIndex;
-			int second = world->mSecondPlaceVehicleIndex;
-			ScreenPrintf(60, -250, 1.0f, 0xFFFFD700u, "Place: %s", first == 0 ? "1st" : "2nd");
-			ScreenPrintf(60, 20, 1.0f, 0xFFFFD700u, "Place: %s", first == 1 ? "1st" : "2nd");
-		}
-	}
-
-	// Win/lose HUD
-	{
-		World* world = World::GetInstance();
-		if (world && world->mRaceFinished && world->mWinnerVehicleIndex >= 0)
-		{
-			const unsigned int winColor = 0xFF00FF00u;  // green
-			const unsigned int loseColor = 0xFFFF0000u; // red
-			const float kHudScale = 2.5f;
-			const int centerY = 100;
-			const int leftStartX = -95;
-			if (world->mWinnerVehicleIndex == 0)
-			{
-				vScreenPrint(leftStartX, centerY - 300, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
-				vScreenPrint(leftStartX, centerY, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
-			}
-			else
-			{
-				vScreenPrint(leftStartX, centerY - 300, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
-				vScreenPrint(leftStartX, centerY, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
-			}
-		}
-	}
-	
-	DebugMenu::render();
-	DebugMenu::renderBackground();
-
-	DrawScreenPrintfs();
+	DrawFE();
 	
 	// push frame
 	if (twkDeflicker)

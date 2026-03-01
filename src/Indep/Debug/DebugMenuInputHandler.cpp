@@ -5,6 +5,8 @@
 #include "InputManager.h"
 #include <gccore.h>
 
+extern bool gDrawFE;
+
 DebugMenuInputHandler::DebugMenuInputHandler()
 {
 	
@@ -98,13 +100,16 @@ void DebugMenuInputHandler::PollInput()
 void DebugMenuInputHandler::Activate()
 {
     mPrevPrintfState = DoScreenPrintf;
+	mPrevFEDrawState = gDrawFE;
 
     DoScreenPrintf = true;
+	gDrawFE = true;
 }
 
 void DebugMenuInputHandler::Deactivate()
 {
     DoScreenPrintf = mPrevPrintfState;
+    gDrawFE = mPrevFEDrawState;
 }
 
 void DebugMenuInputHandler::Exit()

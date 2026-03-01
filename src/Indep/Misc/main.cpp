@@ -273,7 +273,7 @@ void LoadAssets()
 	
 	gCarModel = new vModel("Vehicles/126p/126p.glb");
 
-	gBatteryModel = new vModel("sphere.glb");
+	gBatteryModel = new vModel("Misc/battery.glb");
 	if (gBatteryModel && gBatteryModel->IsEmpty())
 	{
 		delete gBatteryModel;
