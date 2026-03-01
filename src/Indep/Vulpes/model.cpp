@@ -1,14 +1,6 @@
 #include <gccore.h>
 #include <Vulpes/vulpes.h>
-
-//---------------------------------------------------------------------------------
-
-f32 bswap_float(f32 f)
-{
-	uint32_t bytes = *(uint32_t*)&f;
-	bytes = __builtin_bswap32(bytes);
-	return *(f32*)&bytes;
-}
+#include <tWare/Endianness.h>
 
 //---------------------------------------------------------------------------------
 
@@ -41,9 +33,16 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 	// values are little endian and the space is wrong, fix that
 	for (size_t i = 0; i < mVertexCount; i++)
 	{
-		mVertices[i].position.x = -bswap_float(bufVtx[i].x);
-		mVertices[i].position.y = bswap_float(bufVtx[i].y);
-		mVertices[i].position.z = -bswap_float(bufVtx[i].z);
+		mVertices[i].position.x = bufVtx[i].x;
+		mVertices[i].position.y = bufVtx[i].y;
+		mVertices[i].position.z = bufVtx[i].z;
+		
+		tEndianSwap(mVertices[i].position.x);
+		tEndianSwap(mVertices[i].position.y);
+		tEndianSwap(mVertices[i].position.z);
+		
+		mVertices[i].position.x *= -1.0f;
+		mVertices[i].position.z *= -1.0f;
 	}
 	
 	if (primitive.attributes.find("COLOR_0") != primitive.attributes.end())
@@ -83,8 +82,11 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 	// get texcoords
 	for (size_t i = 0; i < mVertexCount; i++)
 	{
-		mVertices[i].texcoord.x = bswap_float(bufTexcoord[i].x);
-		mVertices[i].texcoord.y = bswap_float(bufTexcoord[i].y);
+		mVertices[i].texcoord.x = bufTexcoord[i].x;
+		mVertices[i].texcoord.y = bufTexcoord[i].y;
+		
+		tEndianSwap(mVertices[i].texcoord.x);
+		tEndianSwap(mVertices[i].texcoord.y);
 	}
 	
 	//printf("Normals\n");
@@ -94,9 +96,16 @@ vMesh::vMesh(tinygltf::Model *model, tinygltf::Primitive &primitive, const char*
 	// values are little endian and the space is wrong, fix that
 	for (size_t i = 0; i < mVertexCount; i++)
 	{
-		mVertices[i].normal.x = -bswap_float(bufNrm[i].x);
-		mVertices[i].normal.y = bswap_float(bufNrm[i].y);
-		mVertices[i].normal.z = -bswap_float(bufNrm[i].z);
+		mVertices[i].normal.x = bufNrm[i].x;
+		mVertices[i].normal.y = bufNrm[i].y;
+		mVertices[i].normal.z = bufNrm[i].z;
+		
+		tEndianSwap(mVertices[i].normal.x);
+		tEndianSwap(mVertices[i].normal.y);
+		tEndianSwap(mVertices[i].normal.z);
+		
+		mVertices[i].normal.x *= -1.0f;
+		mVertices[i].normal.z *= -1.0f;
 	}
 	
 	//printf("Indices\n");

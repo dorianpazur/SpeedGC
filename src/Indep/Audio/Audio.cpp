@@ -7,45 +7,10 @@
 #include <tWare/File.h>
 #include <tWare/Memory.h>
 #include <tWare/Thread.h>
+#include <tWare/Endianness.h>
 #include "ScreenPrintf.h"
 
 //---------------------------------------------------------------------------------
-
-void EndianSwap(int16_t& i)
-{
-	uint16_t* data = (uint16_t*)&i;
-	uint16_t swap = ((*data) >> 8) | ((*data) << 8);
-	i = *(int16_t*)&swap;
-}
-
-void EndianSwap(uint16_t& i)
-{
-	uint16_t* data = (uint16_t*)&i;
-	uint16_t swap = ((*data) >> 8) | ((*data) << 8);
-	i = *(uint16_t*)&swap;
-}
-
-void EndianSwap(int32_t& i)
-{
-	uint32_t* data = (uint32_t*)&i;
-	uint32_t swap =	(((*data) & 0xFF000000) >> 24) |
-					(((*data) & 0x00FF0000) >> 8) |
-					(((*data) & 0x0000FF00) << 8) |
-					(((*data) & 0x000000FF) << 24);
-	
-	i = *(int32_t*)&swap;
-}
-
-void EndianSwap(uint32_t& i)
-{
-	uint32_t* data = (uint32_t*)&i;
-	uint32_t swap =	(((*data) & 0xFF000000) >> 24) |
-					(((*data) & 0x00FF0000) >> 8) |
-					(((*data) & 0x0000FF00) << 8) |
-					(((*data) & 0x000000FF) << 24);
-	
-	i = *(uint32_t*)&swap;
-}
 
 int16_t EndianSwapSample(int16_t i)
 {
@@ -81,9 +46,9 @@ struct WaveHeader
 		
 		void EndianSwapData()
 		{
-			EndianSwap(ChunkID);
-			EndianSwap(ChunkSize);
-			EndianSwap(ChunkFmt);
+			tEndianSwap(ChunkID);
+			tEndianSwap(ChunkSize);
+			tEndianSwap(ChunkFmt);
 		}
 	};
 	
@@ -101,14 +66,14 @@ struct WaveHeader
 		
 		void EndianSwapData()
 		{
-			EndianSwap(ChunkID);
-			EndianSwap(ChunkSize);
-			EndianSwap(AudioFormat);
-			EndianSwap(NumChannels);
-			EndianSwap(SampleRate);
-			EndianSwap(ByteRate);
-			EndianSwap(BlockAlign);
-			EndianSwap(BitsPerSample);
+			tEndianSwap(ChunkID);
+			tEndianSwap(ChunkSize);
+			tEndianSwap(AudioFormat);
+			tEndianSwap(NumChannels);
+			tEndianSwap(SampleRate);
+			tEndianSwap(ByteRate);
+			tEndianSwap(BlockAlign);
+			tEndianSwap(BitsPerSample);
 		}
 	};
 	
@@ -120,8 +85,8 @@ struct WaveHeader
 		
 		void EndianSwapData()
 		{
-			EndianSwap(ChunkID);
-			EndianSwap(ChunkSize);
+			tEndianSwap(ChunkID);
+			tEndianSwap(ChunkSize);
 		}
 	};
 	

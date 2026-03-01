@@ -307,7 +307,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		mRaycastVehicle->updateWheelTransform(i, true);
 	}
 	
-	if (speed >= 44.0f * kSpeedRate)
+	if (speed >= 44.0f)
 	{
 		tMatrix4 trailTransform;
 		
