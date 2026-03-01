@@ -263,13 +263,13 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	float speedFrictionScaleR = std::min(1.0f, 0.05f + (speed * 0.035f));
 	
 	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
-	ScreenShadowPrintf(70, 195, "mSteeringInput: %.2f", mSteeringInput);
-	ScreenShadowPrintf(70, 180, "mThrottleInput: %.2f", mThrottleInput);
-	ScreenShadowPrintf(70, 165, "mBrakeInput: %.2f", mBrakeInput);
-	ScreenShadowPrintf(70, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
-	ScreenShadowPrintf(70, 135, "speedFrictionScaleF: %.2f", speedFrictionScaleF);
-	ScreenShadowPrintf(70, 120, "speedFrictionScaleR: %.2f", speedFrictionScaleR);
-	ScreenShadowPrintf(70, 105, "reverse: %s", mIsReversing ? "ON" : "off");
+	ScreenShadowPrintf(-300, 195, "mSteeringInput: %.2f", mSteeringInput);
+	ScreenShadowPrintf(-300, 180, "mThrottleInput: %.2f", mThrottleInput);
+	ScreenShadowPrintf(-300, 165, "mBrakeInput: %.2f", mBrakeInput);
+	ScreenShadowPrintf(-300, 150, "angVelFrictionLoss: %.2f", angVelFrictionLoss);
+	ScreenShadowPrintf(-300, 135, "speedFrictionScaleF: %.2f", speedFrictionScaleF);
+	ScreenShadowPrintf(-300, 120, "speedFrictionScaleR: %.2f", speedFrictionScaleR);
+	ScreenShadowPrintf(-300, 105, "reverse: %s", mIsReversing ? "ON" : "off");
 	ScreenShadowPrintf(-300, 220, "Vehicle pos: (%.2f, %.2f, %.2f)",
 				trans.getOrigin().getX(),
 				trans.getOrigin().getY(),

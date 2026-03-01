@@ -79,7 +79,7 @@ void Battery::Render(vView* view)
 
 	trans.getOpenGLMatrix(transformFlt);
 
-	float s = mRadius * 2.0f * 0.75f;
+	float s = 1.0f;
 	transform[0][0] = (float)transformFlt[0] * s;
 	transform[1][0] = (float)transformFlt[1] * s;
 	transform[2][0] = (float)transformFlt[2] * s;

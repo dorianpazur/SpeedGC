@@ -10,8 +10,8 @@ class ALIGN(32) Battery : public ISimable
 {
 public:
 	DEF_TWARE_NEW_OVERRIDE(Battery, MAIN_POOL)
-
-		Battery(btDynamicsWorld * world, const btVector3 & pos, float radius = 0.8f);
+	
+	Battery(btDynamicsWorld * world, const btVector3 & pos, float radius = 0.8f);
 	~Battery();
 
 	virtual void OnCollide(ISimable * other, const tVector3 & contactPoint) override;

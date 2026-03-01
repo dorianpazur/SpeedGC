@@ -36,24 +36,18 @@ void ExitDebugMenu()
     gDebugMenuIOHandler->Exit();
 }
 
-// this function is for retail, some stuff changed since a124
 void DebugMenuLoad()
 {
     DebugMenu* root = DebugMenu::create("rootMenu", NULL);
 
     // front end menu
     DebugMenu* frontend_menu = DebugMenu::create("Front End ->", root); {
-        
         DebugMenu* printfs = DebugMenu::create("Printfs ->", frontend_menu); {
             DebugMenu::addWidgetToNewestMenu(new BoolWidget("Screen Printf", &gDebugMenuIOHandler->mPrevPrintfState, NULL));
             DebugMenu::addWidgetToNewestMenu(new BoolWidget("Soak Timer", &DebugMenu::mDoSoakTimer, NULL));
 		} DebugMenu::endNewestMenu();
-
-    } DebugMenu::endNewestMenu();
-	
-    // race menu
-    DebugMenu* race = DebugMenu::create("Race ->", root); {
-        
+		
+        DebugMenu::addWidgetToNewestMenu(new BoolWidget("Front End Drawing", &gDebugMenuIOHandler->mPrevFEDrawState, NULL));
     } DebugMenu::endNewestMenu();
 	
 	// car menu
