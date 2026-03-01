@@ -10,7 +10,7 @@ struct ScreenPrintItem
 };
 
 extern bool bWideScreen;
-bool DoScreenPrintf = true;
+bool DoScreenPrintf = false;
 
 ScreenPrintItem ScreenPrintItemTable[SCREEN_PRINT_ITEM_COUNT];
 

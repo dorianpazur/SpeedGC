@@ -35,7 +35,7 @@ void vEffect_STANDARD::Start()
 	
 	if (texture)
 	{
-		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, -2.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_2);
+		//GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, -2.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_2);
 		GX_SetNumTexGens(1);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
@@ -74,7 +74,7 @@ void vEffect_FE::Start()
 	
 	if (texture)
 	{
-		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
+		//GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 		GX_SetNumTexGens(2);
 		
@@ -127,7 +127,7 @@ void vEffect_SKY::Start()
 	
 	if (texture)
 	{
-		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
+		//GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
 		
 		if (texture->nameHash == CTStringHash("SKY_BACKDROP"))
 		{
@@ -247,7 +247,7 @@ void vEffect_PARTICLES::Start()
 	{
 		((__gx_texobj*)&texture->GXTextureObj)->tex_filt = (((__gx_texobj*)&texture->GXTextureObj)->tex_filt & ~0xF) | (GX_CLAMP) | ((GX_CLAMP) << 2);
 		
-		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LINEAR, GX_LINEAR, 0, 0, 0.0f, GX_ENABLE, GX_ENABLE, GX_ANISO_1);
+		//GX_InitTexObjLOD(&texture->GXTextureObj, GX_LINEAR, GX_LINEAR, 0, 0, 0.0f, GX_ENABLE, GX_ENABLE, GX_ANISO_1);
 		
 		GX_SetNumTexGens(1);
 		
@@ -290,7 +290,7 @@ void vEffect_WORLD::Start()
 	
 	if (texture)
 	{
-		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
+		//GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
 		GX_SetNumTexGens(1);
 		
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
@@ -331,7 +331,7 @@ void vEffect_WORLDROAD::Start()
 	
 	if (texture)
 	{
-		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, -4.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_2);
+		//GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 4, -4.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_2);
 		
 		((__gx_texobj*)&texture->GXTextureObj)->tex_filt = (((__gx_texobj*)&texture->GXTextureObj)->tex_filt & ~0xF) | (GX_REPEAT) | ((GX_REPEAT) << 2);
 		
@@ -373,7 +373,7 @@ void vEffect_MOTIONBLUR::Start()
 		
 		GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
 		
-		GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
+		//GX_InitTexObjLOD(&texture->GXTextureObj, GX_LIN_MIP_LIN, GX_LINEAR, 0, 0, 0.0f, GX_DISABLE, GX_ENABLE, GX_ANISO_1);
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 		GX_SetNumTexGens(2);
 		

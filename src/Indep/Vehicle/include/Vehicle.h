@@ -19,6 +19,10 @@ public:
 	virtual void AddFuel(float amount) override;
 
 	virtual void Render(vView* view) override;
+	static constexpr float kMaxFuel = 100.0f;
+	
+	float GetFuel() { return mFuel; };
+	float GetSpeed() { return sqrtf((mVelocity.x * mVelocity.x) + (mVelocity.y * mVelocity.y) + (mVelocity.z * mVelocity.z)); };
 
 private:
 	btRaycastVehicle::btVehicleTuning mTuning;
@@ -34,8 +38,7 @@ private:
 	bool mCollidedThisFrame = false;
 	bool mIsReversing = false;
 
-	float mFuel = 0.0f;
-	static constexpr float kMaxFuel = 100.0f;
+	float mFuel = 70.0f;
 	static constexpr float kFuelConsumptionPerSecond = 10.0f;
 
 };

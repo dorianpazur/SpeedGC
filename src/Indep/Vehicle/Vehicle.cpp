@@ -243,7 +243,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	float fuelScaleRaw = (mFuel > 0.01f) ? std::min(1.0f, mFuel / kMaxFuel) : 0.0f;
 	float fuelScale = kBasePowerScale + (1.0f - kBasePowerScale) * fuelScaleRaw;
 
-	const float kBaseMaxSpeed = 30.0f * kSpeedRate;
+	const float kBaseMaxSpeed = 20.0f * kSpeedRate;
 	const float kExtraMaxSpeed = 60.0f * kSpeedRate;
 	float fuelFraction = (mFuel > 0.0f) ? (mFuel / kMaxFuel) : 0.0f;
 	if (fuelFraction > 1.0f) fuelFraction = 1.0f;
@@ -262,7 +262,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	float speedFrictionScaleF = std::min(1.0f, 0.3f + (speed * 0.025f));
 	float speedFrictionScaleR = std::min(1.0f, 0.05f + (speed * 0.035f));
 	
-	ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
+	//ScreenShadowPrintf(70, 220, "Speed: %.2fm/s (%.0fkm/h)", speed, speed * 3.6f);
 	ScreenShadowPrintf(-300, 195, "mSteeringInput: %.2f", mSteeringInput);
 	ScreenShadowPrintf(-300, 180, "mThrottleInput: %.2f", mThrottleInput);
 	ScreenShadowPrintf(-300, 165, "mBrakeInput: %.2f", mBrakeInput);

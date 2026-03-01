@@ -265,6 +265,8 @@ void LoadAssets()
 	vTextureCache::LoadTextureFromPath("Global/barrier.tpl");
 	vTextureCache::LoadTextureFromPath("Global/FE/RVM.tpl");
 	vTextureCache::LoadTextureFromPath("Global/FE/RVMMask.tpl");
+	vTextureCache::LoadTextureFromPath("Global/FE/NrgMeter.tpl");
+	vTextureCache::LoadTextureFromPath("Global/FE/NrgMeterBar.tpl");
 	
 	//tMemoryPrintAllocationsByAddress(MAIN_POOL);
 	

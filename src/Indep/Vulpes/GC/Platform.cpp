@@ -174,6 +174,169 @@ void DrawRVM()
 
 //---------------------------------------------------------------------------------
 
+void DrawNrgMeter(int x, int y, int vehID)
+{
+	World* world = World::GetInstance();
+	
+	if (!world)
+		return;
+	
+	float energy = world->mVehicles[vehID]->GetFuel() / Vehicle::kMaxFuel;
+	
+	if (bWideScreen)
+	{
+		if (x > 0)
+			x += 106;
+		else if (x < 0)
+			x -= 106;
+	}
+	
+	const float X = x / 320.0f;
+	const float Y = y / 240.0f;
+	
+	char speedText[60] { '\0' };
+	snprintf(speedText, 60, "%.0f km/h", std::max(0.0f, (world->mVehicles[vehID]->GetSpeed() * 3.6f) - 0.5f));
+	
+	vScreenPrint(x, y + 55, speedText);
+	
+	const float W = 0.4;
+	const float H = 0.2;
+	
+	vPoly poly;
+	
+	poly.Vertices[0].x = X;
+	poly.Vertices[0].y = Y;
+	poly.Vertices[0].z = 1;
+	poly.Vertices[1].x = X;
+	poly.Vertices[1].y = Y+H;
+	poly.Vertices[1].z = 1;
+	poly.Vertices[2].x = X+W;
+	poly.Vertices[2].y = Y+H;
+	poly.Vertices[2].z = 1;
+	poly.Vertices[3].x = X+W;
+	poly.Vertices[3].y = Y;
+	poly.Vertices[3].z = 1;
+	
+	poly.Colours[0][0] = 0xFF * (1-energy);
+	poly.Colours[0][1] = 0xFF * energy;
+	poly.Colours[0][2] = 0x00;
+	poly.Colours[0][3] = 0xFF;
+	
+	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+	
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+	
+	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("NrgMeterBar")));
+	vEffectStaticState::pCurrentEffect->SetMiscmap1(vTextureCache::GetTexture(CTStringHash("NrgMeterBar")));
+	vEffectStaticState::pCurrentEffect->Start();
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	
+	poly.UVs[0][0] = energy;
+	poly.UVs[0][1] = 0;
+	
+	poly.UVs[1][0] = energy;
+	poly.UVs[1][1] = 1;
+	
+	poly.UVs[2][0] = -1+energy;
+	poly.UVs[2][1] = 1;
+	
+	poly.UVs[3][0] = -1+energy;
+	poly.UVs[3][1] = 0;
+	
+	poly.UVsMask[0][0] = 0;
+	poly.UVsMask[0][1] = 0;
+	
+	poly.UVsMask[1][0] = 0;
+	poly.UVsMask[1][1] = 1;
+	
+	poly.UVsMask[2][0] = 1;
+	poly.UVsMask[2][1] = 1;
+	
+	poly.UVsMask[3][0] = 1;
+	poly.UVsMask[3][1] = 0;
+	
+	GX_SetCullMode(GX_CULL_NONE);
+	
+	GX_ClearVtxDesc();
+	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_TEX1, GX_DIRECT);
+	
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
+	
+	GX_SetNumChans(1);
+	
+	GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT_NULL,
+				GX_DF_NONE, GX_AF_NONE);
+	
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		GX_Position3f32(poly.Vertices[i].x, poly.Vertices[i].y, poly.Vertices[i].z);
+		GX_Color4u8(poly.Colours[i][0], poly.Colours[i][1], poly.Colours[i][2], poly.Colours[i][3]);
+		GX_TexCoord2f32(poly.UVs[i][0], poly.UVs[i][1]);
+		GX_TexCoord2f32(poly.UVsMask[i][0], poly.UVsMask[i][1]);
+	}
+	
+	GX_End();
+	
+	vEffectStaticState::pCurrentEffect->End();
+	
+	// draw the frame
+	
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_FE];
+	
+	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("NrgMeter")));
+	vEffectStaticState::pCurrentEffect->Start();
+	
+	// set UVs back
+	poly.UVs[0][0] = 0;
+	poly.UVs[0][1] = 0;
+	
+	poly.UVs[1][0] = 0;
+	poly.UVs[1][1] = 1;
+	
+	poly.UVs[2][0] = 1;
+	poly.UVs[2][1] = 1;
+	
+	poly.UVs[3][0] = 1;
+	poly.UVs[3][1] = 0;
+	
+	// colors too
+	poly.Colours[0][0] = 0xFF;
+	poly.Colours[0][1] = 0xFF;
+	poly.Colours[0][2] = 0xFF;
+	poly.Colours[0][3] = 0xFF;
+	
+	*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+	*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+	
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	
+	for (int i = 0; i < 4; i++)
+	{
+		GX_Position3f32(poly.Vertices[i].x, poly.Vertices[i].y, poly.Vertices[i].z);
+		GX_Color4u8(poly.Colours[i][0], poly.Colours[i][1], poly.Colours[i][2], poly.Colours[i][3]);
+		GX_TexCoord2f32(poly.UVs[i][0], poly.UVs[i][1]);
+		GX_TexCoord2f32(poly.UVsMask[i][0], poly.UVsMask[i][1]);
+	}
+	
+	GX_End();
+	
+	vEffectStaticState::pCurrentEffect->End();
+}
+
+//---------------------------------------------------------------------------------
+
 void DrawFE()
 {
 	if (!gDrawFE)
@@ -182,14 +345,23 @@ void DrawFE()
 	if (gCurViewMode == VIEW_MODE_ONE)
 		DrawRVM();
 	
+	if (gCurViewMode == VIEW_MODE_ONE)
+		DrawNrgMeter(160, 170, 0);
+	else
+	{
+		DrawNrgMeter(160, -80, 0);
+		if (World::GetInstance()->mVehicles.size() >= 2)
+			DrawNrgMeter(160, 170, 1);
+	}
+	
 	{
 		World* world = World::GetInstance();
 		if (world && world->mVehicles.size() >= 2)
 		{
 			int first = world->mFirstPlaceVehicleIndex;
 			int second = world->mSecondPlaceVehicleIndex;
-			ScreenPrintf(60, -250, 1.0f, 0xFFFFD700u, "Place: %s", first == 0 ? "1st" : "2nd");
-			ScreenPrintf(60, 20, 1.0f, 0xFFFFD700u, "Place: %s", first == 1 ? "1st" : "2nd");
+			vScreenPrint(60, -250, first == 0 ? "Place: 1st" : "Place: 2nd", 0xFFFFD700u);
+			vScreenPrint(60, 20, first == 1 ? "Place: 1st" : "Place: 2nd", 0xFFFFD700u);
 		}
 	}
 
