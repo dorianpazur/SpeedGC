@@ -289,7 +289,7 @@ void RenderMainView()
 			velocityVector *= 1.0f / velocityLength;
 			
 			velocityLength -= 10.0f;
-			velocityLength = std::fmin(1.0f, velocityLength * 0.02f) / (kBlurSamples * 20.0f);
+			velocityLength = std::fmin(1.0f, velocityLength * 0.02f) / (kBlurSamples * 40.0f);
 			
 			velocityVector *= velocityLength;
 			velocityVector.x *= 0.65f;
