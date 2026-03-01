@@ -171,9 +171,9 @@ void RenderWorld(vView* view)
 		poly.UVs[3][0] = 0.0f;
 		poly.UVs[3][1] = 1.0f;
 		
-		poly.Colours[0][0] = 0xFF;
-		poly.Colours[0][1] = 0xFA;
-		poly.Colours[0][2] = 0xF6;
+		poly.Colours[0][0] = 0xDF;
+		poly.Colours[0][1] = 0xDA;
+		poly.Colours[0][2] = 0xD6;
 		poly.Colours[0][3] = 0xFF;
 		
 		*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
@@ -202,9 +202,9 @@ void RenderWorld(vView* view)
 		poly.UVs[3][0] = 0.0f;
 		poly.UVs[3][1] = 0.0f;
 		
-		poly.Colours[0][0] = 0xA0;
-		poly.Colours[0][1] = 0xA0;
-		poly.Colours[0][2] = 0xB0;
+		poly.Colours[0][0] = 0x80;
+		poly.Colours[0][1] = 0x80;
+		poly.Colours[0][2] = 0x90;
 		poly.Colours[0][3] = 0xFF;
 		
 		*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
@@ -214,6 +214,10 @@ void RenderWorld(vView* view)
 	}
 	
 	vEffectStaticState::pCurrentEffect->End();
+	
+	// draw prop cubes and batteries before motion blur so they are blurred with the world
+	DrawPropCubes(view);
+	DrawBatteries(view);
 	
 	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("barrier")));
 	

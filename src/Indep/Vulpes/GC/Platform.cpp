@@ -260,10 +260,6 @@ void RenderMainView()
 			vViews[viewNum].NearZ,
 			vViews[viewNum].FarZ,
 		{0x9C, 0xBA, 0xDC} );
-		
-		// draw prop cubes and batteries before motion blur so they are blurred with the world
-		DrawPropCubes(&vViews[viewNum]);
-		DrawBatteries(&vViews[viewNum]);
 
 		// disable fog for rest of rendering
 		GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 1.0f, {0,0,0} );
