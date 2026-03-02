@@ -56,7 +56,7 @@ public:
 	int mFirstPlaceVehicleIndex = 0;
 	int mSecondPlaceVehicleIndex = 1;
 	
-	static constexpr float kFinishLineZ = -4050.0f; // -9950.0f end of map
+	static constexpr float kFinishLineZ = -9950.0f; // -9950.0f end of map
 	bool mRaceFinished = false;
 	int mWinnerVehicleIndex = -1;
 
