@@ -225,16 +225,26 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	}
 	bool wantsReverse = (rawBrake > 0.1f) && (throttle == 0.0f) && (speed < 1.0f || mIsReversing);
 
-	// When the race is finished and this vehicle is the winner
+	// When the race is finished and this vehicle hits the endline
 	// we just brake to a stop and stay there
 	if (World* world = World::GetInstance())
 	{
-		if (world->mRaceFinished &&
-			world->mWinnerVehicleIndex >= 0 &&
-			world->mWinnerVehicleIndex < (int)world->mVehicles.size() &&
-			world->mVehicles[world->mWinnerVehicleIndex] == this)
+		if (world->mRaceFinished)
 		{
-			wantsReverse = false;
+			bool isWinner = (world->mWinnerVehicleIndex >= 0 &&
+				world->mWinnerVehicleIndex < (int)world->mVehicles.size() &&
+				world->mVehicles[world->mWinnerVehicleIndex] == this);
+
+			bool hasCrossedFinish = false;
+			if (mBody && mBody->getMotionState())
+			{
+				btTransform t;
+				mBody->getMotionState()->getWorldTransform(t);
+				hasCrossedFinish = (t.getOrigin().getZ() <= World::kFinishLineZ);
+			}
+
+			if (isWinner || hasCrossedFinish)
+				wantsReverse = false;
 		}
 	}
 	mIsReversing = wantsReverse;

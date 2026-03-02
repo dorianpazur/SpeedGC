@@ -355,7 +355,7 @@ void World::Simulate()
 			}
 
 
-			// Once the race is finished ignore new driving input for the winning car
+			// Once the race is finished ignore new driving input for the car
 			if (mRaceFinished)
 			{
 				for (size_t i = 0; i < mVehicles.size(); i++)
@@ -364,8 +364,16 @@ void World::Simulate()
 					if (idx < 0 || idx > 3)
 						continue;
 
-					// clamp the winning car to stop.
-					if (mWinnerVehicleIndex >= 0 && idx == mWinnerVehicleIndex)
+					Vehicle* v = mVehicles[i];
+					if (!v || !v->mBody || !v->mBody->getMotionState())
+						continue;
+
+					float z = v->mBody->getWorldTransform().getOrigin().getZ();
+					bool hasCrossedFinish = (z <= kFinishLineZ);
+
+					// clamp controls for the car
+					// once it crosses the finish line
+					if ((mWinnerVehicleIndex >= 0 && idx == mWinnerVehicleIndex) || hasCrossedFinish)
 					{
 						steering[idx] = 0.0f;
 						engineForce[idx] = 0.0f;
