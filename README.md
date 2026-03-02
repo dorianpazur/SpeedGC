@@ -8,6 +8,7 @@
 ## 👥 Team Members  
 - Dorian Pazur : Engine Programmer, Art
 - Zaid Elkhazendar : Gameplay Programmer
+- Callum Nolan : Audio
 
 ## 📝 Brief Description  
 SpeedGC is an arcade racer whose objective is to collect batteries to keep your energy high and outrun your buddy to the finish line.
@@ -53,6 +54,8 @@ Your energy meter helps you keep track of how much energy you have, if it runs o
    ```bash
    make -j8
    ```
+   Note: The first build will fail as it needs to generate a revision file. Run make again and it should build then.
+
 5. Run build:
    ### If in Dolphin:
    Open ntsc_u.iso
@@ -63,3 +66,34 @@ Your energy meter helps you keep track of how much energy you have, if it runs o
 1. Download unpacked build
 2. Extract Speed directory to root of SD card
 3. Run Speed.dol in Swiss
+
+# License
+BSD 3-Clause License
+
+Copyright (c) 2019, Electronic Arts
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
