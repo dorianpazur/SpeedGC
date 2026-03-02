@@ -353,6 +353,26 @@ void World::Simulate()
 					break;
 				}
 			}
+
+
+			// Once the race is finished ignore new driving input for the winning car
+			if (mRaceFinished)
+			{
+				for (size_t i = 0; i < mVehicles.size(); i++)
+				{
+					int idx = (int)i;
+					if (idx < 0 || idx > 3)
+						continue;
+
+					// clamp the winning car to stop.
+					if (mWinnerVehicleIndex >= 0 && idx == mWinnerVehicleIndex)
+					{
+						steering[idx] = 0.0f;
+						engineForce[idx] = 0.0f;
+						brakeForce[idx] = 1.0f; // full brakes
+					}
+				}
+			}
 			
 			for (size_t i = 0; i < mVehicles.size(); i++)
 			{
@@ -381,6 +401,7 @@ void World::Simulate()
 			
 
 			// Update race order by progress (more negative Z = further down track = 1st)
+			// for 2 vehicles.
 			if (mVehicles.size() >= 2)
 			{
 				float z0 = 0.0f;
@@ -402,22 +423,35 @@ void World::Simulate()
 				}
 			}
 
-			if (!mRaceFinished && mVehicles.size() >= 2)
+			// Finish line for both singlePlayer and multiplayer
+			if (!mRaceFinished && !mVehicles.empty())
 			{
-				float z0 = 0.0f;
-				float z1 = 0.0f;
-				if (mVehicles[0]->mBody && mVehicles[0]->mBody->getMotionState())
-					z0 = mVehicles[0]->mBody->getWorldTransform().getOrigin().getZ();
-				if (mVehicles[1]->mBody && mVehicles[1]->mBody->getMotionState())
-					z1 = mVehicles[1]->mBody->getWorldTransform().getOrigin().getZ();
+				float bestZ = 0.0f;
+				int bestIndex = -1;
 
-				if (z0 <= kFinishLineZ || z1 <= kFinishLineZ)
+				for (size_t i = 0; i < mVehicles.size(); ++i)
+				{
+					Vehicle* v = mVehicles[i];
+					if (!v || !v->mBody || !v->mBody->getMotionState())
+						continue;
+
+					float z = v->mBody->getWorldTransform().getOrigin().getZ();
+
+					// first car to cross the finish line wins
+					if (z <= kFinishLineZ)
+					{
+						if (bestIndex < 0 || z <= bestZ)
+						{
+							bestZ = z;
+							bestIndex = (int)i;
+						}
+					}
+				}
+
+				if (bestIndex >= 0) 
 				{
 					mRaceFinished = true;
-					if (z0 <= z1)
-						mWinnerVehicleIndex = 0;
-					else
-						mWinnerVehicleIndex = 1;
+					mWinnerVehicleIndex = bestIndex;
 				}
 			}
 
@@ -562,8 +596,6 @@ void World::Simulate()
 
 bool World::ShouldPauseWorld()
 {
-	if (mRaceFinished)
-		return true;
 	return DebugMenuShouldPauseWorld();
 }
 

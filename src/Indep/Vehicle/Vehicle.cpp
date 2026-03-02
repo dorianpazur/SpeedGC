@@ -1,6 +1,7 @@
 #include "Vehicle.h"
 #include "ScreenPrintf.h"
 #include <Vulpes/model.h>
+#include "World.h"
 #include <Vulpes/Particles.h>
 
 // car model used for rendering all vehicles
@@ -223,6 +224,19 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 		brake = 1.0f;
 	}
 	bool wantsReverse = (rawBrake > 0.1f) && (throttle == 0.0f) && (speed < 1.0f || mIsReversing);
+
+	// When the race is finished and this vehicle is the winner
+	// we just brake to a stop and stay there
+	if (World* world = World::GetInstance())
+	{
+		if (world->mRaceFinished &&
+			world->mWinnerVehicleIndex >= 0 &&
+			world->mWinnerVehicleIndex < (int)world->mVehicles.size() &&
+			world->mVehicles[world->mWinnerVehicleIndex] == this)
+		{
+			wantsReverse = false;
+		}
+	}
 	mIsReversing = wantsReverse;
 
 	mBrakeInput = std::lerp(mBrakeInput, brake, 60.0f * timestep);
