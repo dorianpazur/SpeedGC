@@ -267,7 +267,7 @@ void Vehicle::Update(float throttle, float brake, float steering, float timestep
 	float fuelScaleRaw = (mFuel > 0.01f) ? std::min(1.0f, mFuel / kMaxFuel) : 0.0f;
 	float fuelScale = kBasePowerScale + (1.0f - kBasePowerScale) * fuelScaleRaw;
 
-	const float kBaseMaxSpeed = 20.0f * kSpeedRate;
+	const float kBaseMaxSpeed = 16.67f * kSpeedRate;
 	const float kExtraMaxSpeed = 60.0f * kSpeedRate;
 	float fuelFraction = (mFuel > 0.0f) ? (mFuel / kMaxFuel) : 0.0f;
 	if (fuelFraction > 1.0f) fuelFraction = 1.0f;
