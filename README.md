@@ -31,6 +31,9 @@ Your energy meter helps you keep track of how much energy you have, if it runs o
   
 - 💻 **Executable Code:**  
   [SpeedGC](https://github.com/dorianpazur/SpeedGC)
+  
+- 🎬 **Trailer Video:**  
+  [Trailer](https://github.com/dorianpazur/SpeedGC/blob/main/Trailer.mp4)
 
 ## 🛠️ Installation & Running the Game  
 
