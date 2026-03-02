@@ -132,11 +132,64 @@ void RenderWorld(vView* view)
 		*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
 		vPolyRender(&poly);
 	}
-	
 	vEffectStaticState::pCurrentEffect->End();
 	
+	// finish line
+	if (std::abs(World::kFinishLineZ - view->Position.z) <= maxRenderDistance)
+	{
+		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
+		vEffectStaticState::pCurrentEffect->SetTexture(nullptr);
+		if (view->ID == VVIEW_ENVMAP)
+			vEffectStaticState::pCurrentEffect->HalfBrightness = true;
+		vEffectStaticState::pCurrentEffect->Start();
+
+		const float kFinishZ = World::kFinishLineZ;
+		const float kHalfWidth = 8.0f;   // 16m along track so its visible
+		const float kFinishY = 0.02f;   // slightly above road
+		const int kNumStripes = 10;
+		const float kStripeWidth = 50.0f / (float)kNumStripes;
+		for (int i = 0; i < kNumStripes; i++)
+		{
+			float x0 = -25.0f + (float)i * kStripeWidth;
+			float x1 = x0 + kStripeWidth;
+			bool isWhite = (i & 1) == 0;
+			unsigned char r = isWhite ? 0xFF : 0x00;
+			unsigned char g = isWhite ? 0xFF : 0x00;
+			unsigned char b = isWhite ? 0xFF : 0x00;
+
+			poly.Vertices[0].x = x0;
+			poly.Vertices[0].y = kFinishY;
+			poly.Vertices[0].z = kFinishZ - kHalfWidth;
+			poly.UVs[0][0] = 0.0f;
+			poly.UVs[0][1] = 0.0f;
+			poly.Colours[0][0] = r;
+			poly.Colours[0][1] = g;
+			poly.Colours[0][2] = b;
+			poly.Colours[0][3] = 0xFF;
+
+			poly.Vertices[1].x = x0;
+			poly.Vertices[1].y = kFinishY;
+			poly.Vertices[1].z = kFinishZ + kHalfWidth;
+			*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+
+			poly.Vertices[2].x = x1;
+			poly.Vertices[2].y = kFinishY;
+			poly.Vertices[2].z = kFinishZ + kHalfWidth;
+			*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+
+			poly.Vertices[3].x = x1;
+			poly.Vertices[3].y = kFinishY;
+			poly.Vertices[3].z = kFinishZ - kHalfWidth;
+			*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+
+			vPolyRender(&poly);
+		}
+		vEffectStaticState::pCurrentEffect->End();
+	}
+
+	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
 	vEffectStaticState::pCurrentEffect->SetTexture(vTextureCache::GetTexture(CTStringHash("concrete")));
-	
+
 	if (view->ID == VVIEW_ENVMAP)
 	{
 		vEffectStaticState::pCurrentEffect->HalfBrightness = true;
