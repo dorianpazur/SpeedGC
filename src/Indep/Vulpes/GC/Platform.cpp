@@ -396,7 +396,17 @@ void DrawFE()
 			}
 		}
 	}
-	
+
+	{
+		World* world = World::GetInstance();
+		if (world && world->mRaceFinished)
+		{
+			const unsigned int promptColor = 0xFFFFFFFFu;
+			const float kPromptScale = 1.0f;
+			vScreenPrint(-390, -250, "Press Start to restart", promptColor, CTStringHash("Arial"), kPromptScale);
+		}
+	}
+
 	DebugMenu::render();
 	DebugMenu::renderBackground();
 

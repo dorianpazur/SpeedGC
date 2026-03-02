@@ -178,6 +178,19 @@ void MainLoop()
 	
 	if (InputManager::ShouldReset())
 		bWantsReset = true;
+
+	World* world = World::GetInstance();
+	if (world && world->mRaceFinished)
+	{
+		for (const InputCommand& cmd : InputManager::GetCommands())
+		{
+			if (cmd.type == InputCommandType::StartPressed)
+			{
+				bWantsReset = true;
+				break;
+			}
+		}
+	}
 	
 	if (gDebugMenuIOHandler)
 		gDebugMenuIOHandler->PollInput();
