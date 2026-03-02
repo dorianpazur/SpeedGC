@@ -95,7 +95,7 @@ World::World()
 		const float kLaneMax = 15.0f; //right edge
 		const float kGapHalf = 8.0f;  // half-width of each gap
 
-		const int kNumRows = kMaxPropCubes / 3; // 100 rows ,,  3 cubes per row = 300
+		const int kNumRows = kMaxPropCubes / 3; // 80 rows ,,  3 cubes per row
 
 		for (int row = 0; row < kNumRows && mPropCubeCount + 3 <= kMaxPropCubes; row++)
 		{

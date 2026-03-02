@@ -42,7 +42,7 @@ public:
 	void Simulate();
 	bool ShouldPauseWorld();
 	
-	static constexpr int kMaxPropCubes = 299;
+	static constexpr int kMaxPropCubes = 240;
 	static constexpr int kMaxBatteries = 40;
 
 	std::vector<Vehicle*, tStdAllocator<Vehicle*>> mVehicles;
@@ -56,7 +56,7 @@ public:
 	int mFirstPlaceVehicleIndex = 0;
 	int mSecondPlaceVehicleIndex = 1;
 	
-	static constexpr float kFinishLineZ = -9950.0f; // -9950.0f end of map
+	static constexpr float kFinishLineZ = -8100.0f; // -8100.0f end of map
 	bool mRaceFinished = false;
 	int mWinnerVehicleIndex = -1;
 

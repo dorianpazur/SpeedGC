@@ -8,7 +8,7 @@
 extern vModel* gCarModel;
 
 const float speedPowerDecline = 0.04f;
-const float kSpeedRate = 1.5f;
+const float kSpeedRate = 2.0f;
 const float enginePower = 24000.0f * kSpeedRate;
 const float brakePower = 50.0f;
 const float wheelRadius = 0.15f;
