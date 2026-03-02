@@ -51,9 +51,9 @@ Your energy meter helps you keep track of how much energy you have, if it runs o
    make -j8
    ```
 5. Run build:
-   # If in Dolphin:
+   ### If in Dolphin:
    Open ntsc_u.iso
-   # If on hardware:
+   ### If on hardware:
    Copy the Speed folder in Build to the root of your SD card and run Speed.dol using Swiss
 
 ### Option 3 – Run on Hardware
