@@ -374,16 +374,25 @@ void DrawFE()
 			const unsigned int loseColor = 0xFFFF0000u; // red
 			const float kHudScale = 2.5f;
 			const int centerY = 100;
-			const int leftStartX = -95;
-			if (world->mWinnerVehicleIndex == 0)
+			const int leftStartX = -110;
+			// single player
+			if (world->mVehicles.size() <= 1)
 			{
-				vScreenPrint(leftStartX, centerY - 300, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
-				vScreenPrint(leftStartX, centerY, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
+				vScreenPrint(leftStartX -100, centerY - 220, "Mission Completed!", winColor, CTStringHash("Arial"), kHudScale);
 			}
 			else
 			{
-				vScreenPrint(leftStartX, centerY - 300, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
-				vScreenPrint(leftStartX, centerY, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
+				// multiplayer
+				if (world->mWinnerVehicleIndex == 0)
+				{
+					vScreenPrint(leftStartX, centerY - 300, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
+					vScreenPrint(leftStartX, centerY, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
+				}
+				else
+				{
+					vScreenPrint(leftStartX, centerY - 300, "YOU LOSE", loseColor, CTStringHash("Arial"), kHudScale);
+					vScreenPrint(leftStartX, centerY, "YOU WIN", winColor, CTStringHash("Arial"), kHudScale);
+				}
 			}
 		}
 	}
