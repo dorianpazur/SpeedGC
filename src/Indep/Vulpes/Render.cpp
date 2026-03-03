@@ -76,9 +76,7 @@ void RenderWorld(vView* view)
 	World* world = World::GetInstance();
 	if (!world)
 		return;
-	
-	// render test ground - TODO: replace this with actual track
-	
+		
 	GX_LoadPosMtxImm(*(Mtx44*)&view->ViewMatrix, GX_PNMTX0);
 	vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
 	
@@ -134,6 +132,56 @@ void RenderWorld(vView* view)
 	}
 	vEffectStaticState::pCurrentEffect->End();
 	
+	// start line
+	const float kStartLineZ = -5.0f;
+	if (std::abs(kStartLineZ - view->Position.z) <= maxRenderDistance)
+	{
+		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLDROAD];
+		vEffectStaticState::pCurrentEffect->SetTexture(nullptr);
+		if (view->ID == VVIEW_ENVMAP)
+			vEffectStaticState::pCurrentEffect->HalfBrightness = true;
+		vEffectStaticState::pCurrentEffect->Start();
+
+		// checkerboard start line: small black/white squares across X and short depth along Z.
+		const float kHalfDepth = 2.0f;   // total depth 5.4m
+		const float kLineY = 0.02f;
+		const int   kTilesX = 10;        // tiles across width
+		const int   kTilesZ = 4;         // tiles along depth
+		const float kTileWidth = 50.0f / (float)kTilesX;
+		const float kTileDepth = (2.0f * kHalfDepth) / (float)kTilesZ;
+
+		for (int ix = 0; ix < kTilesX; ++ix)
+		{
+			float x0 = -25.0f + (float)ix * kTileWidth;
+			float x1 = x0 + kTileWidth;
+
+			for (int iz = 0; iz < kTilesZ; ++iz)
+			{
+				float z0 = kStartLineZ - kHalfDepth + (float)iz * kTileDepth;
+				float z1 = z0 + kTileDepth;
+
+				bool isWhite = ((ix + iz) & 1) == 0;
+				unsigned char r = isWhite ? 0xFF : 0x00;
+				unsigned char g = isWhite ? 0xFF : 0x00;
+				unsigned char b = isWhite ? 0xFF : 0x00;
+
+				poly.Vertices[0].x = x0; poly.Vertices[0].y = kLineY; poly.Vertices[0].z = z0;
+				poly.Vertices[1].x = x0; poly.Vertices[1].y = kLineY; poly.Vertices[1].z = z1;
+				poly.Vertices[2].x = x1; poly.Vertices[2].y = kLineY; poly.Vertices[2].z = z1;
+				poly.Vertices[3].x = x1; poly.Vertices[3].y = kLineY; poly.Vertices[3].z = z0;
+
+				poly.Colours[0][0] = r; poly.Colours[0][1] = g; poly.Colours[0][2] = b; poly.Colours[0][3] = 0xFF;
+				*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+				*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+				*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+
+				vPolyRender(&poly);
+			}
+		}
+		vEffectStaticState::pCurrentEffect->End();
+	}
+
+
 	// finish line
 	if (std::abs(World::kFinishLineZ - view->Position.z) <= maxRenderDistance)
 	{
