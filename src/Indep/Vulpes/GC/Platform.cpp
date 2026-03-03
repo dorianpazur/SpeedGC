@@ -403,7 +403,7 @@ void DrawFE()
 		{
 			const unsigned int promptColor = 0xFFFFFFFFu;
 			const float kPromptScale = 1.0f;
-			vScreenPrint(-390, -250, "Press Start to restart", promptColor, CTStringHash("Arial"), kPromptScale);
+			vScreenPrint(-390, -220, "Press Start to restart", promptColor, CTStringHash("Arial"), kPromptScale);
 		}
 	}
 

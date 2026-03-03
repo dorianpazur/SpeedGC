@@ -1,6 +1,8 @@
 #include "Battery.h"
 #include "Vehicle.h"
 #include <Vulpes/model.h>
+#include <Vulpes/Poly.h>
+#include <Vulpes/Effect.h>
 
 extern vModel* gBatteryModel;
 
@@ -97,4 +99,49 @@ void Battery::Render(vView* view)
 		return;
 
 	gBatteryModel->Render(view, &transform);
+
+	{
+		float cx = (float)transformFlt[12];
+		float cz = (float)transformFlt[14];
+		const float outerRadius = mRadius * 1.75f;
+		const float innerRadius = mRadius * 0.90f;
+		const float ringHeight = 0.35f;
+
+		const unsigned char r = 0x08;
+		const unsigned char g = 0x20;
+		const unsigned char b = 0xC8;
+		const unsigned char a = 0x80;
+
+		GX_LoadPosMtxImm(*(Mtx44*)&view->ViewMatrix, GX_PNMTX0);
+		vEffectStaticState::pCurrentEffect = vEffects[VEFFECT_WORLD];
+		vEffectStaticState::pCurrentEffect->SetTexture(nullptr);
+		vEffectStaticState::pCurrentEffect->Start();
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
+		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
+
+		vPoly poly{};
+		auto drawSegment = [&](float x0, float z0, float x1, float z1)
+			{
+				poly.Vertices[0].x = x0; poly.Vertices[0].y = ringHeight; poly.Vertices[0].z = z0;
+				poly.Vertices[1].x = x0; poly.Vertices[1].y = ringHeight; poly.Vertices[1].z = z1;
+				poly.Vertices[2].x = x1; poly.Vertices[2].y = ringHeight; poly.Vertices[2].z = z1;
+				poly.Vertices[3].x = x1; poly.Vertices[3].y = ringHeight; poly.Vertices[3].z = z0;
+
+				poly.Colours[0][0] = r; poly.Colours[0][1] = g; poly.Colours[0][2] = b; poly.Colours[0][3] = a;
+				*(unsigned int*)&poly.Colours[1] = *(unsigned int*)&poly.Colours[0];
+				*(unsigned int*)&poly.Colours[2] = *(unsigned int*)&poly.Colours[0];
+				*(unsigned int*)&poly.Colours[3] = *(unsigned int*)&poly.Colours[0];
+
+				vPolyRender(&poly);
+			};
+
+		drawSegment(cx - outerRadius, cz - outerRadius, cx + outerRadius, cz - innerRadius); // top
+		drawSegment(cx - outerRadius, cz + innerRadius, cx + outerRadius, cz + outerRadius); // bottom
+		drawSegment(cx - outerRadius, cz - innerRadius, cx - innerRadius, cz + innerRadius); // left
+		drawSegment(cx + innerRadius, cz - innerRadius, cx + outerRadius, cz + innerRadius); // right
+
+		vEffectStaticState::pCurrentEffect->End();
+		vEffectStaticState::pCurrentEffect = NULL;
+	}
+
 }
