@@ -161,9 +161,9 @@ void RenderWorld(vView* view)
 				float z1 = z0 + kTileDepth;
 
 				bool isWhite = ((ix + iz) & 1) == 0;
-				unsigned char r = isWhite ? 0xFF : 0x00;
-				unsigned char g = isWhite ? 0xFF : 0x00;
-				unsigned char b = isWhite ? 0xFF : 0x00;
+				unsigned char r = isWhite ? 0xE0 : 0x30;
+				unsigned char g = isWhite ? 0xE0 : 0x30;
+				unsigned char b = isWhite ? 0xE0 : 0x30;
 
 				poly.Vertices[0].x = x0; poly.Vertices[0].y = kLineY; poly.Vertices[0].z = z0;
 				poly.Vertices[1].x = x0; poly.Vertices[1].y = kLineY; poly.Vertices[1].z = z1;
@@ -192,7 +192,7 @@ void RenderWorld(vView* view)
 		vEffectStaticState::pCurrentEffect->Start();
 
 		const float kFinishZ = World::kFinishLineZ;
-		const float kHalfWidth = 8.0f;   // 16m along track so its visible
+		const float kHalfWidth = 4.0f;   // 8m along track so its visible
 		const float kFinishY = 0.02f;   // slightly above road
 		const int kNumStripes = 10;
 		const float kStripeWidth = 50.0f / (float)kNumStripes;
@@ -201,9 +201,9 @@ void RenderWorld(vView* view)
 			float x0 = -25.0f + (float)i * kStripeWidth;
 			float x1 = x0 + kStripeWidth;
 			bool isWhite = (i & 1) == 0;
-			unsigned char r = isWhite ? 0xFF : 0x00;
-			unsigned char g = isWhite ? 0xFF : 0x00;
-			unsigned char b = isWhite ? 0xFF : 0x00;
+			unsigned char r = isWhite ? 0xE0 : 0x30;
+			unsigned char g = isWhite ? 0xE0 : 0x30;
+			unsigned char b = isWhite ? 0xE0 : 0x30;
 
 			poly.Vertices[0].x = x0;
 			poly.Vertices[0].y = kFinishY;
